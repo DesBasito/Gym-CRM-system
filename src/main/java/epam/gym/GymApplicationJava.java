@@ -1,11 +1,13 @@
 package epam.gym;
 
-/**
- * Hello world!
- *
- */
+
+import epam.gym.config.ApplicationConfig;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
 public class GymApplicationJava {
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(ApplicationConfig.class);
+        System.out.println(ctx.containsBean("traineeService"));
     }
 }

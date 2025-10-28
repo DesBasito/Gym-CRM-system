@@ -1,0 +1,11 @@
+storage:
+  users:
+    file: data/users.txt
+  trainers:
+    file: data/trainers.txt
+  trainees:
+    file: data/trainees.txt
+  trainings:
+    file: data/trainings.txt
+  trainingTypes:
+    file: data/trainingTypes.txt
