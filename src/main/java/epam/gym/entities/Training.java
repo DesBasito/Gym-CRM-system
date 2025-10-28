@@ -11,9 +11,7 @@ import java.time.LocalDate;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Training {
-    String trainerId;
-    String traineeId;
-    String trainingName;
+    EmbeddedTrainingId trainingId;
     String trainingType;
     LocalDate trainingDate;
     String trainingDuration;
