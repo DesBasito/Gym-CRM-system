@@ -1,22 +1,26 @@
 package epam.gym.services.impl;
 
-import epam.gym.entities.Trainee;
+import epam.gym.dao.impl.TraineeDao;
+import epam.gym.domain.dto.TraineeDto;
+import epam.gym.domain.entities.Trainee;
 import epam.gym.services.interfaces.TraineeService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class TraineeServiceImpl implements TraineeService {
+    @Autowired
+    private TraineeDao traineeDao;
+
     @Override
-    public Trainee create() {
+    public Trainee create(TraineeDto traineeDto) {
         return null;
     }
 
     @Override
-    public Trainee update() {
+    public Trainee update(TraineeDto traineeDto) {
         return null;
     }
 
@@ -26,7 +30,7 @@ public class TraineeServiceImpl implements TraineeService {
     }
 
     @Override
-    public void delete() {
-
+    public void delete(String id) {
+        traineeDao.delete(id);
     }
 }

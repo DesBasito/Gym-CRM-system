@@ -1,6 +1,6 @@
 package epam.gym.services.interfaces;
 
-import epam.gym.entities.Trainee;
+import epam.gym.domain.entities.Trainee;
 
 public interface TrainerService {
     Trainee create();

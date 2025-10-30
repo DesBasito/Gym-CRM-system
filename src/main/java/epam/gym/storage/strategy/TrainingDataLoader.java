@@ -1,8 +1,7 @@
-package epam.gym.component.strategy;
+package epam.gym.storage.strategy;
 
-import epam.gym.entities.EmbeddedTrainingId;
-import epam.gym.entities.Training;
-import epam.gym.entities.User;
+import epam.gym.domain.entities.EmbeddedTrainingId;
+import epam.gym.domain.entities.Training;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -13,9 +12,9 @@ import java.time.LocalDate;
 import java.util.Map;
 
 @Component
-public class TrainingDataLoader implements DataLoader<Training>{
+public class TrainingDataLoader implements DataLoader<Training, EmbeddedTrainingId>{
     @Override
-    public void loadData(InputStream inputStream, Map<String, Training> storage) throws IOException {
+    public void loadData(InputStream inputStream, Map<EmbeddedTrainingId, Training> storage) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -32,7 +31,7 @@ public class TrainingDataLoader implements DataLoader<Training>{
                             LocalDate.parse(parts[4].trim()),
                             parts[5].trim()
                             );
-                    storage.put(training.getTrainingId().toString(), training);
+                    storage.put(training.getTrainingId(), training);
                 }
             }
         }

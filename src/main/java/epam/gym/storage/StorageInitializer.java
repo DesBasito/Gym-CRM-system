@@ -1,6 +1,6 @@
-package epam.gym.component;
+package epam.gym.storage;
 
-import epam.gym.component.strategy.DataLoader;
+import epam.gym.storage.strategy.DataLoader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
@@ -33,12 +33,12 @@ public class StorageInitializer implements BeanPostProcessor, InitializingBean {
     @Value("${storage.trainingTypes}")
     private String trainingTypesFilePath;
 
-    private List<DataLoader<?>> dataLoaders;
+    private List<DataLoader<?, ?>> dataLoaders;
     private boolean initialized = false;
     private Map<String, String> filePathMap;
 
     @Autowired
-    public void setDataLoaders(List<DataLoader<?>> dataLoaders) {
+    public void setDataLoaders(List<DataLoader<?, ?>> dataLoaders) {
         this.dataLoaders = dataLoaders;
     }
 
@@ -56,10 +56,10 @@ public class StorageInitializer implements BeanPostProcessor, InitializingBean {
     @SuppressWarnings("unchecked")
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
         if (!initialized && bean instanceof Map) {
-            for (DataLoader<?> loader : dataLoaders) {
+            for (DataLoader<?, ?> loader : dataLoaders) {
                 if (loader.getStorageBeanName().equals(beanName)) {
                     String filePath = filePathMap.get(beanName);
-                    loadData(loader, (Map<String, ?>) bean, filePath, beanName);
+                    loadData(loader, (Map<?, ?>) bean, filePath, beanName);
                     break;
                 }
             }
@@ -72,13 +72,13 @@ public class StorageInitializer implements BeanPostProcessor, InitializingBean {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> void loadData(DataLoader<T> loader, Map<String, ?> storage, String filePath, String beanName) {
+    private <T, V> void loadData(DataLoader<T, V> loader, Map<?, ?> storage, String filePath, String beanName) {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(filePath)) {
             if (is == null) {
                 log.error("File not found: {}", filePath);
                 return;
             }
-            loader.loadData(is, (Map<String, T>) storage);
+            loader.loadData(is, (Map<V, T>) storage);
             log.info("Loaded {} entries for {}", storage.size(), beanName);
         } catch (Exception e) {
             log.error("Error loading data for {}: {}", beanName, e.getMessage());

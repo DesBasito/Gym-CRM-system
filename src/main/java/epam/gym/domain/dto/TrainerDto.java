@@ -1,16 +1,15 @@
-package epam.gym.entities;
+package epam.gym.domain.dto;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Setter@Getter
+@Setter
+@Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User {
+public class TrainerDto {
     String firstName;
     String lastName;
-    String username;
-    String password;
-    Boolean isActive;
+    String specialization;
 }

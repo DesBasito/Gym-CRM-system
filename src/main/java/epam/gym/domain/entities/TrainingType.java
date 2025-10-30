@@ -1,4 +1,4 @@
-package epam.gym.entities;
+package epam.gym.domain.entities;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

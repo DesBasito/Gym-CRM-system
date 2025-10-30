@@ -1,7 +1,7 @@
 package epam.gym;
 
 
-import epam.gym.component.strategy.DataLoader;
+import epam.gym.storage.strategy.DataLoader;
 import epam.gym.config.ApplicationConfig;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

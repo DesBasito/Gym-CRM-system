@@ -1,6 +1,6 @@
-package epam.gym.component.strategy;
+package epam.gym.storage.strategy;
 
-import epam.gym.entities.TrainingType;
+import epam.gym.domain.entities.Trainer;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -10,17 +10,20 @@ import java.io.InputStreamReader;
 import java.util.Map;
 
 @Component
-public class TrainingTypeDataLoader implements DataLoader<TrainingType>{
+public class TrainerDataLoader implements DataLoader<Trainer, String>{
 
     @Override
-    public void loadData(InputStream inputStream, Map<String, TrainingType> storage) throws IOException {
+    public void loadData(InputStream inputStream, Map<String, Trainer> storage) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",");
-                if (parts.length >= 1) {
-                    TrainingType trainingType = new TrainingType(parts[0].trim());
-                    storage.put(trainingType.getTrainingTypeName(), trainingType);
+                if (parts.length >= 2) {
+                    Trainer trainer = new Trainer(
+                            parts[0].trim(),
+                            parts[1].trim()
+                    );
+                    storage.put(trainer.getUserId(), trainer);
                 }
             }
         }
@@ -28,6 +31,6 @@ public class TrainingTypeDataLoader implements DataLoader<TrainingType>{
 
     @Override
     public String getStorageBeanName() {
-        return "trainingTypeStorage";
+        return "";
     }
 }

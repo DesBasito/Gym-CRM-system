@@ -1,4 +1,4 @@
-package epam.gym.entities;
+package epam.gym.domain.dto;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -10,8 +10,9 @@ import java.time.LocalDate;
 @Setter
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Trainee {
+public class TraineeDto {
+    String firstName;
+    String lastName;
     LocalDate dateOfBirth;
     String address;
-    String userId;
 }

@@ -1,4 +1,4 @@
-package epam.gym.entities;
+package epam.gym.domain.entities;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,6 +9,6 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Trainer {
-    String Specialization;
+    String specialization;
     String userId;
 }

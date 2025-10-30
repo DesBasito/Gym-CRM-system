@@ -1,6 +1,6 @@
 package epam.gym.config;
 
-import epam.gym.entities.*;
+import epam.gym.domain.entities.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -25,7 +25,7 @@ public class StorageConfig {
     }
 
     @Bean
-    public Map<String, Training> trainingStorage() {
+    public Map<EmbeddedTrainingId, Training> trainingStorage() {
         return new HashMap<>();
     }
 
