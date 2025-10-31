@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Repository
 public class TrainingDao implements EntityDao<Training, EmbeddedTrainingId> {
@@ -17,12 +17,12 @@ public class TrainingDao implements EntityDao<Training, EmbeddedTrainingId> {
     private Map<EmbeddedTrainingId,Training> trainingStorage;
 
     @Override
-    public Training create(Training entity) {
-        return trainingStorage.put(entity.getTrainingId(), entity);
+    public Optional<Training> create(Training entity) {
+        return Optional.ofNullable(trainingStorage.put(entity.getTrainingId(), entity));
     }
 
     @Override
-    public List<Training> select() {
-        return new ArrayList<>(trainingStorage.values());
+    public Optional<Training> select(EmbeddedTrainingId id) {
+        return Optional.of(trainingStorage.get(id));
     }
 }

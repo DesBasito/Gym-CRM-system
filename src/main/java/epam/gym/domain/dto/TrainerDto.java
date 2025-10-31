@@ -12,4 +12,5 @@ public class TrainerDto {
     String firstName;
     String lastName;
     String specialization;
+    Boolean isActive;
 }

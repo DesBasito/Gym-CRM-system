@@ -15,4 +15,5 @@ public class TraineeDto {
     String lastName;
     LocalDate dateOfBirth;
     String address;
+    Boolean isActive;
 }

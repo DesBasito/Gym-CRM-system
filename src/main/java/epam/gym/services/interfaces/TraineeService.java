@@ -6,7 +6,7 @@ import epam.gym.domain.entities.Trainee;
 
 public interface TraineeService {
     Trainee create(TraineeDto traineeDto);
-    Trainee update(TraineeDto traineeDto);
-    Trainee select();
+    Trainee update(TraineeDto traineeDto, String username);
+    Trainee select(String id);
     void delete(String id);
 }

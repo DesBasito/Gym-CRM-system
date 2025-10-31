@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class TrainerDao implements EntityDao<Trainer, String> {
@@ -16,17 +17,17 @@ public class TrainerDao implements EntityDao<Trainer, String> {
 
 
     @Override
-    public Trainer create(Trainer entity) {
-        return trainerStorage.put(entity.getUserId(), entity);
+    public Optional<Trainer> create(Trainer entity) {
+        return Optional.ofNullable(trainerStorage.put(entity.getUserId(), entity));
     }
 
     @Override
-    public List<Trainer> select() {
-        return new ArrayList<>(trainerStorage.values());
+    public Optional<Trainer> select(String id) {
+        return Optional.of(trainerStorage.get(id));
     }
 
     @Override
-    public Trainer update(Trainer entity) {
-        return trainerStorage.put(entity.getUserId(), entity);
+    public Optional<Trainer> update(Trainer entity) {
+        return Optional.ofNullable(trainerStorage.put(entity.getUserId(), entity));
     }
 }
