@@ -20,9 +20,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {ApplicationConfig.class, StorageConfig.class})
 class CheckAllBeansTest {
+    private ApplicationContext applicationContext;
 
     @Autowired
-    private ApplicationContext applicationContext;
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Test
     void testAllDaoBeansExist() {

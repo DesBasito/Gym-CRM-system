@@ -22,19 +22,30 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {ApplicationConfig.class, StorageConfig.class})
 class GymFacadeFunctionsTest {
-
-    @Autowired
     private GymFacade gymFacade;
-
-
-    @Autowired
     private Map<String, User> userStorage;
-
-    @Autowired
     private Map<String, Trainee> traineeStorage;
+    private Map<String, Trainer> trainerStorage;
 
     @Autowired
-    private Map<String, Trainer> trainerStorage;
+    public void setGymFacade(GymFacade gymFacade) {
+        this.gymFacade = gymFacade;
+    }
+
+    @Autowired
+    public void setUserStorage(Map<String, User> userStorage) {
+        this.userStorage = userStorage;
+    }
+
+    @Autowired
+    public void setTraineeStorage(Map<String, Trainee> traineeStorage) {
+        this.traineeStorage = traineeStorage;
+    }
+
+    @Autowired
+    public void setTrainerStorage(Map<String, Trainer> trainerStorage) {
+        this.trainerStorage = trainerStorage;
+    }
 
     @BeforeEach
     void setUp() {
