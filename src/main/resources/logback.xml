@@ -70,7 +70,6 @@
         </rollingPolicy>
     </appender>
 
-    <!-- Корневой логгер -->
     <root level="info">
         <appender-ref ref="Console" />
         <appender-ref ref="InfoFile" />
