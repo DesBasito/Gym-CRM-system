@@ -1,4 +1,4 @@
-package epam.gym;
+package epam.gym.spring;
 
 import epam.gym.config.ApplicationConfig;
 import epam.gym.config.StorageConfig;
