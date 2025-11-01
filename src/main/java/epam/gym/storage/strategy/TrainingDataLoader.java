@@ -39,6 +39,6 @@ public class TrainingDataLoader implements DataLoader<Training, EmbeddedTraining
 
     @Override
     public String getStorageBeanName() {
-        return "";
+        return "trainingStorage";
     }
 }

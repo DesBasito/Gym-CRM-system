@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
         user.setIsActive(true);
 
         log.info("User created successfully with username: {}", username);
-        return userDao.create(user).get();
+        return userDao.create(user).orElse(null);
     }
 
     @Override

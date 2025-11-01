@@ -7,7 +7,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 @Configuration
-@ComponentScan(basePackages = "epam.gym")
+@ComponentScan("epam.gym")
 @PropertySource("classpath:application.properties")
 public class ApplicationConfig {
     @Bean

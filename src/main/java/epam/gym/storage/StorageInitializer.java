@@ -72,13 +72,13 @@ public class StorageInitializer implements BeanPostProcessor, InitializingBean {
     }
 
     @SuppressWarnings("unchecked")
-    private <T, V> void loadData(DataLoader<T, V> loader, Map<?, ?> storage, String filePath, String beanName) {
+    private <V, ID> void loadData(DataLoader<V, ID> loader, Map<?, ?> storage, String filePath, String beanName) {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(filePath)) {
             if (is == null) {
                 log.error("File not found: {}", filePath);
                 return;
             }
-            loader.loadData(is, (Map<V, T>) storage);
+            loader.loadData(is, (Map<ID, V>) storage);
             log.info("Loaded {} entries for {}", storage.size(), beanName);
         } catch (Exception e) {
             log.error("Error loading data for {}: {}", beanName, e.getMessage());
