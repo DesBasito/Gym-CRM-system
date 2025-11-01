@@ -17,21 +17,36 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {ApplicationConfig.class, StorageConfig.class})
 class GymStorageTest {
-
-    @Autowired
     private Map<String, User> userStorage;
-
-    @Autowired
     private Map<String, Trainee> traineeStorage;
-
-    @Autowired
     private Map<String, Trainer> trainerStorage;
-
-    @Autowired
     private Map<EmbeddedTrainingId, Training> trainingStorage;
+    private Map<String, TrainingType> trainingTypeStorage;
 
     @Autowired
-    private Map<String, TrainingType> trainingTypeStorage;
+    public void setUserStorage(Map<String, User> userStorage) {
+        this.userStorage = userStorage;
+    }
+
+    @Autowired
+    public void setTraineeStorage(Map<String, Trainee> traineeStorage) {
+        this.traineeStorage = traineeStorage;
+    }
+
+    @Autowired
+    public void setTrainerStorage(Map<String, Trainer> trainerStorage) {
+        this.trainerStorage = trainerStorage;
+    }
+
+    @Autowired
+    public void setTrainingStorage(Map<EmbeddedTrainingId, Training> trainingStorage) {
+        this.trainingStorage = trainingStorage;
+    }
+
+    @Autowired
+    public void setTrainingTypeStorage(Map<String, TrainingType> trainingTypeStorage) {
+        this.trainingTypeStorage = trainingTypeStorage;
+    }
 
     @Test
     void testAllStoragesNotNull() {
