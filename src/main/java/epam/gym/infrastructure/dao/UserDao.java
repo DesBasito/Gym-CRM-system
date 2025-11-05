@@ -1,7 +1,7 @@
-package epam.gym.domain.entities;
+package epam.gym.infrastructure.dao;
 
 import lombok.*;
-        import lombok.experimental.FieldDefaults;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
@@ -9,7 +9,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Setter@Getter
 @FieldDefaults(level = AccessLevel.PROTECTED)
-public class User {
+public class UserDao {
     String firstName;
     String lastName;
     String username;

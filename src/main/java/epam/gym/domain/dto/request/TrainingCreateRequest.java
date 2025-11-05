@@ -1,5 +1,6 @@
-package epam.gym.domain.entities;
+package epam.gym.domain.dto.request;
 
+import epam.gym.domain.entities.EmbeddedTrainingId;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -8,10 +9,9 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
-@Builder
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Training {
+public class TrainingCreateRequest {
     EmbeddedTrainingId trainingId;
     String trainingType;
     LocalDate trainingDate;

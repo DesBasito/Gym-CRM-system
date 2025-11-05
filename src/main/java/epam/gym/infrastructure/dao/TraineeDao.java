@@ -1,15 +1,18 @@
-package epam.gym.domain.entities;
+package epam.gym.infrastructure.dao;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.SuperBuilder;
+
+import java.time.LocalDate;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-@SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Trainer extends User{
-    String specialization;
+public class TraineeDao {
+    String username;
+    LocalDate dateOfBirth;
+    String address;
 }
