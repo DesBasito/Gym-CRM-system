@@ -79,7 +79,7 @@ public class StorageInitializer implements InitializingBean, ApplicationContextA
 
             Map<ID, V> loadedData = loader.loadData(is);
             if (loadedData != null && !loadedData.isEmpty()) {
-                storage.putAll((Map<? extends Object, ? extends Object>) loadedData);
+                storage.putAll(loadedData);
                 log.info("Loaded {} entries for {}", loadedData.size(), beanName);
             } else {
                 log.warn("No data loaded from {}", filePath);
