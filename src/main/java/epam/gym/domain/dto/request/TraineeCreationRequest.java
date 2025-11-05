@@ -1,18 +1,19 @@
-package epam.gym.domain.entities;
+package epam.gym.domain.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 
-@SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Trainee extends User {
+public class TraineeCreationRequest {
+    String firstName;
+    String lastName;
     LocalDate dateOfBirth;
     String address;
+    Boolean isActive;
 }

@@ -1,15 +1,16 @@
-package epam.gym.domain.entities;
+package epam.gym.domain.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.SuperBuilder;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-@SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Trainer extends User{
+public class TrainerCreationRequest {
+    String firstName;
+    String lastName;
     String specialization;
+    Boolean isActive;
 }

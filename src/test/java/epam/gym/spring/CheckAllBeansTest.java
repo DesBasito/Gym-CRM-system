@@ -2,11 +2,15 @@ package epam.gym.spring;
 
 import epam.gym.config.ApplicationConfig;
 import epam.gym.config.StorageConfig;
-import epam.gym.dao.impl.*;
-import epam.gym.facade.GymFacade;
-import epam.gym.services.impl.*;
-import epam.gym.storage.StorageInitializer;
-import epam.gym.storage.strategy.*;
+import epam.gym.domain.services.impl.TraineeServiceImpl;
+import epam.gym.domain.services.impl.TrainerServiceImpl;
+import epam.gym.domain.services.impl.TrainingServiceImpl;
+import epam.gym.application.GymFacade;
+import epam.gym.infrastructure.repositories.impl.TraineeRepository;
+import epam.gym.infrastructure.repositories.impl.TrainerRepository;
+import epam.gym.infrastructure.repositories.impl.TrainingRepository;
+import epam.gym.infrastructure.storage.StorageInitializer;
+import epam.gym.infrastructure.storage.strategy.*;
 import epam.gym.util.UsernameAndPasswordGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,15 +33,13 @@ class CheckAllBeansTest {
 
     @Test
     void testAllDaoBeansExist() {
-        assertNotNull(applicationContext.getBean(UserDao.class));
-        assertNotNull(applicationContext.getBean(TraineeDao.class));
-        assertNotNull(applicationContext.getBean(TrainerDao.class));
-        assertNotNull(applicationContext.getBean(TrainingDao.class));
+        assertNotNull(applicationContext.getBean(TraineeRepository.class));
+        assertNotNull(applicationContext.getBean(TrainerRepository.class));
+        assertNotNull(applicationContext.getBean(TrainingRepository.class));
     }
 
     @Test
     void testAllServiceBeansExist() {
-        assertNotNull(applicationContext.getBean(UserServiceImpl.class));
         assertNotNull(applicationContext.getBean(TraineeServiceImpl.class));
         assertNotNull(applicationContext.getBean(TrainerServiceImpl.class));
         assertNotNull(applicationContext.getBean(TrainingServiceImpl.class));
@@ -59,7 +61,6 @@ class CheckAllBeansTest {
 
     @Test
     void testUtilityBeansExist() {
-        assertNotNull(applicationContext.getBean(UsernameAndPasswordGenerator.class));
         assertNotNull(applicationContext.getBean(StorageInitializer.class));
     }
 

@@ -1,4 +1,4 @@
-package epam.gym.domain.entities;
+package epam.gym.infrastructure.dao;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,9 +9,8 @@ import java.util.Objects;
 @NoArgsConstructor
 @Setter
 @Getter
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class EmbeddedTrainingId {
+public class EmbeddedTrainingDaoId {
     String trainerId;
     String traineeId;
     String trainingName;
@@ -19,7 +18,7 @@ public class EmbeddedTrainingId {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        EmbeddedTrainingId that = (EmbeddedTrainingId) o;
+        epam.gym.infrastructure.dao.EmbeddedTrainingDaoId that = (epam.gym.infrastructure.dao.EmbeddedTrainingDaoId) o;
         return Objects.equals(trainerId, that.trainerId) && Objects.equals(traineeId, that.traineeId) && Objects.equals(trainingName, that.trainingName);
     }
 
@@ -38,3 +37,4 @@ public class EmbeddedTrainingId {
         return sb.toString();
     }
 }
+
