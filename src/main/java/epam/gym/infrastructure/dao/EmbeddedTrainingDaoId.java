@@ -9,6 +9,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @Setter
 @Getter
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EmbeddedTrainingDaoId {
     String trainerId;

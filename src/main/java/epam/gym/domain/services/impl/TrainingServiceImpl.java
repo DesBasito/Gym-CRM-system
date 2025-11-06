@@ -25,7 +25,7 @@ public class TrainingServiceImpl implements TrainingService {
         training.setTrainingDate(trainingCreateRequest.getTrainingDate());
         training.setTrainingDuration(trainingCreateRequest.getTrainingDuration());
 
-        Training createdTraining = trainingRepository.save(training).orElse(null);
+        Training createdTraining = trainingRepository.save(training);
 
         if (createdTraining == null) log.error("Failed to create training: {}", trainingCreateRequest.getTrainingId());
         else log.info("Training created successfully: {}", createdTraining.getTrainingId());
@@ -37,7 +37,7 @@ public class TrainingServiceImpl implements TrainingService {
     @Override
     public Training select(EmbeddedTrainingId id) {
         log.info("Selecting training by id: {}", id);
-        Training training = trainingRepository.select(id).orElse(null);
+        Training training = trainingRepository.select(id);
 
         if (training == null) log.error("Training not found with id: {}", id);
         else log.info("Training found with id: {}", id);

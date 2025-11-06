@@ -19,6 +19,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -127,9 +128,7 @@ class GymFacadeFunctionsTest {
         String userId = created.getUsername();
 
         gymFacade.deleteTrainee(userId);
-
-        Trainee deleted = gymFacade.getTrainee(userId);
-        assertNull(deleted);
+        assertThrows(NoSuchElementException.class, () -> gymFacade.getTrainee(userId));
     }
 
     // ============= Trainer =============
@@ -169,22 +168,22 @@ class GymFacadeFunctionsTest {
 
     @Test
     void testUpdateTrainer() {
-        TrainerCreationRequest trainerDto = new TrainerCreationRequest();
-        trainerDto.setFirstName("Tom");
-        trainerDto.setLastName("Hardy");
-        trainerDto.setSpecialization("Yoga");
-        trainerDto.setIsActive(true);
+        TrainerCreationRequest trainerCreationRequest = new TrainerCreationRequest();
+        trainerCreationRequest.setFirstName("Tom");
+        trainerCreationRequest.setLastName("Hardy");
+        trainerCreationRequest.setSpecialization("Yoga");
+        trainerCreationRequest.setIsActive(true);
 
-        Trainer created = gymFacade.createTrainer(trainerDto);
+        Trainer created = gymFacade.createTrainer(trainerCreationRequest);
         String userId = created.getUsername();
 
-        TrainerCreationRequest updateDto = new TrainerCreationRequest();
-        updateDto.setFirstName("Tom");
-        updateDto.setLastName("Hardy");
-        updateDto.setSpecialization("Pilates");
-        updateDto.setIsActive(true);
+        TrainerCreationRequest updateRequest = new TrainerCreationRequest();
+        updateRequest.setFirstName("Tom");
+        updateRequest.setLastName("Hardy");
+        updateRequest.setSpecialization("Pilates");
+        updateRequest.setIsActive(true);
 
-        Trainer updated = gymFacade.updateTrainer(updateDto, userId);
+        Trainer updated = gymFacade.updateTrainer(updateRequest, userId);
 
         assertNotNull(updated);
         assertEquals("Pilates", updated.getSpecialization());
