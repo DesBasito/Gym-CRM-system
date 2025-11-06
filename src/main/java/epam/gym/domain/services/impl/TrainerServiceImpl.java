@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -24,31 +26,24 @@ public class TrainerServiceImpl implements TrainerService {
         trainer.setIsActive(true);
         trainer.setSpecialization(trainerCreationRequest.getSpecialization());
 
-        Trainer createdTrainer = trainerRepository.save(trainer).orElse(null);
+        Trainer createdTrainer = trainerRepository.save(trainer);
 
-        assert createdTrainer != null;
         log.info("Trainer created successfully with username: {}", createdTrainer.getUsername());
-
         return createdTrainer;
     }
 
     @Override
     public Trainer update(TrainerCreationRequest trainerCreationRequest, String username) {
-        log.info("Updating trainer: {} {}", trainerCreationRequest.getFirstName(), trainerCreationRequest.getLastName());
+        log.info("Updating user: {} {}", trainerCreationRequest.getFirstName(), trainerCreationRequest.getLastName());
 
-        Trainer currentTrainer = trainerRepository.select(username).orElse(null);
+        Trainer currentTrainer = trainerRepository.select(username);
         if (currentTrainer == null) {
-            log.warn("Trainer with username {} not found", username);
-            return null;
+            log.warn("User with username {} not found", username);
+            throw new NoSuchElementException("User with username "+username+" not found");
         }
 
         boolean nameChanged = !currentTrainer.getFirstName().equals(trainerCreationRequest.getFirstName()) ||
                               !currentTrainer.getLastName().equals(trainerCreationRequest.getLastName());
-
-        if (nameChanged) {
-            log.info("Name changed, deleting old trainer with username: {}", username);
-            trainerRepository.delete(username);
-        }
 
         Trainer trainer = Trainer.builder()
                 .firstName(trainerCreationRequest.getFirstName())
@@ -57,12 +52,20 @@ public class TrainerServiceImpl implements TrainerService {
                 .specialization(trainerCreationRequest.getSpecialization())
                 .build();
 
-        Trainer updatedTrainer = trainerRepository.save(trainer).orElse(null);
+        if (nameChanged) {
+            log.info("Name changed, deleting old user with username: {}", username);
+            trainerRepository.delete(username);
+        } else {
+            trainer.setUsername(username);
+        }
+
+
+        Trainer updatedTrainer = trainerRepository.save(trainer);
 
         if (updatedTrainer == null) {
-            log.error("Failed to update trainer");
+            log.error("Failed to update user");
         } else {
-            log.info("Trainer updated successfully with username: {}", updatedTrainer.getUsername());
+            log.info("User updated successfully with username: {}", updatedTrainer.getUsername());
         }
 
         return updatedTrainer;
@@ -70,14 +73,14 @@ public class TrainerServiceImpl implements TrainerService {
 
     @Override
     public Trainer select(String id) {
-        log.info("Selecting trainer by username: {}", id);
+        log.info("Selecting user by username: {}", id);
 
-        Trainer trainer = trainerRepository.select(id).orElse(null);
+        Trainer trainer = trainerRepository.select(id);
 
         if (trainer == null) {
-            log.error("Trainer not found with username: {}", id);
+            log.error("User not found with username: {}", id);
         } else {
-            log.info("Trainer found with username: {}", id);
+            log.info("User found with username: {}", id);
         }
 
         return trainer;

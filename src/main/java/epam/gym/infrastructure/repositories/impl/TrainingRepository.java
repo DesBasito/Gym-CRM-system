@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Slf4j
@@ -21,23 +22,23 @@ public class TrainingRepository implements EntityRepository<Training, EmbeddedTr
     private final TrainingMapper trainerMapper;
 
     @Override
-    public Optional<Training> save(Training entity) {
+    public Training save(Training entity) {
         if (entity == null) {
             log.warn("Attempt to save null training");
-            return Optional.empty();
+            throw new IllegalArgumentException("Attempt to save null training");
         }
 
         validate(entity);
         TrainingDao trainingDao = trainerMapper.toDao(entity);
         trainingStorage.put(trainingDao.getTrainingDaoId(), trainingDao);
-        return Optional.of(entity);
+        return entity;
     }
 
     @Override
-    public Optional<Training> select(EmbeddedTrainingId id) {
+    public Training select(EmbeddedTrainingId id) {
         if (id == null) {
             log.warn("Attempt to select training with null id");
-            return Optional.empty();
+            throw new IllegalArgumentException("Attempt to select training with null id");
         }
 
         EmbeddedTrainingDaoId daoId = new EmbeddedTrainingDaoId();
@@ -48,10 +49,10 @@ public class TrainingRepository implements EntityRepository<Training, EmbeddedTr
         TrainingDao trainingDao = trainingStorage.get(daoId);
         if (trainingDao == null) {
             log.warn("Training with id {} not found", id);
-            return Optional.empty();
+            throw new NoSuchElementException("Training with id "+id+" not found");
         }
 
-        return Optional.of(trainerMapper.toModel(trainingDao));
+        return trainerMapper.toModel(trainingDao);
     }
 
     private void validate(Training entity) {

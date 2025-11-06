@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.NoSuchElementException;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -16,7 +18,7 @@ public class TraineeServiceImpl implements TraineeService {
 
     @Override
     public Trainee create(TraineeCreationRequest traineeCreationRequest) {
-        log.info("Creating trainee: {} {}", traineeCreationRequest.getFirstName(), traineeCreationRequest.getLastName());
+        log.info("Creating user: {} {}", traineeCreationRequest.getFirstName(), traineeCreationRequest.getLastName());
 
 
         Trainee trainee = new Trainee();
@@ -26,31 +28,22 @@ public class TraineeServiceImpl implements TraineeService {
         trainee.setDateOfBirth(traineeCreationRequest.getDateOfBirth());
         trainee.setAddress(traineeCreationRequest.getAddress());
 
-        Trainee createdTrainee = traineeRepository.save(trainee).orElse(null);
-
-        assert createdTrainee != null;
-        log.info("Trainee created successfully with userId: {}", createdTrainee.getUsername());
-
+        Trainee createdTrainee = traineeRepository.save(trainee);
+        log.info("User created successfully with userId: {}", createdTrainee.getUsername());
         return createdTrainee;
     }
 
     @Override
     public Trainee update(TraineeCreationRequest traineeCreationRequest, String username) {
-        log.info("Updating trainee: {} {}", traineeCreationRequest.getFirstName(), traineeCreationRequest.getLastName());
-
-        Trainee currentTrainee = traineeRepository.select(username).orElse(null);
+        log.info("Updating user: {} {}", traineeCreationRequest.getFirstName(), traineeCreationRequest.getLastName());
+        Trainee currentTrainee = traineeRepository.select(username);
         if (currentTrainee == null) {
-            log.warn("Trainee with username {} not found", username);
-            return null;
+            log.warn("User with username {} not found", username);
+            throw new IllegalArgumentException("User with username: " + username + " not found!");
         }
 
         boolean nameChanged = !currentTrainee.getFirstName().equals(traineeCreationRequest.getFirstName()) ||
                               !currentTrainee.getLastName().equals(traineeCreationRequest.getLastName());
-
-        if (nameChanged) {
-            log.info("Name changed, deleting old trainee with username: {}", username);
-            traineeRepository.delete(username);
-        }
 
         Trainee trainee = Trainee.builder()
                 .firstName(traineeCreationRequest.getFirstName())
@@ -60,38 +53,35 @@ public class TraineeServiceImpl implements TraineeService {
                 .isActive(traineeCreationRequest.getIsActive())
                 .build();
 
-        Trainee updatedTrainee = traineeRepository.save(trainee).orElse(null);
-
-        if (updatedTrainee == null) {
-            log.error("Failed to update trainee");
+        if (!nameChanged) {
+            log.info("Name changed, deleting old user with username: {}", username);
+            traineeRepository.delete(username);
         } else {
-            log.info("Trainee updated successfully with username: {}", updatedTrainee.getUsername());
+            trainee.setUsername(username);
         }
 
+        Trainee updatedTrainee = traineeRepository.save(trainee);
+        log.info("User updated successfully with username: {}", updatedTrainee.getUsername());
         return updatedTrainee;
     }
 
     @Override
     public Trainee select(String id) {
-        log.info("Selecting trainee by userId: {}", id);
+        log.info("Selecting user by userId: {}", id);
+        Trainee trainee = traineeRepository.select(id);
 
-        Trainee trainee = traineeRepository.select(id).orElse(null);
+        if (trainee == null){
+            throw new NoSuchElementException("User by username: "+id+" not found!");
+        }
 
-        if (trainee == null) log.error("Trainee not found with userId: {}", id);
-        else log.info("Trainee found with userId: {}", id);
-
-
+        log.info("User found with userId: {}", id);
         return trainee;
     }
 
     @Override
     public void delete(String id) {
-        log.info("Deleting trainee with userId: {}", id);
-
-        boolean deleted = traineeRepository.delete(id);
-
-        if (deleted) log.info("Trainee deleted successfully with userId: {}", id);
-        else log.error("Failed to delete trainee with userId: {}", id);
-
+        log.info("Deleting user with userId: {}", id);
+        traineeRepository.delete(id);
+        log.info("User deleted successfully with userId: {}", id);
     }
 }
