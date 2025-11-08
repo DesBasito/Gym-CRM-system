@@ -1,0 +1,4 @@
+Fitness,John.Doe
+Yoga,Jane.Smith
+Cardio,Mike.Johnson
+Boxing,Sarah.Connor

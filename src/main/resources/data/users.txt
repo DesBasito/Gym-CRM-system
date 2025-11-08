@@ -1,0 +1,7 @@
+John,Doe,John.Doe,password123,true
+Jane,Smith,Jane.Smith,pass456,true
+Mike,Johnson,Mike.Johnson,secure789,true
+Alice,Brown,Alice.Brown,mypass111,true
+Bob,Wilson,Bob.Wilson,secret222,false
+Charlie,Davis,Charlie.Davis,pwd333,true
+Sarah,Connor,Sarah.Connor,term444,true

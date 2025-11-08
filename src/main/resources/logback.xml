@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <property name="LOGS" value="./gym-logs" />
+
+    <!-- Console -->
+    <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                %black(%d{ISO8601}) %highlight(%-5level) [%blue(%t)] %yellow(%C{1.}): %msg%n%throwable
+            </Pattern>
+        </layout>
+    </appender>
+
+    <!-- INFOS -->
+    <appender name="InfoFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS}/info/application.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <Pattern>%d %p %C{1.} [%t] %m%n</Pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS}/info/archived/application-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- ERRORS -->
+    <appender name="ErrorFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS}/error/error.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <Pattern>%d %p %C{1.} [%t] %m%n</Pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS}/error/archived/error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>90</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- DEBUGS -->
+    <appender name="DebugFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS}/debug/debug.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>DEBUG</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <Pattern>%d %p %C{1.} [%t] %m%n</Pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOGS}/debug/archived/debug-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Root logger -->
+    <root level="info">
+        <appender-ref ref="Console" />
+        <appender-ref ref="InfoFile" />
+        <appender-ref ref="ErrorFile" />
+        <appender-ref ref="DebugFile" />
+    </root>
+
+</configuration>
