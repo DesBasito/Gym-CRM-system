@@ -24,8 +24,4 @@ public class UsernameAndPasswordGenerator {
 
         return password.toString();
     }
-
-    public static void main(String[] args) {
-        System.out.println(generateAndGetPassword());
-    }
 }

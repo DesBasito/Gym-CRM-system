@@ -1,10 +1,10 @@
 package epam.gym.domain.services.interfaces;
 
-import epam.gym.domain.dto.request.TrainerCreationRequest;
-import epam.gym.domain.entities.Trainer;
+import epam.gym.domain.dto.request.TrainerRequest;
+import epam.gym.domain.models.TrainerModel;
 
 public interface TrainerService {
-    Trainer create(TrainerCreationRequest trainerDto);
-    Trainer update(TrainerCreationRequest trainerDto, String oldUsername);
-    Trainer select(String id);
+    TrainerModel create(TrainerRequest trainerDto);
+    TrainerModel update(TrainerRequest trainerDto, String oldUsername);
+    TrainerModel select(String id);
 }

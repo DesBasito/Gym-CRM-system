@@ -1,17 +1,15 @@
 package epam.gym.spring;
 
 import epam.gym.config.ApplicationConfig;
-import epam.gym.config.StorageConfig;
 import epam.gym.domain.services.impl.TraineeServiceImpl;
 import epam.gym.domain.services.impl.TrainerServiceImpl;
 import epam.gym.domain.services.impl.TrainingServiceImpl;
 import epam.gym.application.GymFacade;
-import epam.gym.infrastructure.repositories.impl.TraineeRepository;
-import epam.gym.infrastructure.repositories.impl.TrainerRepository;
-import epam.gym.infrastructure.repositories.impl.TrainingRepository;
+import epam.gym.infrastructure.repositories.TraineeRepository;
+import epam.gym.infrastructure.repositories.TrainerRepository;
+import epam.gym.infrastructure.repositories.TrainingRepository;
 import epam.gym.infrastructure.storage.StorageInitializer;
 import epam.gym.infrastructure.storage.strategy.*;
-import epam.gym.util.UsernameAndPasswordGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

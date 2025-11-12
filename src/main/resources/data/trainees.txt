@@ -1,3 +1,0 @@
-1990-05-15,123 Main St,Alice.Brown
-1995-08-20,456 Oak Ave,Bob.Wilson
-1992-03-10,789 Pine Rd,Charlie.Davis
