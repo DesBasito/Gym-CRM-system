@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             version="3.0"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <persistence-unit name="default" transaction-type="RESOURCE_LOCAL">
+
+        <!-- Entity classes -->
+        <class>epam.gym.infrastructure.entities.User</class>
+        <class>epam.gym.infrastructure.entities.Trainee</class>
+        <class>epam.gym.infrastructure.entities.Trainer</class>
+        <class>epam.gym.infrastructure.entities.Training</class>
+        <class>epam.gym.infrastructure.entities.TrainingType</class>
+
+        <properties>
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/gym_db"/>
+            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
+            <property name="jakarta.persistence.jdbc.password" value="qwe"/>
+
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+
+            <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
+
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.jdbc.time_zone" value="UTC"/>
+        </properties>
+    </persistence-unit>
+</persistence>

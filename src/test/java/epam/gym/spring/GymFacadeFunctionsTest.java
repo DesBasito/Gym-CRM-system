@@ -1,15 +1,12 @@
 package epam.gym.spring;
 
 import epam.gym.config.ApplicationConfig;
-import epam.gym.config.StorageConfig;
-import epam.gym.domain.dto.request.TraineeCreationRequest;
-import epam.gym.domain.dto.request.TrainerCreationRequest;
-import epam.gym.domain.dto.request.TrainingCreateRequest;
-import epam.gym.domain.entities.*;
+import epam.gym.domain.dto.request.TraineeRequest;
+import epam.gym.domain.dto.request.TrainerRequest;
+import epam.gym.domain.dto.request.TrainingRequest;
+import epam.gym.domain.models.*;
 import epam.gym.application.GymFacade;
-import epam.gym.infrastructure.dao.TraineeDao;
-import epam.gym.infrastructure.dao.TrainerDao;
-import epam.gym.infrastructure.dao.UserDao;
+import epam.gym.infrastructure.entities.UserDao;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,8 +25,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class GymFacadeFunctionsTest {
     private GymFacade gymFacade;
     private Map<String, UserDao> userStorage;
-    private Map<String, TraineeDao> traineeStorage;
-    private Map<String, TrainerDao> trainerStorage;
+    private Map<String, TraineeEntity> traineeStorage;
+    private Map<String, TrainerEntity> trainerStorage;
 
     @Autowired
     public void setGymFacade(GymFacade gymFacade) {
@@ -42,12 +39,12 @@ class GymFacadeFunctionsTest {
     }
 
     @Autowired
-    public void setTraineeStorage(Map<String, TraineeDao> traineeStorage) {
+    public void setTraineeStorage(Map<String, TraineeEntity> traineeStorage) {
         this.traineeStorage = traineeStorage;
     }
 
     @Autowired
-    public void setTrainerStorage(Map<String, TrainerDao> trainerStorage) {
+    public void setTrainerStorage(Map<String, TrainerEntity> trainerStorage) {
         this.trainerStorage = trainerStorage;
     }
 
@@ -61,32 +58,32 @@ class GymFacadeFunctionsTest {
 
     @Test
     void testCreateTrainee() {
-        TraineeCreationRequest traineeCreationRequest = new TraineeCreationRequest();
-        traineeCreationRequest.setFirstName("John");
-        traineeCreationRequest.setLastName("Doe");
-        traineeCreationRequest.setDateOfBirth(LocalDate.of(1990, 1, 1));
-        traineeCreationRequest.setAddress("123 Main St");
+        TraineeRequest traineeRequest = new TraineeRequest();
+        traineeRequest.setFirstName("John");
+        traineeRequest.setLastName("Doe");
+        traineeRequest.setDateOfBirth(LocalDate.of(1990, 1, 1));
+        traineeRequest.setAddress("123 Main St");
 
-        Trainee createdTrainee = gymFacade.createTrainee(traineeCreationRequest);
+        TraineeModel createdTraineeModel = gymFacade.createTrainee(traineeRequest);
 
-        assertNotNull(createdTrainee);
-        assertEquals("123 Main St", createdTrainee.getAddress());
-        assertEquals(LocalDate.of(1990, 1, 1), createdTrainee.getDateOfBirth());
-        assertNotNull(createdTrainee.getUsername());
+        assertNotNull(createdTraineeModel);
+        assertEquals("123 Main St", createdTraineeModel.getAddress());
+        assertEquals(LocalDate.of(1990, 1, 1), createdTraineeModel.getDateOfBirth());
+        assertNotNull(createdTraineeModel.getUsername());
     }
 
     @Test
     void testGetTrainee() {
-        TraineeCreationRequest traineeCreationRequest = new TraineeCreationRequest();
-        traineeCreationRequest.setFirstName("Jane");
-        traineeCreationRequest.setLastName("Smith");
-        traineeCreationRequest.setDateOfBirth(LocalDate.of(1995, 5, 15));
-        traineeCreationRequest.setAddress("456 Oak Ave");
+        TraineeRequest traineeRequest = new TraineeRequest();
+        traineeRequest.setFirstName("Jane");
+        traineeRequest.setLastName("Smith");
+        traineeRequest.setDateOfBirth(LocalDate.of(1995, 5, 15));
+        traineeRequest.setAddress("456 Oak Ave");
 
-        Trainee created = gymFacade.createTrainee(traineeCreationRequest);
+        TraineeModel created = gymFacade.createTrainee(traineeRequest);
         String userId = created.getUsername();
 
-        Trainee retrieved = gymFacade.getTrainee(userId);
+        TraineeModel retrieved = gymFacade.getTrainee(userId);
 
         assertNotNull(retrieved);
         assertEquals(userId, retrieved.getUsername());
@@ -95,22 +92,22 @@ class GymFacadeFunctionsTest {
 
     @Test
     void testUpdateTrainee() {
-        TraineeCreationRequest traineeCreationRequest = new TraineeCreationRequest();
-        traineeCreationRequest.setFirstName("Bob");
-        traineeCreationRequest.setLastName("Johnson");
-        traineeCreationRequest.setDateOfBirth(LocalDate.of(1985, 3, 10));
-        traineeCreationRequest.setAddress("789 Pine Rd");
+        TraineeRequest traineeRequest = new TraineeRequest();
+        traineeRequest.setFirstName("Bob");
+        traineeRequest.setLastName("Johnson");
+        traineeRequest.setDateOfBirth(LocalDate.of(1985, 3, 10));
+        traineeRequest.setAddress("789 Pine Rd");
 
-        Trainee created = gymFacade.createTrainee(traineeCreationRequest);
+        TraineeModel created = gymFacade.createTrainee(traineeRequest);
         String userId = created.getUsername();
 
-        TraineeCreationRequest updateDto = new TraineeCreationRequest();
+        TraineeRequest updateDto = new TraineeRequest();
         updateDto.setFirstName("Bob");
         updateDto.setLastName("Johnson");
         updateDto.setDateOfBirth(LocalDate.of(1985, 3, 10));
         updateDto.setAddress("999 New Address");
 
-        Trainee updated = gymFacade.updateTrainee(updateDto, userId);
+        TraineeModel updated = gymFacade.updateTrainee(updateDto, userId);
 
         assertNotNull(updated);
         assertEquals("999 New Address", updated.getAddress());
@@ -118,13 +115,13 @@ class GymFacadeFunctionsTest {
 
     @Test
     void testDeleteTrainee() {
-        TraineeCreationRequest traineeCreationRequest = new TraineeCreationRequest();
-        traineeCreationRequest.setFirstName("Alice");
-        traineeCreationRequest.setLastName("Williams");
-        traineeCreationRequest.setDateOfBirth(LocalDate.of(1992, 7, 20));
-        traineeCreationRequest.setAddress("321 Elm St");
+        TraineeRequest traineeRequest = new TraineeRequest();
+        traineeRequest.setFirstName("Alice");
+        traineeRequest.setLastName("Williams");
+        traineeRequest.setDateOfBirth(LocalDate.of(1992, 7, 20));
+        traineeRequest.setAddress("321 Elm St");
 
-        Trainee created = gymFacade.createTrainee(traineeCreationRequest);
+        TraineeModel created = gymFacade.createTrainee(traineeRequest);
         String userId = created.getUsername();
 
         gymFacade.deleteTrainee(userId);
@@ -135,31 +132,31 @@ class GymFacadeFunctionsTest {
 
     @Test
     void testCreateTrainer() {
-        TrainerCreationRequest trainerDto = new TrainerCreationRequest();
+        TrainerRequest trainerDto = new TrainerRequest();
         trainerDto.setFirstName("Mike");
         trainerDto.setLastName("Tyson");
         trainerDto.setSpecialization("Boxing");
         trainerDto.setIsActive(true);
 
-        Trainer createdTrainer = gymFacade.createTrainer(trainerDto);
+        TrainerModel createdTrainerModel = gymFacade.createTrainer(trainerDto);
 
-        assertNotNull(createdTrainer);
-        assertEquals("Boxing", createdTrainer.getSpecialization());
-        assertNotNull(createdTrainer.getUsername());
+        assertNotNull(createdTrainerModel);
+        assertEquals("Boxing", createdTrainerModel.getSpecialization());
+        assertNotNull(createdTrainerModel.getUsername());
     }
 
     @Test
     void testGetTrainer() {
-        TrainerCreationRequest trainerDto = new TrainerCreationRequest();
+        TrainerRequest trainerDto = new TrainerRequest();
         trainerDto.setFirstName("Sarah");
         trainerDto.setLastName("Connor");
         trainerDto.setSpecialization("Fitness");
         trainerDto.setIsActive(true);
 
-        Trainer created = gymFacade.createTrainer(trainerDto);
+        TrainerModel created = gymFacade.createTrainer(trainerDto);
         String userId = created.getUsername();
 
-        Trainer retrieved = gymFacade.getTrainer(userId);
+        TrainerModel retrieved = gymFacade.getTrainer(userId);
 
         assertNotNull(retrieved);
         assertEquals(userId, retrieved.getUsername());
@@ -168,22 +165,22 @@ class GymFacadeFunctionsTest {
 
     @Test
     void testUpdateTrainer() {
-        TrainerCreationRequest trainerCreationRequest = new TrainerCreationRequest();
-        trainerCreationRequest.setFirstName("Tom");
-        trainerCreationRequest.setLastName("Hardy");
-        trainerCreationRequest.setSpecialization("Yoga");
-        trainerCreationRequest.setIsActive(true);
+        TrainerRequest trainerRequest = new TrainerRequest();
+        trainerRequest.setFirstName("Tom");
+        trainerRequest.setLastName("Hardy");
+        trainerRequest.setSpecialization("Yoga");
+        trainerRequest.setIsActive(true);
 
-        Trainer created = gymFacade.createTrainer(trainerCreationRequest);
+        TrainerModel created = gymFacade.createTrainer(trainerRequest);
         String userId = created.getUsername();
 
-        TrainerCreationRequest updateRequest = new TrainerCreationRequest();
+        TrainerRequest updateRequest = new TrainerRequest();
         updateRequest.setFirstName("Tom");
         updateRequest.setLastName("Hardy");
         updateRequest.setSpecialization("Pilates");
         updateRequest.setIsActive(true);
 
-        Trainer updated = gymFacade.updateTrainer(updateRequest, userId);
+        TrainerModel updated = gymFacade.updateTrainer(updateRequest, userId);
 
         assertNotNull(updated);
         assertEquals("Pilates", updated.getSpecialization());
@@ -193,32 +190,32 @@ class GymFacadeFunctionsTest {
 
     @Test
     void testCreateTraining() {
-        TraineeCreationRequest traineeCreationRequest = new TraineeCreationRequest();
-        traineeCreationRequest.setFirstName("Student");
-        traineeCreationRequest.setLastName("One");
-        traineeCreationRequest.setDateOfBirth(LocalDate.of(1990, 1, 1));
-        traineeCreationRequest.setAddress("Address");
-        Trainee trainee = gymFacade.createTrainee(traineeCreationRequest);
+        TraineeRequest traineeRequest = new TraineeRequest();
+        traineeRequest.setFirstName("Student");
+        traineeRequest.setLastName("One");
+        traineeRequest.setDateOfBirth(LocalDate.of(1990, 1, 1));
+        traineeRequest.setAddress("Address");
+        TraineeModel traineeModel = gymFacade.createTrainee(traineeRequest);
 
-        TrainerCreationRequest trainerDto = new TrainerCreationRequest();
+        TrainerRequest trainerDto = new TrainerRequest();
         trainerDto.setFirstName("Coach");
         trainerDto.setLastName("One");
         trainerDto.setSpecialization("Cardio");
         trainerDto.setIsActive(true);
-        Trainer trainer = gymFacade.createTrainer(trainerDto);
+        TrainerModel trainerModel = gymFacade.createTrainer(trainerDto);
 
         EmbeddedTrainingId trainingId = new EmbeddedTrainingId();
-        trainingId.setTrainerId(trainer.getUsername());
-        trainingId.setTraineeId(trainee.getUsername());
+        trainingId.setTrainerId(trainerModel.getUsername());
+        trainingId.setTraineeId(traineeModel.getUsername());
         trainingId.setTrainingName("Morning Session");
 
-        TrainingCreateRequest trainingCreateRequest = new TrainingCreateRequest();
-        trainingCreateRequest.setTrainingId(trainingId);
-        trainingCreateRequest.setTrainingType("Cardio");
-        trainingCreateRequest.setTrainingDate(LocalDate.now());
-        trainingCreateRequest.setTrainingDuration("60");
+        TrainingRequest trainingRequest = new TrainingRequest();
+        trainingRequest.setTrainingId(trainingId);
+        trainingRequest.setTrainingType("Cardio");
+        trainingRequest.setTrainingDate(LocalDate.now());
+        trainingRequest.setTrainingDuration("60");
 
-        Training created = gymFacade.createTraining(trainingCreateRequest);
+        TrainingModel created = gymFacade.createTraining(trainingRequest);
 
         assertNotNull(created);
         assertEquals("Cardio", created.getTrainingType());
@@ -227,34 +224,34 @@ class GymFacadeFunctionsTest {
 
     @Test
     void testGetTraining() {
-        TraineeCreationRequest traineeCreationRequest = new TraineeCreationRequest();
-        traineeCreationRequest.setFirstName("Student");
-        traineeCreationRequest.setLastName("Two");
-        traineeCreationRequest.setDateOfBirth(LocalDate.of(1990, 1, 1));
-        traineeCreationRequest.setAddress("Address");
-        Trainee trainee = gymFacade.createTrainee(traineeCreationRequest);
+        TraineeRequest traineeRequest = new TraineeRequest();
+        traineeRequest.setFirstName("Student");
+        traineeRequest.setLastName("Two");
+        traineeRequest.setDateOfBirth(LocalDate.of(1990, 1, 1));
+        traineeRequest.setAddress("Address");
+        TraineeModel traineeModel = gymFacade.createTrainee(traineeRequest);
 
-        TrainerCreationRequest trainerDto = new TrainerCreationRequest();
+        TrainerRequest trainerDto = new TrainerRequest();
         trainerDto.setFirstName("Coach");
         trainerDto.setLastName("Two");
         trainerDto.setSpecialization("Strength");
         trainerDto.setIsActive(true);
-        Trainer trainer = gymFacade.createTrainer(trainerDto);
+        TrainerModel trainerModel = gymFacade.createTrainer(trainerDto);
 
         EmbeddedTrainingId trainingId = new EmbeddedTrainingId();
-        trainingId.setTrainerId(trainer.getUsername());
-        trainingId.setTraineeId(trainee.getUsername());
+        trainingId.setTrainerId(trainerModel.getUsername());
+        trainingId.setTraineeId(traineeModel.getUsername());
         trainingId.setTrainingName("Evening Session");
 
-        TrainingCreateRequest trainingCreateRequest = new TrainingCreateRequest();
-        trainingCreateRequest.setTrainingId(trainingId);
-        trainingCreateRequest.setTrainingType("Strength");
-        trainingCreateRequest.setTrainingDate(LocalDate.now());
-        trainingCreateRequest.setTrainingDuration("90");
+        TrainingRequest trainingRequest = new TrainingRequest();
+        trainingRequest.setTrainingId(trainingId);
+        trainingRequest.setTrainingType("Strength");
+        trainingRequest.setTrainingDate(LocalDate.now());
+        trainingRequest.setTrainingDuration("90");
 
-        gymFacade.createTraining(trainingCreateRequest);
+        gymFacade.createTraining(trainingRequest);
 
-        Training retrieved = gymFacade.getTraining(trainingId);
+        TrainingModel retrieved = gymFacade.getTraining(trainingId);
 
         assertNotNull(retrieved);
         assertEquals("Strength", retrieved.getTrainingType());

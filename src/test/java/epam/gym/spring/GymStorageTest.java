@@ -1,8 +1,7 @@
 package epam.gym.spring;
 
 import epam.gym.config.ApplicationConfig;
-import epam.gym.config.StorageConfig;
-import epam.gym.infrastructure.dao.*;
+import epam.gym.infrastructure.entities.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = {ApplicationConfig.class, StorageConfig.class})
 class GymStorageTest {
     private Map<String, UserDao> userStorage;
-    private Map<String, TraineeDao> traineeStorage;
-    private Map<String, TrainerDao> trainerStorage;
+    private Map<String, TraineeEntity> traineeStorage;
+    private Map<String, TrainerEntity> trainerStorage;
     private Map<EmbeddedTrainingDaoId, TrainingDao> trainingStorage;
     private Map<String, TrainingTypeDao> trainingTypeStorage;
 
@@ -29,12 +28,12 @@ class GymStorageTest {
     }
 
     @Autowired
-    public void setTraineeStorage(Map<String, TraineeDao> traineeStorage) {
+    public void setTraineeStorage(Map<String, TraineeEntity> traineeStorage) {
         this.traineeStorage = traineeStorage;
     }
 
     @Autowired
-    public void setTrainerStorage(Map<String, TrainerDao> trainerStorage) {
+    public void setTrainerStorage(Map<String, TrainerEntity> trainerStorage) {
         this.trainerStorage = trainerStorage;
     }
 
@@ -87,18 +86,18 @@ class GymStorageTest {
     void testTraineesLoaded() {
         assertEquals(3, traineeStorage.size());
 
-        TraineeDao alice = traineeStorage.get("Alice.Brown");
+        TraineeEntity alice = traineeStorage.get("Alice.Brown");
         assertNotNull(alice);
         assertEquals(LocalDate.of(1990, 5, 15), alice.getDateOfBirth());
         assertEquals("123 Main St", alice.getAddress());
         assertEquals("Alice.Brown", alice.getUsername());
 
-        TraineeDao bob = traineeStorage.get("Bob.Wilson");
+        TraineeEntity bob = traineeStorage.get("Bob.Wilson");
         assertNotNull(bob);
         assertEquals(LocalDate.of(1995, 8, 20), bob.getDateOfBirth());
         assertEquals("456 Oak Ave", bob.getAddress());
 
-        TraineeDao charlie = traineeStorage.get("Charlie.Davis");
+        TraineeEntity charlie = traineeStorage.get("Charlie.Davis");
         assertNotNull(charlie);
         assertEquals(LocalDate.of(1992, 3, 10), charlie.getDateOfBirth());
         assertEquals("789 Pine Rd", charlie.getAddress());
@@ -108,20 +107,20 @@ class GymStorageTest {
     void testTrainersLoaded() {
         assertEquals(4, trainerStorage.size());
 
-        TrainerDao john = trainerStorage.get("John.Doe");
+        TrainerEntity john = trainerStorage.get("John.Doe");
         assertNotNull(john);
         assertEquals("Fitness", john.getSpecialization());
         assertEquals("John.Doe", john.getUsername());
 
-        TrainerDao jane = trainerStorage.get("Jane.Smith");
+        TrainerEntity jane = trainerStorage.get("Jane.Smith");
         assertNotNull(jane);
         assertEquals("Yoga", jane.getSpecialization());
 
-        TrainerDao mike = trainerStorage.get("Mike.Johnson");
+        TrainerEntity mike = trainerStorage.get("Mike.Johnson");
         assertNotNull(mike);
         assertEquals("Cardio", mike.getSpecialization());
 
-        TrainerDao sarah = trainerStorage.get("Sarah.Connor");
+        TrainerEntity sarah = trainerStorage.get("Sarah.Connor");
         assertNotNull(sarah);
         assertEquals("Boxing", sarah.getSpecialization());
     }
