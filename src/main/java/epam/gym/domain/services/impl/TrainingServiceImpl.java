@@ -9,6 +9,7 @@ import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.repositories.TrainingRepository;
 import epam.gym.infrastructure.repositories.TrainingTypeRepository;
+import epam.gym.util.TrainingTypeValidator;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +42,7 @@ public class TrainingServiceImpl implements TrainingService {
     }
 
     private Training getTraining(TrainingRequest trainingRequest) {
+        TrainingTypeValidator.parse(trainingRequest.getTrainingType());
         Training training = mapper.requestToEntity(trainingRequest);
         training.setTrainingType(trainingTypeRepository.findByName(trainingRequest.getTrainingType()));
         training.setTrainee(traineeRepository.findByUsername(trainingRequest.getTraineeUsername()));

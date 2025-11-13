@@ -21,7 +21,7 @@ public class FlywayConfig {
 
     @Value("${spring.datasource.driver-class-name}")
     private String driverClassName;
-    @Value("${classpath:db/migration}")
+    @Value("${classpath:db/migrations}")
     private String migrationPath;
 
     @Bean
