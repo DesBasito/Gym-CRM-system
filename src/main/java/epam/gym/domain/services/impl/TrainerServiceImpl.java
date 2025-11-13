@@ -10,8 +10,7 @@ import epam.gym.infrastructure.mappers.TrainerMapper;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.repositories.TrainingTypeRepository;
-import epam.gym.util.UsernameAndPasswordGenerator;
-import jakarta.transaction.Transactional;
+import epam.gym.util.TrainingTypeValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +33,17 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
         this.traineeRepository = traineeRepository;
     }
 
+    @Override
+    public TrainerModel create(TrainerRequest request) {
+        TrainingTypeValidator.parse(request.getSpecialization());
+        return super.create(request);
+    }
+
+    @Override
+    public TrainerModel update(TrainerRequest request, String username) {
+        TrainingTypeValidator.parse(request.getSpecialization());
+        return super.update(request, username);
+    }
 
     @Override
     protected void updateEntityFields(Trainer entity, TrainerRequest request) {
@@ -48,22 +58,6 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
         return String.format("%s %s",request.getFirstName(), request.getLastName());
     }
 
-    @Override
-    protected boolean hasNameChanged(Trainer entity, TrainerRequest request) {
-        return !entity.getFirstName().equals(request.getFirstName()) ||
-               !entity.getLastName().equals(request.getLastName());
-    }
-
-    @Override
-    protected Trainer createNewUserEntity(TrainerRequest request) {
-        Trainer newEntity = new Trainer();
-        newEntity.setUsername(UsernameAndPasswordGenerator.generateAndGetUsername(
-                request.getFirstName(), request.getLastName()));
-        newEntity.setPassword(UsernameAndPasswordGenerator.generateAndGetPassword());
-        return newEntity;
-    }
-
-    @Transactional()
     public List<TrainerModel> findAllNotAssignedToTrainee(String traineeUsername) {
         log.info("Finding trainers not assigned to trainee: {}", traineeUsername);
 

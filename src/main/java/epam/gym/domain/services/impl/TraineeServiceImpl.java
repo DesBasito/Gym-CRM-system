@@ -7,10 +7,10 @@ import epam.gym.domain.services.interfaces.TraineeService;
 import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.mappers.TraineeMapper;
 import epam.gym.infrastructure.repositories.TraineeRepository;
-import epam.gym.util.UsernameAndPasswordGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import jakarta.transaction.Transactional;
 
 @Service
 @Slf4j
@@ -37,23 +37,11 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
     }
 
     @Override
-    protected boolean hasNameChanged(Trainee entity, TraineeRequest request) {
-        return !entity.getFirstName().equals(request.getFirstName()) ||
-               !entity.getLastName().equals(request.getLastName());
-    }
-
-    @Override
-    protected Trainee createNewUserEntity(TraineeRequest request) {
-        Trainee newEntity = new Trainee();
-        newEntity.setUsername(UsernameAndPasswordGenerator.generateAndGetUsername(
-                request.getFirstName(), request.getLastName()));
-        newEntity.setPassword(UsernameAndPasswordGenerator.generateAndGetPassword());
-        return newEntity;
-    }
-
-    @Override
-    public void delete(String id) {
-
+    @Transactional(rollbackOn = {IllegalArgumentException.class})
+    public void delete(String username) {
+        log.info("Deleting trainee with username: {}", username);
+        repository.delete(username);
+        log.info("Trainee deleted successfully with username: {}", username);
     }
 }
 
