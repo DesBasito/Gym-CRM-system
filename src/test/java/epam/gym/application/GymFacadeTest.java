@@ -53,7 +53,7 @@ class GymFacadeTest {
     private UserContext userContext;
 
     @InjectMocks
-    private GymFacade gymFacade;
+    private GymFacadeImpl gymFacade;
 
     private TraineeRequest traineeRequest;
     private TraineeModel traineeModel;
