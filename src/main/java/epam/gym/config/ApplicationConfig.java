@@ -10,6 +10,8 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 @ComponentScan("epam.gym")
 @PropertySource("classpath:application.properties")
 public class ApplicationConfig {
+    private ApplicationConfig() {}
+
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertyConfigurer() {
         return new PropertySourcesPlaceholderConfigurer();

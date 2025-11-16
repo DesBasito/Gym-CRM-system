@@ -34,22 +34,14 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
     }
 
     @Override
+    protected void beforeCreate(Trainer entity, TrainerRequest request) {
+        entity.setSpecialization(trainingTypeRepository.findByName(request.getSpecialization()));
+    }
+
+    @Override
     public TrainerModel create(TrainerRequest request) {
         TrainingTypeValidator.parse(request.getSpecialization());
-        log.info("Creating trainer: {} {} with specialization: {}",
-                request.getFirstName(), request.getLastName(), request.getSpecialization());
-
-        TrainerModel model = mapper.requestToModel(request);
-        setGeneratedCredentials(model);
-
-        Trainer entity = mapper.toEntity(model);
-        entity.setSpecialization(trainingTypeRepository.findByName(request.getSpecialization()));
-
-        Trainer created = repository.save(entity);
-        TrainerModel result = mapper.toModel(created);
-
-        log.info("Trainer created successfully with username: {}", result.getUsername());
-        return result;
+        return super.create(request);
     }
 
     @Override

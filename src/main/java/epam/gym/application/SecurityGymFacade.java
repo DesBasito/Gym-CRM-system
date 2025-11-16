@@ -7,7 +7,6 @@ import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.models.TrainerModel;
 import epam.gym.domain.models.TrainingModel;
 import epam.gym.domain.services.interfaces.SecurityService;
-import epam.gym.infrastructure.security.UserContext;
 import epam.gym.infrastructure.security.UserRole;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,17 +20,15 @@ import java.util.List;
 @Slf4j
 @Component
 @Primary
-public class SecurityGymFacade implements GymFacadeInterface {
+public class SecurityGymFacade implements GymFacade {
 
-    @Qualifier("gymFacadeImpl")
-    private final GymFacadeInterface delegate;
-    private final UserContext userContext;
+    private final GymFacade delegate;
     private final SecurityService securityService;
 
     @Autowired
-    public SecurityGymFacade(GymFacadeInterface delegate, UserContext userContext, SecurityService securityService) {
+    public SecurityGymFacade(@Qualifier("gymFacadeImpl") GymFacade delegate,
+                             SecurityService securityService) {
         this.delegate = delegate;
-        this.userContext = userContext;
         this.securityService = securityService;
     }
 

@@ -29,15 +29,16 @@ import static org.junit.jupiter.api.Assertions.*;
 @ContextConfiguration(classes = {TestConfig.class})
 @Transactional
 class SecurityGymFacadeIntegrationTest {
+    private final GymFacade securityGymFacade;
+    private final UserContext userContext;
+    private final EntityManager entityManager;
 
     @Autowired
-    private GymFacadeInterface securityGymFacade;
-
-    @Autowired
-    private UserContext userContext;
-
-    @Autowired
-    private EntityManager entityManager;
+    public SecurityGymFacadeIntegrationTest(GymFacade securityGymFacade, UserContext userContext, EntityManager entityManager) {
+        this.securityGymFacade = securityGymFacade;
+        this.userContext = userContext;
+        this.entityManager = entityManager;
+    }
 
     @BeforeEach
     void setUp() {
@@ -168,8 +169,7 @@ class SecurityGymFacadeIntegrationTest {
 
     @Test
     void testGetAllTrainees_withoutAuth_shouldThrowException() {
-        assertThrows(UnauthorizedException.class, () ->
-                securityGymFacade.getAllTrainees()
+        assertThrows(UnauthorizedException.class, securityGymFacade::getAllTrainees
         );
     }
 
