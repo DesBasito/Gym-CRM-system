@@ -148,10 +148,12 @@ class TraineeServiceImplTest {
     @Test
     void testDelete_shouldDeleteTrainee() {
         Long traineeId = 1L;
+        when(traineeRepository.findById(traineeId)).thenReturn(trainee);
         doNothing().when(traineeRepository).delete(traineeId);
 
         traineeService.delete(traineeId);
 
+        verify(traineeRepository).findById(traineeId);
         verify(traineeRepository).delete(traineeId);
     }
 

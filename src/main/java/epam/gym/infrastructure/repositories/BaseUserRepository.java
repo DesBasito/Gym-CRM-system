@@ -1,12 +1,10 @@
 package epam.gym.infrastructure.repositories;
 
-import epam.gym.infrastructure.entities.User;
 import epam.gym.infrastructure.entities.UserHolder;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -65,17 +63,6 @@ public abstract class BaseUserRepository<T extends UserHolder> {
 
         entityManager.remove(entity);
         log.info("{} deleted with id: {}", getEntityName(), id);
-    }
-
-    public void delete(String username) {
-        T entity = findByUsername(username);
-        if (entity == null) {
-            log.warn("{} not found for deletion with username: {}", getEntityName(), username);
-            throw new IllegalArgumentException(getEntityName() + " not found with username: " + username);
-        }
-
-        entityManager.remove(entity);
-        log.info("{} deleted with username: {}", getEntityName(), username);
     }
 
     public boolean authenticate(String username, String password) {

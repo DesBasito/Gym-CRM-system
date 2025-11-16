@@ -10,7 +10,6 @@ import epam.gym.infrastructure.repositories.TraineeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import jakarta.transaction.Transactional;
 
 @Service
 @Slf4j
@@ -34,14 +33,6 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
     @Override
     protected String getFullName(TraineeRequest request) {
         return String.format("%s %s",request.getFirstName(), request.getLastName());
-    }
-
-    @Override
-    @Transactional(rollbackOn = {IllegalArgumentException.class})
-    public void delete(Long id) {
-        log.info("Deleting trainee with id: {}", id);
-        repository.delete(id);
-        log.info("Trainee deleted successfully with id: {}", id);
     }
 }
 

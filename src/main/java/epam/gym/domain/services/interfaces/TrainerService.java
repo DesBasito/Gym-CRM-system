@@ -13,4 +13,6 @@ public interface TrainerService {
     void deactivate(Long id);
     void changePassword(Long id, String newPassword);
     List<TrainerModel> findAllNotAssignedToTrainee(String traineeUsername);
+
+    void delete(Long trainerId);
 }

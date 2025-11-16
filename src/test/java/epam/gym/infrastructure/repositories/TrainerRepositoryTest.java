@@ -191,7 +191,7 @@ class TrainerRepositoryTest {
         Trainer trainer = trainerRepository.findByUsername(username);
         assertNotNull(trainer);
 
-        trainerRepository.delete(username);
+        trainerRepository.delete(trainer.getId());
 
         Trainer deleted = trainerRepository.findByUsername(username);
         assertNull(deleted);
@@ -208,10 +208,10 @@ class TrainerRepositoryTest {
 
     @Test
     void testDelete_byUsername_whenNotExists_shouldThrowException() {
-        String nonExistentUsername = "NonExistent.User";
+        Long nonExistentUserId = 1234L;
 
         assertThrows(IllegalArgumentException.class, () -> {
-            trainerRepository.delete(nonExistentUsername);
+            trainerRepository.delete(nonExistentUserId);
         });
     }
 

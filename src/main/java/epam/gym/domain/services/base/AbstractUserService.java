@@ -61,6 +61,18 @@ public abstract class AbstractUserService<T extends UserHolder,
         return result;
     }
 
+    @Transactional(rollbackOn = {IllegalArgumentException.class, NoSuchElementException.class})
+    public void delete(Long id) {
+        log.info("Deleting user with id: {}", id);
+
+        T current = repository.findById(id);
+        if (current == null) {
+            throw new NoSuchElementException("User not found with id: " + id);
+        }
+        repository.delete(id);
+        log.info("User deleted with id: {}", id);
+    }
+
     @Transactional(dontRollbackOn = NoSuchElementException.class)
     public M select(Long id) {
         log.info("Selecting user with id: {}", id);
