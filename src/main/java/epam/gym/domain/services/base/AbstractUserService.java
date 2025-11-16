@@ -1,7 +1,6 @@
 package epam.gym.domain.services.base;
 
 import epam.gym.domain.models.UserModel;
-import epam.gym.infrastructure.entities.User;
 import epam.gym.infrastructure.entities.UserHolder;
 import epam.gym.infrastructure.mappers.BaseMapper;
 import epam.gym.infrastructure.repositories.BaseUserRepository;
@@ -26,6 +25,8 @@ public abstract class AbstractUserService<T extends UserHolder,
     protected abstract void updateEntityFields(T entity, Q request);
     protected abstract String getFullName(Q request);
 
+    protected void beforeCreate(T entity, Q request) {}
+
     @Transactional(rollbackOn = {IllegalArgumentException.class, NoSuchElementException.class})
     public M create(Q request) {
         log.info("Creating user: {}", getFullName(request));
@@ -34,6 +35,8 @@ public abstract class AbstractUserService<T extends UserHolder,
         setGeneratedCredentials(model);
 
         T entity = mapper.toEntity(model);
+        beforeCreate(entity, request);
+
         T created = repository.save(entity);
         M result = mapper.toModel(created);
 
