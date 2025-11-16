@@ -24,9 +24,9 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
 
     @Override
     protected void updateEntityFields(Trainee entity, TraineeRequest request) {
-        entity.setFirstName(request.getFirstName());
-        entity.setLastName(request.getLastName());
-        entity.setIsActive(request.getIsActive());
+        entity.getUser().setFirstName(request.getFirstName());
+        entity.getUser().setLastName(request.getLastName());
+        entity.getUser().setIsActive(request.getIsActive());
         entity.setAddress(request.getAddress());
         entity.setDateOfBirth(request.getDateOfBirth());
     }
@@ -38,10 +38,10 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
 
     @Override
     @Transactional(rollbackOn = {IllegalArgumentException.class})
-    public void delete(String username) {
-        log.info("Deleting trainee with username: {}", username);
-        repository.delete(username);
-        log.info("Trainee deleted successfully with username: {}", username);
+    public void delete(Long id) {
+        log.info("Deleting trainee with id: {}", id);
+        repository.delete(id);
+        log.info("Trainee deleted successfully with id: {}", id);
     }
 }
 

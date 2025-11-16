@@ -52,10 +52,10 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Transactional
     @Override
-    public List<TrainingModel> selectTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate) {
+    public List<TrainingModel> selectTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainingType) {
         log.info("Selecting trainee trainings for username: {}", traineeUsername);
 
-        List<Training> trainings = trainingRepository.findTraineeTrainings(traineeUsername, fromDate, toDate);
+        List<Training> trainings = trainingRepository.findTraineeTrainings(traineeUsername, fromDate, toDate, trainingType);
         return trainings.stream()
                 .map(mapper::entityToModel)
                 .toList();

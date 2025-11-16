@@ -9,9 +9,10 @@ import epam.gym.domain.models.TrainingModel;
 import epam.gym.domain.services.interfaces.TraineeService;
 import epam.gym.domain.services.interfaces.TrainerService;
 import epam.gym.domain.services.interfaces.TrainingService;
-import epam.gym.domain.services.impl.TrainerServiceImpl;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
+import epam.gym.infrastructure.security.UserContext;
+import epam.gym.infrastructure.security.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,66 +21,70 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
-@Component
+@Component("gymFacadeImpl")
 @RequiredArgsConstructor
-public class GymFacade {
+public class GymFacade implements GymFacadeInterface {
     private final TraineeService traineeService;
     private final TrainerService trainerService;
     private final TrainingService trainingService;
-    private final TrainerServiceImpl trainerServiceImpl;
     private final TraineeRepository traineeRepository;
     private final TrainerRepository trainerRepository;
+    private final UserContext userContext;
 
     public TraineeModel createTrainee(TraineeRequest traineeRequest) {
         log.info("Facade: Creating trainee {} {}", traineeRequest.getFirstName(), traineeRequest.getLastName());
         return traineeService.create(traineeRequest);
     }
 
-    public TraineeModel updateTrainee(TraineeRequest traineeRequest, String username) {
-        log.info("Facade: Updating trainee with username {}", username);
-        return traineeService.update(traineeRequest, username);
+    public TraineeModel updateTrainee(TraineeRequest traineeRequest, Long id) {
+        log.info("Facade: Updating trainee with id {}", id);
+        return traineeService.update(traineeRequest, id);
     }
 
-    public TraineeModel getTrainee(String username) {
-        log.info("Facade: Getting trainee with username {}", username);
-        return traineeService.select(username);
+    public TraineeModel getTrainee(Long id) {
+        log.info("Facade: Getting trainee with id {}", id);
+        return traineeService.select(id);
     }
 
-    public void deleteTrainee(String username) {
-        log.info("Facade: Deleting trainee with username {}", username);
-        traineeService.delete(username);
+    public void deleteTrainee(Long id) {
+        log.info("Facade: Deleting trainee with id {}", id);
+        traineeService.delete(id);
     }
 
     public List<TraineeModel> getAllTrainees() {
         log.info("Facade: Getting all trainees");
         return traineeRepository.findAll().stream()
-                .map(trainee -> traineeService.select(trainee.getUsername()))
+                .map(trainee -> traineeService.select(trainee.getId()))
                 .toList();
     }
 
     public boolean authenticateTrainee(String username, String password) {
         log.info("Facade: Authenticating trainee {}", username);
-        return traineeRepository.authenticate(username, password);
+        boolean authenticated = traineeRepository.authenticate(username, password);
+        if (authenticated) {
+            userContext.login(username, UserRole.TRAINEE);
+        }
+        return authenticated;
     }
 
-    public void changeTraineePassword(String username, String newPassword) {
-        log.info("Facade: Changing password for trainee {}", username);
-        traineeService.changePassword(username, newPassword);
+    public void changeTraineePassword(Long id, String newPassword) {
+        log.info("Facade: Changing password for trainee {}", id);
+        traineeService.changePassword(id, newPassword);
     }
 
-    public void activateTrainee(String username) {
-        log.info("Facade: Activating trainee {}", username);
-        traineeService.activate(username);
+    public void activateTrainee(Long id) {
+        log.info("Facade: Activating trainee {}", id);
+        traineeService.activate(id);
     }
 
-    public void deactivateTrainee(String username) {
-        log.info("Facade: Deactivating trainee {}", username);
-        traineeService.deactivate(username);
+    public void deactivateTrainee(Long id) {
+        log.info("Facade: Deactivating trainee {}", id);
+        traineeService.deactivate(id);
     }
 
-    public List<TrainingModel> getTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate) {
+    public List<TrainingModel> getTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainingType) {
         log.info("Facade: Getting trainings for trainee {} from {} to {}", traineeUsername, fromDate, toDate);
-        return trainingService.selectTraineeTrainings(traineeUsername, fromDate, toDate);
+        return trainingService.selectTraineeTrainings(traineeUsername, fromDate, toDate, trainingType);
     }
 
     public TrainerModel createTrainer(TrainerRequest trainerRequest) {
@@ -87,46 +92,50 @@ public class GymFacade {
         return trainerService.create(trainerRequest);
     }
 
-    public TrainerModel updateTrainer(TrainerRequest trainerRequest, String username) {
-        log.info("Facade: Updating trainer with username {}", username);
-        return trainerService.update(trainerRequest, username);
+    public TrainerModel updateTrainer(TrainerRequest trainerRequest, Long id) {
+        log.info("Facade: Updating trainer with id {}", id);
+        return trainerService.update(trainerRequest, id);
     }
 
-    public TrainerModel getTrainer(String username) {
-        log.info("Facade: Getting trainer with username {}", username);
-        return trainerService.select(username);
+    public TrainerModel getTrainer(Long id) {
+        log.info("Facade: Getting trainer with id {}", id);
+        return trainerService.select(id);
     }
 
     public List<TrainerModel> getAllTrainers() {
         log.info("Facade: Getting all trainers");
         return trainerRepository.findAll().stream()
-                .map(trainer -> trainerService.select(trainer.getUsername()))
+                .map(trainer -> trainerService.select(trainer.getId()))
                 .toList();
     }
 
     public List<TrainerModel> getTrainersNotAssignedToTrainee(String traineeUsername) {
         log.info("Facade: Getting trainers not assigned to trainee {}", traineeUsername);
-        return trainerServiceImpl.findAllNotAssignedToTrainee(traineeUsername);
+        return trainerService.findAllNotAssignedToTrainee(traineeUsername);
     }
 
     public boolean authenticateTrainer(String username, String password) {
         log.info("Facade: Authenticating trainer {}", username);
-        return trainerRepository.authenticate(username, password);
+        boolean authenticated = trainerRepository.authenticate(username, password);
+        if (authenticated) {
+            userContext.login(username, UserRole.TRAINER);
+        }
+        return authenticated;
     }
 
-    public void changeTrainerPassword(String username, String newPassword) {
-        log.info("Facade: Changing password for trainer {}", username);
-        trainerService.changePassword(username, newPassword);
+    public void changeTrainerPassword(Long id, String newPassword) {
+        log.info("Facade: Changing password for trainer {}", id);
+        trainerService.changePassword(id, newPassword);
     }
 
-    public void activateTrainer(String username) {
-        log.info("Facade: Activating trainer {}", username);
-        trainerService.activate(username);
+    public void activateTrainer(Long id) {
+        log.info("Facade: Activating trainer {}", id);
+        trainerService.activate(id);
     }
 
-    public void deactivateTrainer(String username) {
-        log.info("Facade: Deactivating trainer {}", username);
-        trainerService.deactivate(username);
+    public void deactivateTrainer(Long id) {
+        log.info("Facade: Deactivating trainer {}", id);
+        trainerService.deactivate(id);
     }
 
     public List<TrainingModel> getTrainerTrainings(String trainerUsername, LocalDate fromDate, LocalDate toDate) {

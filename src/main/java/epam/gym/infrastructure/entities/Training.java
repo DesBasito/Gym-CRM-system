@@ -51,6 +51,6 @@ public class Training {
 
     @NotNull
     @Column(name = "training_duration", nullable = false)
-    Long trainingDuration;
+    Integer trainingDuration;
 
 }

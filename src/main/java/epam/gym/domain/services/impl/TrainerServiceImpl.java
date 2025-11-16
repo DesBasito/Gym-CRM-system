@@ -36,20 +36,33 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
     @Override
     public TrainerModel create(TrainerRequest request) {
         TrainingTypeValidator.parse(request.getSpecialization());
-        return super.create(request);
+        log.info("Creating trainer: {} {} with specialization: {}",
+                request.getFirstName(), request.getLastName(), request.getSpecialization());
+
+        TrainerModel model = mapper.requestToModel(request);
+        setGeneratedCredentials(model);
+
+        Trainer entity = mapper.toEntity(model);
+        entity.setSpecialization(trainingTypeRepository.findByName(request.getSpecialization()));
+
+        Trainer created = repository.save(entity);
+        TrainerModel result = mapper.toModel(created);
+
+        log.info("Trainer created successfully with username: {}", result.getUsername());
+        return result;
     }
 
     @Override
-    public TrainerModel update(TrainerRequest request, String username) {
+    public TrainerModel update(TrainerRequest request, Long id) {
         TrainingTypeValidator.parse(request.getSpecialization());
-        return super.update(request, username);
+        return super.update(request, id);
     }
 
     @Override
     protected void updateEntityFields(Trainer entity, TrainerRequest request) {
-        entity.setFirstName(request.getFirstName());
-        entity.setLastName(request.getLastName());
-        entity.setIsActive(request.getIsActive());
+        entity.getUser().setFirstName(request.getFirstName());
+        entity.getUser().setLastName(request.getLastName());
+        entity.getUser().setIsActive(request.getIsActive());
         entity.setSpecialization(trainingTypeRepository.findByName(request.getSpecialization()));
     }
 
@@ -58,6 +71,7 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
         return String.format("%s %s",request.getFirstName(), request.getLastName());
     }
 
+    @Override
     public List<TrainerModel> findAllNotAssignedToTrainee(String traineeUsername) {
         log.info("Finding trainers not assigned to trainee: {}", traineeUsername);
 

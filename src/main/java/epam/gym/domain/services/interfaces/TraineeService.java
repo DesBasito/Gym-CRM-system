@@ -5,10 +5,10 @@ import epam.gym.domain.models.TraineeModel;
 
 public interface TraineeService {
     TraineeModel create(TraineeRequest traineeRequest);
-    TraineeModel update(TraineeRequest traineeRequest, String username);
-    TraineeModel select(String username);
-    void delete(String username);
-    void activate(String username);
-    void deactivate(String username);
-    void changePassword(String username, String newPassword);
+    TraineeModel update(TraineeRequest traineeRequest, Long id);
+    TraineeModel select(Long id);
+    void delete(Long id);
+    void activate(Long id);
+    void deactivate(Long id);
+    void changePassword(Long id, String newPassword);
 }

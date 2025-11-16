@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface TrainingService {
     TrainingModel create(TrainingRequest trainingRequest);
-    List<TrainingModel> selectTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate);
+    List<TrainingModel> selectTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainingType);
     List<TrainingModel> selectTrainerTrainings(String trainerUsername, LocalDate fromDate, LocalDate toDate);
 }

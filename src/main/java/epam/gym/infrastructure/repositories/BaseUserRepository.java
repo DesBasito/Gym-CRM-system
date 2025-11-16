@@ -1,27 +1,43 @@
 package epam.gym.infrastructure.repositories;
 
 import epam.gym.infrastructure.entities.User;
+import epam.gym.infrastructure.entities.UserHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 
 @Slf4j
-@RequiredArgsConstructor
-public abstract class BaseUserRepository<T extends User> {
+public abstract class BaseUserRepository<T extends UserHolder> {
 
-    protected final EntityManager entityManager;
-    protected final Class<T> entityClass;
+    protected EntityManager entityManager;
+    protected Class<T> entityClass;
+
+    @Autowired
+    BaseUserRepository(EntityManager entityManager, Class<T> entityClass) {
+        this.entityManager = entityManager;
+        this.entityClass = entityClass;
+    }
 
     public T save(T entity) {
         if (entity.getId() == null) {
             entityManager.persist(entity);
-            log.info("{} created with username: {}", getEntityName(), entity.getUsername());
+            log.info("{} created with username: {}", getEntityName(), entity.getUser().getUsername());
         } else {
             entity = entityManager.merge(entity);
-            log.info("{} updated with username: {}", getEntityName(), entity.getUsername());
+            log.info("{} updated with username: {}", getEntityName(), entity.getUser().getUsername());
+        }
+        return entity;
+    }
+
+    public T findById(Long id) {
+        T entity = entityManager.find(entityClass, id);
+        if (entity == null) {
+            log.warn("{} not found with id: {}", getEntityName(), id);
         }
         return entity;
     }
@@ -30,7 +46,7 @@ public abstract class BaseUserRepository<T extends User> {
     public T findByUsername(String username) {
         try {
             Query query = entityManager.createQuery(
-                    "SELECT t FROM " + entityClass.getSimpleName() + " t WHERE t.username = :username",
+                    "SELECT t FROM " + entityClass.getSimpleName() + " t WHERE t.user.username = :username",
                     entityClass);
             query.setParameter("username", username);
             return (T) query.getSingleResult();
@@ -38,6 +54,17 @@ public abstract class BaseUserRepository<T extends User> {
             log.warn("{} not found with username: {}", getEntityName(), username);
             return null;
         }
+    }
+
+    public void delete(Long id) {
+        T entity = findById(id);
+        if (entity == null) {
+            log.warn("{} not found for deletion with id: {}", getEntityName(), id);
+            throw new IllegalArgumentException(getEntityName() + " not found with id: " + id);
+        }
+
+        entityManager.remove(entity);
+        log.info("{} deleted with id: {}", getEntityName(), id);
     }
 
     public void delete(String username) {
@@ -55,7 +82,7 @@ public abstract class BaseUserRepository<T extends User> {
         try {
             Query query = entityManager.createQuery(
                     "SELECT COUNT(t) FROM " + entityClass.getSimpleName() +
-                    " t WHERE t.username = :username AND t.password = :password",
+                    " t WHERE t.user.username = :username AND t.user.password = :password",
                     Long.class);
             query.setParameter("username", username);
             query.setParameter("password", password);
@@ -66,6 +93,18 @@ public abstract class BaseUserRepository<T extends User> {
         }
     }
 
+    public void changePassword(Long id, String newPassword) {
+        T entity = findById(id);
+        if (entity == null) {
+            log.warn("{} not found for password change with id: {}", getEntityName(), id);
+            throw new IllegalArgumentException(getEntityName() + " not found with id: " + id);
+        }
+
+        entity.getUser().setPassword(newPassword);
+        entityManager.merge(entity);
+        log.info("Password changed for {} with id: {}", getEntityName(), id);
+    }
+
     public void changePassword(String username, String newPassword) {
         T entity = findByUsername(username);
         if (entity == null) {
@@ -73,9 +112,21 @@ public abstract class BaseUserRepository<T extends User> {
             throw new IllegalArgumentException(getEntityName() + " not found with username: " + username);
         }
 
-        entity.setPassword(newPassword);
+        entity.getUser().setPassword(newPassword);
         entityManager.merge(entity);
         log.info("Password changed for {}: {}", getEntityName(), username);
+    }
+
+    public void activate(Long id) {
+        T entity = findById(id);
+        if (entity == null) {
+            log.warn("{} not found for activation with id: {}", getEntityName(), id);
+            throw new IllegalArgumentException(getEntityName() + " not found with id: " + id);
+        }
+
+        entity.getUser().setIsActive(true);
+        entityManager.merge(entity);
+        log.info("{} activated with id: {}", getEntityName(), id);
     }
 
     public void activate(String username) {
@@ -85,9 +136,21 @@ public abstract class BaseUserRepository<T extends User> {
             throw new IllegalArgumentException(getEntityName() + " not found with username: " + username);
         }
 
-        entity.setIsActive(true);
+        entity.getUser().setIsActive(true);
         entityManager.merge(entity);
         log.info("{} activated: {}", getEntityName(), username);
+    }
+
+    public void deactivate(Long id) {
+        T entity = findById(id);
+        if (entity == null) {
+            log.warn("{} not found for deactivation with id: {}", getEntityName(), id);
+            throw new IllegalArgumentException(getEntityName() + " not found with id: " + id);
+        }
+
+        entity.getUser().setIsActive(false);
+        entityManager.merge(entity);
+        log.info("{} deactivated with id: {}", getEntityName(), id);
     }
 
     public void deactivate(String username) {
@@ -97,7 +160,7 @@ public abstract class BaseUserRepository<T extends User> {
             throw new IllegalArgumentException(getEntityName() + " not found with username: " + username);
         }
 
-        entity.setIsActive(false);
+        entity.getUser().setIsActive(false);
         entityManager.merge(entity);
         log.info("{} deactivated: {}", getEntityName(), username);
     }

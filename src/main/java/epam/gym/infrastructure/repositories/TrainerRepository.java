@@ -22,14 +22,16 @@ public class TrainerRepository extends epam.gym.infrastructure.repositories.Base
         }
 
         Query query = entityManager.createNativeQuery(
-                "SELECT t.*, u.* FROM trainers t " +
-                "INNER JOIN users u ON t.user_id = u.id " +
-                "WHERE t.id NOT IN " +
-                "(SELECT tt.trainer_id FROM trainers_trainees tt " +
-                "INNER JOIN trainees tr ON tt.trainee_id = tr.id " +
-                "WHERE tr.user_id IN " +
-                "(SELECT id FROM users WHERE username = :traineeUsername)) " +
-                "AND u.is_active = true",
+                """
+                SELECT t.id, t.user_id, t.specialization_id FROM trainers t \s
+                INNER JOIN users u ON t.user_id = u.id \s
+                WHERE t.id NOT IN \s
+                (SELECT tt.trainer_id FROM trainers_trainees tt \s
+                INNER JOIN trainees tr ON tt.trainee_id = tr.id \s
+                WHERE tr.user_id IN \s
+                (SELECT id FROM users WHERE username = :traineeUsername)) \s
+                AND u.is_active = true \s
+                """,
                 Trainer.class);
         query.setParameter("traineeUsername", traineeUsername);
         return query.getResultList();
