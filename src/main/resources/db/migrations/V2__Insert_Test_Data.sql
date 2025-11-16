@@ -25,22 +25,22 @@ ON CONFLICT (user_id) DO NOTHING;
 -- Insert Trainers
 INSERT INTO trainers (user_id, specialization_id)
 SELECT u.id, tt.id FROM users u, training_types tt
-WHERE u.username = 'John.Doe' AND tt.training_type_name = 'Fitness'
+WHERE u.username = 'John.Doe' AND tt.training_type_name = 'FITNESS'
 ON CONFLICT (user_id) DO NOTHING;
 
 INSERT INTO trainers (user_id, specialization_id)
 SELECT u.id, tt.id FROM users u, training_types tt
-WHERE u.username = 'Jane.Smith' AND tt.training_type_name = 'Yoga'
+WHERE u.username = 'Jane.Smith' AND tt.training_type_name = 'YOGA'
 ON CONFLICT (user_id) DO NOTHING;
 
 INSERT INTO trainers (user_id, specialization_id)
 SELECT u.id, tt.id FROM users u, training_types tt
-WHERE u.username = 'Mike.Johnson' AND tt.training_type_name = 'Cardio'
+WHERE u.username = 'Mike.Johnson' AND tt.training_type_name = 'CARDIO'
 ON CONFLICT (user_id) DO NOTHING;
 
 INSERT INTO trainers (user_id, specialization_id)
 SELECT u.id, tt.id FROM users u, training_types tt
-WHERE u.username = 'Sarah.Connor' AND tt.training_type_name = 'Boxing'
+WHERE u.username = 'Sarah.Connor' AND tt.training_type_name = 'BOXING'
 ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert Trainer-Trainee relationships
@@ -74,7 +74,7 @@ SELECT tr.id, t.id, 'Morning Workout', tt.id, '2024-01-15', 60
 FROM trainees tr, trainers t, training_types tt, users uu, users tu
 WHERE tr.user_id = uu.id AND uu.username = 'Alice.Brown'
   AND t.user_id = tu.id AND tu.username = 'John.Doe'
-  AND tt.training_type_name = 'Fitness'
+  AND tt.training_type_name = 'FITNESS'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO trainings (trainee_id, trainer_id, training_name, training_type_id, training_date, training_duration)
@@ -82,7 +82,7 @@ SELECT tr.id, t.id, 'Yoga Session', tt.id, '2024-01-16', 90
 FROM trainees tr, trainers t, training_types tt, users uu, users tu
 WHERE tr.user_id = uu.id AND uu.username = 'Bob.Wilson'
   AND t.user_id = tu.id AND tu.username = 'Jane.Smith'
-  AND tt.training_type_name = 'Yoga'
+  AND tt.training_type_name = 'YOGA'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO trainings (trainee_id, trainer_id, training_name, training_type_id, training_date, training_duration)
@@ -90,7 +90,7 @@ SELECT tr.id, t.id, 'Cardio Training', tt.id, '2024-01-17', 45
 FROM trainees tr, trainers t, training_types tt, users uu, users tu
 WHERE tr.user_id = uu.id AND uu.username = 'Alice.Brown'
   AND t.user_id = tu.id AND tu.username = 'Mike.Johnson'
-  AND tt.training_type_name = 'Cardio'
+  AND tt.training_type_name = 'CARDIO'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO trainings (trainee_id, trainer_id, training_name, training_type_id, training_date, training_duration)
@@ -98,7 +98,7 @@ SELECT tr.id, t.id, 'Boxing Class', tt.id, '2024-01-18', 75
 FROM trainees tr, trainers t, training_types tt, users uu, users tu
 WHERE tr.user_id = uu.id AND uu.username = 'Charlie.Davis'
   AND t.user_id = tu.id AND tu.username = 'Sarah.Connor'
-  AND tt.training_type_name = 'Boxing'
+  AND tt.training_type_name = 'BOXING'
 ON CONFLICT DO NOTHING;
 
 INSERT INTO trainings (trainee_id, trainer_id, training_name, training_type_id, training_date, training_duration)
@@ -106,5 +106,5 @@ SELECT tr.id, t.id, 'Evening Fitness', tt.id, '2024-01-19', 50
 FROM trainees tr, trainers t, training_types tt, users uu, users tu
 WHERE tr.user_id = uu.id AND uu.username = 'Charlie.Davis'
   AND t.user_id = tu.id AND tu.username = 'John.Doe'
-  AND tt.training_type_name = 'Fitness'
+  AND tt.training_type_name = 'FITNESS'
 ON CONFLICT DO NOTHING;

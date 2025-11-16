@@ -16,5 +16,5 @@ public class TrainingRequest {
     String trainingName;
     String trainingType;
     LocalDate trainingDate;
-    String trainingDuration;
+    Integer trainingDuration;
 }

@@ -31,41 +31,44 @@ public class TrainingRepository {
         return training;
     }
 
-    public List<Training> findTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate) {
+    public List<Training> findTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainingType) {
         return buildTrainingsQuery(training -> {
             Join<Training, Trainee> trainee = training.join("trainee");
-            return trainee.get("username");
-        }, traineeUsername, fromDate, toDate);
+            return trainee.get("user").get("username");
+        }, traineeUsername, fromDate, toDate, trainingType);
     }
 
     public List<Training> findTrainerTrainings(String trainerUsername, LocalDate fromDate, LocalDate toDate) {
         return buildTrainingsQuery(training -> {
             Join<Training, Trainer> trainer = training.join("trainer");
-            return trainer.get("username");
-        }, trainerUsername, fromDate, toDate);
+            return trainer.get("user").get("username");
+        }, trainerUsername, fromDate, toDate, null);
     }
 
     private List<Training> buildTrainingsQuery(Function<Root<Training>, Expression<String>> usernameGetter,
-                                               String username, LocalDate fromDate, LocalDate toDate) {
+                                               String username, LocalDate fromDate, LocalDate toDate, String trainingType) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Training> query = cb.createQuery(Training.class);
         Root<Training> training = query.from(Training.class);
 
         List<Predicate> predicates = new ArrayList<>();
         predicates.add(cb.equal(usernameGetter.apply(training), username));
-        addDatePredicates(cb, training, fromDate, toDate, predicates);
+        addDatePredicates(cb, training, fromDate, toDate, predicates, trainingType);
 
         query.where(cb.and(predicates.toArray(new Predicate[0])));
         return entityManager.createQuery(query).getResultList();
     }
 
     private void addDatePredicates(CriteriaBuilder cb, Root<Training> training,
-                                   LocalDate fromDate, LocalDate toDate, List<Predicate> predicates) {
+                                   LocalDate fromDate, LocalDate toDate, List<Predicate> predicates, String trainingType) {
         if (fromDate != null) {
             predicates.add(cb.greaterThanOrEqualTo(training.get("trainingDate"), fromDate));
         }
         if (toDate != null) {
             predicates.add(cb.lessThanOrEqualTo(training.get("trainingDate"), toDate));
+        }
+        if (trainingType != null && !trainingType.isBlank()) {
+            predicates.add(cb.equal(training.get("trainingType").get("trainingTypeName"), trainingType));
         }
     }
 }

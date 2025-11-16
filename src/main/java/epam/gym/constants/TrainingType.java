@@ -12,6 +12,11 @@ public enum TrainingType {
     SWIMMING;
 
     public static boolean isExists(String t){
-        return Arrays.asList(TrainingType.values()).contains(TrainingType.valueOf(t.toUpperCase()));
+        try {
+            TrainingType.valueOf(t.toUpperCase());
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

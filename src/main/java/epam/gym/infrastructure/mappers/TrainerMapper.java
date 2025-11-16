@@ -22,6 +22,12 @@ public interface TrainerMapper extends BaseMapper<Trainer, TrainerModel, Trainer
     @Mapping(target = "specialization", ignore = true)
     Trainer toEntity(TrainerModel model);
 
+    @Mapping(source = "user.firstName", target = "firstName")
+    @Mapping(source = "user.lastName", target = "lastName")
+    @Mapping(source = "user.isActive", target = "isActive")
+    @Mapping(source = "user.username", target = "username")
+    @Mapping(source = "user.password", target = "password")
+    @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "specialization.trainingTypeName", target = "specialization")
     TrainerModel toModel(Trainer trainer);
 }

@@ -14,7 +14,6 @@ import org.hibernate.validator.constraints.UniqueElements;
 @Setter
 @Entity
 @Table(name = "users")
-@Inheritance(strategy=InheritanceType.JOINED)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @AllArgsConstructor
 @NoArgsConstructor
