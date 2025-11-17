@@ -3,6 +3,8 @@ package epam.gym.domain.services;
 import epam.gym.config.TestConfig;
 import epam.gym.domain.dto.request.TraineeRequest;
 import epam.gym.domain.dto.request.TrainerRequest;
+import epam.gym.domain.models.TraineeModel;
+import epam.gym.domain.models.TrainerModel;
 import epam.gym.domain.services.interfaces.TraineeService;
 import epam.gym.domain.services.interfaces.TrainerService;
 import jakarta.persistence.EntityManager;
@@ -58,7 +60,7 @@ class TransactionRollbackTest {
         createRequest.setAddress("123 Main St");
         createRequest.setIsActive(true);
 
-        var created = traineeService.create(createRequest);
+        TraineeModel created = traineeService.create(createRequest);
         Long traineeId = created.getId();
         String originalFirstName = created.getFirstName();
         String originalAddress = created.getAddress();
@@ -77,7 +79,7 @@ class TransactionRollbackTest {
             System.out.println("Rollback transaction!");
         }
 
-        var afterFailedUpdate = traineeService.select(traineeId);
+        TraineeModel afterFailedUpdate = traineeService.select(traineeId);
         assertEquals(originalFirstName, afterFailedUpdate.getFirstName());
         assertEquals(originalAddress, afterFailedUpdate.getAddress());
     }
@@ -90,7 +92,7 @@ class TransactionRollbackTest {
         createRequest.setSpecialization("FITNESS");
         createRequest.setIsActive(true);
 
-        var created = trainerService.create(createRequest);
+        TrainerModel created = trainerService.create(createRequest);
         Long trainerId = created.getId();
         String originalFirstName = created.getFirstName();
         String originalSpecialization = created.getSpecialization();
@@ -109,7 +111,7 @@ class TransactionRollbackTest {
             System.out.println("Rollback transaction!");
         }
 
-        var afterFailedUpdate = trainerService.select(trainerId);
+        TrainerModel afterFailedUpdate = trainerService.select(trainerId);
         assertEquals(originalFirstName, afterFailedUpdate.getFirstName());
         assertEquals(originalSpecialization, afterFailedUpdate.getSpecialization());
     }
