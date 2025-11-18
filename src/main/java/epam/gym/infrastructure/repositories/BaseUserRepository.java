@@ -152,11 +152,20 @@ public abstract class BaseUserRepository<T extends UserHolder> {
         log.info("{} deactivated: {}", getEntityName(), username);
     }
 
-    public List<T> findAll() {
+    public List<T> findAll(int offset, int limit) {
         Query query = entityManager.createQuery(
                 "SELECT t FROM " + entityClass.getSimpleName() + " t",
                 entityClass);
+        query.setFirstResult(offset);
+        query.setMaxResults(limit);
         return query.getResultList();
+    }
+
+    public long count() {
+        Query query = entityManager.createQuery(
+                "SELECT COUNT(t) FROM " + entityClass.getSimpleName() + " t",
+                Long.class);
+        return (Long) query.getSingleResult();
     }
 
     protected String getEntityName() {

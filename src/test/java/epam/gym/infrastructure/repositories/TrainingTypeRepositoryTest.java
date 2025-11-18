@@ -39,7 +39,7 @@ class TrainingTypeRepositoryTest {
         TrainingType type = trainingTypeRepository.findByName(name);
 
         assertNotNull(type);
-        assertEquals(name, type.getTrainingTypeName());
+        assertEquals(epam.gym.constants.TrainingType.FITNESS, type.getTrainingTypeName());
     }
 
     @Test
@@ -50,7 +50,7 @@ class TrainingTypeRepositoryTest {
             TrainingType type = trainingTypeRepository.findByName(typeName);
 
             assertNotNull(type, "Training type " + typeName + " should exist");
-            assertEquals(typeName, type.getTrainingTypeName());
+            assertEquals(epam.gym.constants.TrainingType.valueOf(typeName), type.getTrainingTypeName());
         }
     }
 

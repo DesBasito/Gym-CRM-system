@@ -51,11 +51,16 @@ public class GymFacadeImpl implements GymFacade {
         traineeService.delete(id);
     }
 
-    public List<TraineeModel> getAllTrainees() {
-        log.info("Facade: Getting all trainees");
-        return traineeRepository.findAll().stream()
+    public List<TraineeModel> getAllTrainees(int offset, int limit) {
+        log.info("Facade: Getting trainees with offset {} and limit {}", offset, limit);
+        return traineeRepository.findAll(offset, limit).stream()
                 .map(trainee -> traineeService.select(trainee.getId()))
                 .toList();
+    }
+
+    public long countTrainees() {
+        log.info("Facade: Counting all trainees");
+        return traineeRepository.count();
     }
 
     public boolean authenticateTrainee(String username, String password) {
@@ -102,11 +107,16 @@ public class GymFacadeImpl implements GymFacade {
         return trainerService.select(id);
     }
 
-    public List<TrainerModel> getAllTrainers() {
-        log.info("Facade: Getting all trainers");
-        return trainerRepository.findAll().stream()
+    public List<TrainerModel> getAllTrainers(int offset, int limit) {
+        log.info("Facade: Getting trainers with offset {} and limit {}", offset, limit);
+        return trainerRepository.findAll(offset, limit).stream()
                 .map(trainer -> trainerService.select(trainer.getId()))
                 .toList();
+    }
+
+    public long countTrainers() {
+        log.info("Facade: Counting all trainers");
+        return trainerRepository.count();
     }
 
     public List<TrainerModel> getTrainersNotAssignedToTrainee(String traineeUsername) {

@@ -17,7 +17,8 @@ public interface GymFacade {
     TraineeModel updateTrainee(TraineeRequest traineeRequest, Long id);
     TraineeModel getTrainee(Long id);
     void deleteTrainee(Long id);
-    List<TraineeModel> getAllTrainees();
+    List<TraineeModel> getAllTrainees(int offset, int limit);
+    long countTrainees();
     boolean authenticateTrainee(String username, String password);
     void changeTraineePassword(Long id, String newPassword);
     void activateTrainee(Long id);
@@ -28,7 +29,8 @@ public interface GymFacade {
     TrainerModel createTrainer(TrainerRequest trainerRequest);
     TrainerModel updateTrainer(TrainerRequest trainerRequest, Long id);
     TrainerModel getTrainer(Long id);
-    List<TrainerModel> getAllTrainers();
+    List<TrainerModel> getAllTrainers(int offset, int limit);
+    long countTrainers();
     List<TrainerModel> getTrainersNotAssignedToTrainee(String traineeUsername);
     boolean authenticateTrainer(String username, String password);
     void changeTrainerPassword(Long id, String newPassword);

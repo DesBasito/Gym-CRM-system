@@ -77,7 +77,7 @@ class TrainerMapperTest {
 
         TrainingType trainingType = new TrainingType();
         trainingType.setId(1L);
-        trainingType.setTrainingTypeName("FITNESS");
+        trainingType.setTrainingTypeName(epam.gym.constants.TrainingType.FITNESS);
 
         Trainer entity = new Trainer();
         entity.setId(2L);
@@ -109,7 +109,7 @@ class TrainerMapperTest {
 
         TrainingType trainingType = new TrainingType();
         trainingType.setId(2L);
-        trainingType.setTrainingTypeName("YOGA");
+        trainingType.setTrainingTypeName(epam.gym.constants.TrainingType.YOGA);
 
         Trainer entity = new Trainer();
         entity.setId(2L);

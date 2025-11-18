@@ -73,7 +73,7 @@ class TrainingServiceImplTest {
 
         trainingType = new TrainingType();
         trainingType.setId(1L);
-        trainingType.setTrainingTypeName("FITNESS");
+        trainingType.setTrainingTypeName(epam.gym.constants.TrainingType.FITNESS);
 
         training = new Training();
         training.setId(1L);

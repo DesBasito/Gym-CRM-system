@@ -144,15 +144,15 @@ class GymFacadeTest {
         TraineeModel model2 = new TraineeModel();
         model2.setId(2L);
 
-        when(traineeRepository.findAll()).thenReturn(trainees);
+        when(traineeRepository.findAll(0,2)).thenReturn(trainees);
         when(traineeService.select(1L)).thenReturn(model1);
         when(traineeService.select(2L)).thenReturn(model2);
 
-        List<TraineeModel> result = gymFacade.getAllTrainees();
+        List<TraineeModel> result = gymFacade.getAllTrainees(0,2);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(traineeRepository).findAll();
+        verify(traineeRepository).findAll(0,2);
         verify(traineeService, times(2)).select(any(Long.class));
     }
 
@@ -278,15 +278,15 @@ class GymFacadeTest {
         TrainerModel model2 = new TrainerModel();
         model2.setId(2L);
 
-        when(trainerRepository.findAll()).thenReturn(trainers);
+        when(trainerRepository.findAll(0,2)).thenReturn(trainers);
         when(trainerService.select(1L)).thenReturn(model1);
         when(trainerService.select(2L)).thenReturn(model2);
 
-        List<TrainerModel> result = gymFacade.getAllTrainers();
+        List<TrainerModel> result = gymFacade.getAllTrainers(0,2);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(trainerRepository).findAll();
+        verify(trainerRepository).findAll(0,2);
         verify(trainerService, times(2)).select(any(Long.class));
     }
 

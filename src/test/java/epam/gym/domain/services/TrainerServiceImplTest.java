@@ -77,7 +77,7 @@ class TrainerServiceImplTest {
 
         trainingType = new TrainingType();
         trainingType.setId(1L);
-        trainingType.setTrainingTypeName("FITNESS");
+        trainingType.setTrainingTypeName(epam.gym.constants.TrainingType.FITNESS);
 
         trainer = new Trainer();
         trainer.setId(1L);
@@ -118,7 +118,7 @@ class TrainerServiceImplTest {
 
         TrainingType yogaType = new TrainingType();
         yogaType.setId(2L);
-        yogaType.setTrainingTypeName("YOGA");
+        yogaType.setTrainingTypeName(epam.gym.constants.TrainingType.YOGA);
 
         when(trainerRepository.findById(trainerId)).thenReturn(trainer);
         when(trainingTypeRepository.findByName("YOGA")).thenReturn(yogaType);

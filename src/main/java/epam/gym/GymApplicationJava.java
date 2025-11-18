@@ -15,21 +15,21 @@ import java.util.List;
 
 public class GymApplicationJava {
     public static void main(String[] args) {
-        ApplicationContext ctx = new AnnotationConfigApplicationContext(ApplicationConfig.class);
-        TrainerRepository trainerRepository = ctx.getBean(TrainerRepository.class);
-        TrainingRepository trainingRepository = ctx.getBean(TrainingRepository.class);
-        System.out.println("=== Reading all trainers from database ===");
-        List<Trainer> trainers = trainerRepository.findAll();
-
-        System.out.println("Found " + trainers.size() + " trainers:");
-        for (Trainer trainer : trainers) {
-            System.out.println("  - ID: " + trainer.getId() +
-                             ", Username: " + trainer.getUser().getUsername() +
-                             ", Name: " + trainer.getUser().getFirstName() + " " + trainer.getUser().getLastName() +
-                             ", Specialization: " + (trainer.getSpecialization() != null ? trainer.getSpecialization().getTrainingTypeName() : "N/A") +
-                             ", Active: " + trainer.getUser().getIsActive());
-        }
-
-        ((AnnotationConfigApplicationContext) ctx).close();
+//        ApplicationContext ctx = new AnnotationConfigApplicationContext(ApplicationConfig.class);
+//        TrainerRepository trainerRepository = ctx.getBean(TrainerRepository.class);
+//        TrainingRepository trainingRepository = ctx.getBean(TrainingRepository.class);
+//        System.out.println("=== Reading all trainers from database ===");
+//        List<Trainer> trainers = trainerRepository.findAll();
+//
+//        System.out.println("Found " + trainers.size() + " trainers:");
+//        for (Trainer trainer : trainers) {
+//            System.out.println("  - ID: " + trainer.getId() +
+//                             ", Username: " + trainer.getUser().getUsername() +
+//                             ", Name: " + trainer.getUser().getFirstName() + " " + trainer.getUser().getLastName() +
+//                             ", Specialization: " + (trainer.getSpecialization() != null ? trainer.getSpecialization().getTrainingTypeName() : "N/A") +
+//                             ", Active: " + trainer.getUser().getIsActive());
+//        }
+//
+//        ((AnnotationConfigApplicationContext) ctx).close();
     }
 }

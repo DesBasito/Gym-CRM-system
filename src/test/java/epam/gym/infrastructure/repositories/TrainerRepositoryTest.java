@@ -28,7 +28,7 @@ class TrainerRepositoryTest {
 
     @Test
     void testFindAll_shouldReturnAllTrainers() {
-        List<Trainer> trainers = trainerRepository.findAll();
+        List<Trainer> trainers = trainerRepository.findAll(0,4);
 
         assertNotNull(trainers);
         assertEquals(4, trainers.size());
@@ -36,7 +36,7 @@ class TrainerRepositoryTest {
 
     @Test
     void testFindById_whenTrainerExists_shouldReturnTrainer() {
-        List<Trainer> trainers = trainerRepository.findAll();
+        List<Trainer> trainers = trainerRepository.findAll(0,4);
         assertFalse(trainers.isEmpty());
         Long firstId = trainers.get(0).getId();
 

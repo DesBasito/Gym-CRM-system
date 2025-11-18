@@ -27,7 +27,7 @@ class TraineeRepositoryTest {
 
     @Test
     void testFindAll_shouldReturnAllTrainees() {
-        List<Trainee> trainees = traineeRepository.findAll();
+        List<Trainee> trainees = traineeRepository.findAll(0,3);
 
         assertNotNull(trainees);
         assertEquals(3, trainees.size());
@@ -35,7 +35,7 @@ class TraineeRepositoryTest {
 
     @Test
     void testFindById_whenTraineeExists_shouldReturnTrainee() {
-        List<Trainee> trainees = traineeRepository.findAll();
+        List<Trainee> trainees = traineeRepository.findAll(0,3);
         assertFalse(trainees.isEmpty());
         Long firstId = trainees.get(0).getId();
 

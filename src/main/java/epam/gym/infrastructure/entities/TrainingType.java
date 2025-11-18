@@ -2,7 +2,6 @@ package epam.gym.infrastructure.entities;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,9 +15,9 @@ public class TrainingType {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Size(max = 255)
+    @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "training_type_name", nullable = false)
-    private String trainingTypeName;
+    private epam.gym.constants.TrainingType trainingTypeName;
 
 }

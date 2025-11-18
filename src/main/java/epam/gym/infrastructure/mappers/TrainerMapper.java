@@ -28,6 +28,11 @@ public interface TrainerMapper extends BaseMapper<Trainer, TrainerModel, Trainer
     @Mapping(source = "user.username", target = "username")
     @Mapping(source = "user.password", target = "password")
     @Mapping(source = "user.id", target = "userId")
-    @Mapping(source = "specialization.trainingTypeName", target = "specialization")
+    @Mapping(target = "specialization", expression = """
+            java(
+            trainer.getSpecialization() != null\s
+            && trainer.getSpecialization().getTrainingTypeName() != null\s
+            ? trainer.getSpecialization().getTrainingTypeName().name()\s
+            : null)""")
     TrainerModel toModel(Trainer trainer);
 }

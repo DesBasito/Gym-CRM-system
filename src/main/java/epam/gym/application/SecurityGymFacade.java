@@ -63,10 +63,17 @@ public class SecurityGymFacade implements GymFacade {
     }
 
     @Override
-    public List<TraineeModel> getAllTrainees() {
+    public List<TraineeModel> getAllTrainees(int offset, int limit) {
         securityService.requireAuth();
         securityService.requireRole(UserRole.TRAINEE);
-        return delegate.getAllTrainees();
+        return delegate.getAllTrainees(offset, limit);
+    }
+
+    @Override
+    public long countTrainees() {
+        securityService.requireAuth();
+        securityService.requireRole(UserRole.TRAINEE);
+        return delegate.countTrainees();
     }
 
     @Override
@@ -129,10 +136,17 @@ public class SecurityGymFacade implements GymFacade {
     }
 
     @Override
-    public List<TrainerModel> getAllTrainers() {
+    public List<TrainerModel> getAllTrainers(int offset, int limit) {
         securityService.requireAuth();
         securityService.requireRole(UserRole.TRAINER);
-        return delegate.getAllTrainers();
+        return delegate.getAllTrainers(offset, limit);
+    }
+
+    @Override
+    public long countTrainers() {
+        securityService.requireAuth();
+        securityService.requireRole(UserRole.TRAINER);
+        return delegate.countTrainers();
     }
 
     @Override

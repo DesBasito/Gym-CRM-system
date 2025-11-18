@@ -127,7 +127,16 @@ public abstract class AbstractUserService<T extends UserHolder,
     }
 
     protected void setGeneratedCredentials(M model) {
-        model.setUsername(UsernameAndPasswordGenerator.generateAndGetUsername(model.getFirstName(), model.getLastName()));
+        String baseUsername = UsernameAndPasswordGenerator.generateAndGetUsername(model.getFirstName(), model.getLastName());
+        String username = baseUsername;
+        int suffix = 1;
+
+        while (repository.findByUsername(username) != null) {
+            username = baseUsername + suffix;
+            suffix++;
+        }
+
+        model.setUsername(username);
         model.setPassword(UsernameAndPasswordGenerator.generateAndGetPassword());
     }
 }
