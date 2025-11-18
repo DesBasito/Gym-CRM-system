@@ -48,7 +48,6 @@ class TrainerServiceImplTest {
     private TrainerModel trainerModel;
     private Trainer trainer;
     private User user;
-    private TrainingType trainingType;
 
     @BeforeEach
     void setUp() {
@@ -75,7 +74,7 @@ class TrainerServiceImplTest {
         user.setPassword("password123");
         user.setIsActive(true);
 
-        trainingType = new TrainingType();
+        TrainingType trainingType = new TrainingType();
         trainingType.setId(1L);
         trainingType.setTrainingTypeName(epam.gym.constants.TrainingType.FITNESS);
 

@@ -26,7 +26,7 @@ class TrainingTypeRepositoryTest {
 
     @Test
     void testFindAll_shouldReturnAllTrainingTypes() {
-        List<TrainingType> types = trainingTypeRepository.findAll();
+        List<TrainingType> types = trainingTypeRepository.findAll(0,7);
 
         assertNotNull(types);
         assertEquals(7, types.size());
@@ -40,6 +40,14 @@ class TrainingTypeRepositoryTest {
 
         assertNotNull(type);
         assertEquals(epam.gym.constants.TrainingType.FITNESS, type.getTrainingTypeName());
+    }
+
+    @Test
+    void testCountTheActualSize_whenExists_shouldReturnSizeOfTrainingType() {
+        Long type = trainingTypeRepository.count();
+
+        assertNotNull(type);
+        assertEquals(7, type);
     }
 
     @Test
@@ -63,7 +71,7 @@ class TrainingTypeRepositoryTest {
 
     @Test
     void testFindById_whenExists_shouldReturnTrainingType() {
-        List<TrainingType> types = trainingTypeRepository.findAll();
+        List<TrainingType> types = trainingTypeRepository.findAll(0,7);
         assertFalse(types.isEmpty());
         Long firstId = types.get(0).getId();
 

@@ -35,19 +35,11 @@ public class TrainingTypeRepository {
 
     public TrainingType findById(Long id) {
         try {
-            TrainingType trainingType = entityManager.find(TrainingType.class, id);
-            return trainingType;
+            return entityManager.find(TrainingType.class, id);
         } catch (NoResultException e) {
             log.warn("TrainingType not found with id: {}", id);
             return null;
         }
-    }
-
-    public List<TrainingType> findAll() {
-        Query query = entityManager.createQuery(
-                "SELECT t FROM " + TrainingType.class.getSimpleName() + " t",
-                TrainingType.class);
-        return query.getResultList();
     }
 
     public List<TrainingType> findAll(int offset, int limit) {
