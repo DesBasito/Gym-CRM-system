@@ -1,75 +1,43 @@
 package epam.gym.application;
 
-import epam.gym.domain.dto.request.TraineeCreationRequest;
-import epam.gym.domain.dto.request.TrainerCreationRequest;
-import epam.gym.domain.dto.request.TrainingCreateRequest;
-import epam.gym.domain.entities.EmbeddedTrainingId;
-import epam.gym.domain.entities.Trainee;
-import epam.gym.domain.entities.Trainer;
-import epam.gym.domain.entities.Training;
-import epam.gym.domain.services.interfaces.TraineeService;
-import epam.gym.domain.services.interfaces.TrainerService;
-import epam.gym.domain.services.interfaces.TrainingService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import epam.gym.domain.dto.request.TraineeRequest;
+import epam.gym.domain.dto.request.TrainerRequest;
+import epam.gym.domain.dto.request.TrainingRequest;
+import epam.gym.domain.models.TraineeModel;
+import epam.gym.domain.models.TrainerModel;
+import epam.gym.domain.models.TrainingModel;
 
-@Slf4j
-@Component
-@RequiredArgsConstructor
-public class GymFacade {
-    private final TrainerService trainerService;
-    private final TraineeService traineeService;
-    private final TrainingService trainingService;
+import java.time.LocalDate;
+import java.util.List;
 
-    // ============= Trainee =============
+public interface GymFacade {
 
-    public Trainee createTrainee(TraineeCreationRequest traineeCreationRequest) {
-        log.info("Facade: Creating trainee {} {}", traineeCreationRequest.getFirstName(), traineeCreationRequest.getLastName());
-        return traineeService.create(traineeCreationRequest);
-    }
+    // TRAINEE
+    TraineeModel createTrainee(TraineeRequest traineeRequest);
+    TraineeModel updateTrainee(TraineeRequest traineeRequest, Long id);
+    TraineeModel getTrainee(Long id);
+    void deleteTrainee(Long id);
+    List<TraineeModel> getAllTrainees(int offset, int limit);
+    long countTrainees();
+    boolean authenticateTrainee(String username, String password);
+    void changeTraineePassword(Long id, String newPassword);
+    void activateTrainee(Long id);
+    void deactivateTrainee(Long id);
+    List<TrainingModel> getTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainingType);
 
-    public Trainee updateTrainee(TraineeCreationRequest traineeCreationRequest, String username) {
-        log.info("Facade: Updating trainee with username {}", username);
-        return traineeService.update(traineeCreationRequest, username);
-    }
+    // TRAINER
+    TrainerModel createTrainer(TrainerRequest trainerRequest);
+    TrainerModel updateTrainer(TrainerRequest trainerRequest, Long id);
+    TrainerModel getTrainer(Long id);
+    List<TrainerModel> getAllTrainers(int offset, int limit);
+    long countTrainers();
+    List<TrainerModel> getTrainersNotAssignedToTrainee(String traineeUsername);
+    boolean authenticateTrainer(String username, String password);
+    void changeTrainerPassword(Long id, String newPassword);
+    void activateTrainer(Long id);
+    void deactivateTrainer(Long id);
+    List<TrainingModel> getTrainerTrainings(String trainerUsername, LocalDate fromDate, LocalDate toDate);
 
-    public Trainee getTrainee(String userId) {
-        log.info("Facade: Getting trainee with userId {}", userId);
-        return traineeService.select(userId);
-    }
-
-    public void deleteTrainee(String userId) {
-        log.info("Facade: Deleting trainee with userId {}", userId);
-        traineeService.delete(userId);
-    }
-
-    // ============= Trainer =============
-
-    public Trainer createTrainer(TrainerCreationRequest trainerDto) {
-        log.info("Facade: Creating trainer {} {}", trainerDto.getFirstName(), trainerDto.getLastName());
-        return trainerService.create(trainerDto);
-    }
-
-    public Trainer updateTrainer(TrainerCreationRequest trainerDto, String username) {
-        log.info("Facade: Updating trainer with username {}", username);
-        return trainerService.update(trainerDto, username);
-    }
-
-    public Trainer getTrainer(String userId) {
-        log.info("Facade: Getting trainer with userId {}", userId);
-        return trainerService.select(userId);
-    }
-
-    // ============= Training =============
-
-    public Training createTraining(TrainingCreateRequest trainingCreateRequest) {
-        log.info("Facade: Creating training {}", trainingCreateRequest.getTrainingId());
-        return trainingService.create(trainingCreateRequest);
-    }
-
-    public Training getTraining(EmbeddedTrainingId trainingId) {
-        log.info("Facade: Getting training with id {}", trainingId);
-        return trainingService.select(trainingId);
-    }
+    // TRAINING
+    TrainingModel createTraining(TrainingRequest trainingRequest);
 }

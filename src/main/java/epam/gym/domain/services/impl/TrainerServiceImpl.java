@@ -1,88 +1,83 @@
 package epam.gym.domain.services.impl;
 
-import epam.gym.domain.dto.request.TrainerCreationRequest;
-import epam.gym.domain.entities.Trainer;
+import epam.gym.domain.dto.request.TrainerRequest;
+import epam.gym.domain.models.TrainerModel;
+import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TrainerService;
-import epam.gym.infrastructure.repositories.impl.TrainerRepository;
-import lombok.RequiredArgsConstructor;
+import epam.gym.infrastructure.entities.Trainee;
+import epam.gym.infrastructure.entities.Trainer;
+import epam.gym.infrastructure.mappers.TrainerMapper;
+import epam.gym.infrastructure.repositories.TraineeRepository;
+import epam.gym.infrastructure.repositories.TrainerRepository;
+import epam.gym.infrastructure.repositories.TrainingTypeRepository;
+import epam.gym.util.TrainingTypeValidator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
-@Slf4j
 @Service
-@RequiredArgsConstructor
-public class TrainerServiceImpl implements TrainerService {
-    private final TrainerRepository trainerRepository;
+@Slf4j
+public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerModel, TrainerRepository, TrainerRequest>
+        implements TrainerService {
 
-    @Override
-    public Trainer create(TrainerCreationRequest trainerCreationRequest) {
-        log.info("Creating trainer: {} {}", trainerCreationRequest.getFirstName(), trainerCreationRequest.getLastName());
+    private final TrainingTypeRepository trainingTypeRepository;
+    private final TraineeRepository traineeRepository;
 
-        Trainer trainer = new Trainer();
-        trainer.setFirstName(trainerCreationRequest.getFirstName());
-        trainer.setLastName(trainerCreationRequest.getLastName());
-        trainer.setIsActive(true);
-        trainer.setSpecialization(trainerCreationRequest.getSpecialization());
-
-        Trainer createdTrainer = trainerRepository.save(trainer);
-
-        log.info("Trainer created successfully with username: {}", createdTrainer.getUsername());
-        return createdTrainer;
+    @Autowired
+    public TrainerServiceImpl(TrainerRepository repo, TrainerMapper mapper, TrainingTypeRepository typeRepo, TraineeRepository traineeRepository) {
+        super(repo, mapper);
+        this.trainingTypeRepository = typeRepo;
+        this.traineeRepository = traineeRepository;
     }
 
     @Override
-    public Trainer update(TrainerCreationRequest trainerCreationRequest, String username) {
-        log.info("Updating user: {} {}", trainerCreationRequest.getFirstName(), trainerCreationRequest.getLastName());
-
-        Trainer currentTrainer = trainerRepository.select(username);
-        if (currentTrainer == null) {
-            log.warn("User with username {} not found", username);
-            throw new NoSuchElementException("User with username "+username+" not found");
-        }
-
-        boolean nameChanged = !currentTrainer.getFirstName().equals(trainerCreationRequest.getFirstName()) ||
-                              !currentTrainer.getLastName().equals(trainerCreationRequest.getLastName());
-
-        Trainer trainer = Trainer.builder()
-                .firstName(trainerCreationRequest.getFirstName())
-                .lastName(trainerCreationRequest.getLastName())
-                .isActive(trainerCreationRequest.getIsActive())
-                .specialization(trainerCreationRequest.getSpecialization())
-                .build();
-
-        if (nameChanged) {
-            log.info("Name changed, deleting old user with username: {}", username);
-            trainerRepository.delete(username);
-        } else {
-            trainer.setUsername(username);
-        }
-
-
-        Trainer updatedTrainer = trainerRepository.save(trainer);
-
-        if (updatedTrainer == null) {
-            log.error("Failed to update user");
-        } else {
-            log.info("User updated successfully with username: {}", updatedTrainer.getUsername());
-        }
-
-        return updatedTrainer;
+    protected void beforeCreate(Trainer entity, TrainerRequest request) {
+        entity.setSpecialization(trainingTypeRepository.findByName(request.getSpecialization()));
     }
 
     @Override
-    public Trainer select(String id) {
-        log.info("Selecting user by username: {}", id);
+    public TrainerModel create(TrainerRequest request) {
+        TrainingTypeValidator.parse(request.getSpecialization());
+        return super.create(request);
+    }
 
-        Trainer trainer = trainerRepository.select(id);
+    @Override
+    public TrainerModel update(TrainerRequest request, Long id) {
+        TrainingTypeValidator.parse(request.getSpecialization());
+        return super.update(request, id);
+    }
 
-        if (trainer == null) {
-            log.error("User not found with username: {}", id);
-        } else {
-            log.info("User found with username: {}", id);
+    @Override
+    protected void updateEntityFields(Trainer entity, TrainerRequest request) {
+        entity.getUser().setFirstName(request.getFirstName());
+        entity.getUser().setLastName(request.getLastName());
+        entity.getUser().setIsActive(request.getIsActive());
+        entity.setSpecialization(trainingTypeRepository.findByName(request.getSpecialization()));
+    }
+
+    @Override
+    protected String getFullName(TrainerRequest request) {
+        return String.format("%s %s",request.getFirstName(), request.getLastName());
+    }
+
+    @Override
+    public List<TrainerModel> findAllNotAssignedToTrainee(String traineeUsername) {
+        log.info("Finding trainers not assigned to trainee: {}", traineeUsername);
+
+        Trainee trainee = traineeRepository.findByUsername(traineeUsername);
+        if (trainee == null) {
+            throw new NoSuchElementException("Trainee not found with username: " + traineeUsername);
         }
 
-        return trainer;
+        List<Trainer> trainers = repository.findAllNotAssignedToTrainee(traineeUsername);
+        List<TrainerModel> trainerModels = trainers.stream()
+                .map(mapper::toModel)
+                .toList();
+
+        log.info("Found {} trainers not assigned to trainee: {}", trainerModels.size(), traineeUsername);
+        return trainerModels;
     }
 }

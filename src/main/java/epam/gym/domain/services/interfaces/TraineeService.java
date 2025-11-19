@@ -1,11 +1,14 @@
 package epam.gym.domain.services.interfaces;
 
-import epam.gym.domain.dto.request.TraineeCreationRequest;
-import epam.gym.domain.entities.Trainee;
+import epam.gym.domain.dto.request.TraineeRequest;
+import epam.gym.domain.models.TraineeModel;
 
 public interface TraineeService {
-    Trainee create(TraineeCreationRequest traineeCreationRequest);
-    Trainee update(TraineeCreationRequest traineeCreationRequest, String username);
-    Trainee select(String id);
-    void delete(String id);
+    TraineeModel create(TraineeRequest traineeRequest);
+    TraineeModel update(TraineeRequest traineeRequest, Long id);
+    TraineeModel select(Long id);
+    void delete(Long id);
+    void activate(Long id);
+    void deactivate(Long id);
+    void changePassword(Long id, String newPassword);
 }
