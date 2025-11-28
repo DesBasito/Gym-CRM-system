@@ -6,7 +6,6 @@
 
     <persistence-unit name="default" transaction-type="RESOURCE_LOCAL">
 
-        <!-- Entity classes -->
         <class>epam.gym.infrastructure.entities.User</class>
         <class>epam.gym.infrastructure.entities.Trainee</class>
         <class>epam.gym.infrastructure.entities.Trainer</class>
@@ -14,15 +13,8 @@
         <class>epam.gym.infrastructure.entities.TrainingType</class>
 
         <properties>
-            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:6543/gym_db"/>
-            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
-            <property name="jakarta.persistence.jdbc.password" value="qwe"/>
-
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
-
             <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
-
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
             <property name="hibernate.jdbc.time_zone" value="UTC"/>

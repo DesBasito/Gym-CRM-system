@@ -1,23 +1,24 @@
 package epam.gym.domain.services.base;
 
+import epam.gym.domain.dto.response.RegistrationResponse;
 import epam.gym.domain.models.UserModel;
 import epam.gym.infrastructure.entities.UserHolder;
 import epam.gym.infrastructure.mappers.BaseMapper;
 import epam.gym.infrastructure.repositories.BaseUserRepository;
 import epam.gym.util.UsernameAndPasswordGenerator;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
 
 @Slf4j
 public abstract class AbstractUserService<T extends UserHolder,
-        M extends UserModel, R extends BaseUserRepository<T>, Q> {
+        M extends UserModel, R extends BaseUserRepository<T>, Q, D> {
 
     protected final R repository;
-    protected final BaseMapper<T, M, Q> mapper;
+    protected final BaseMapper<T, M, Q, D> mapper;
 
-    protected AbstractUserService(R repository, BaseMapper<T, M, Q> mapper) {
+    protected AbstractUserService(R repository, BaseMapper<T, M, Q, D> mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }
@@ -27,8 +28,8 @@ public abstract class AbstractUserService<T extends UserHolder,
 
     protected void beforeCreate(T entity, Q request) {}
 
-    @Transactional(rollbackOn = {IllegalArgumentException.class, NoSuchElementException.class})
-    public M create(Q request) {
+    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
+    public RegistrationResponse create(Q request) {
         log.info("Creating user: {}", getFullName(request));
 
         M model = mapper.requestToModel(request);
@@ -38,13 +39,17 @@ public abstract class AbstractUserService<T extends UserHolder,
         beforeCreate(entity, request);
 
         T created = repository.save(entity);
-        M result = mapper.toModel(created);
 
-        log.info("User created successfully with username: {}", result.getUsername());
-        return result;
+        RegistrationResponse response = RegistrationResponse.builder()
+                .username(created.getUser().getUsername())
+                .password(created.getUser().getPassword())
+                .build();
+
+        log.info("User created successfully with username: {}", response.getUsername());
+        return response;
     }
 
-    @Transactional(rollbackOn = {IllegalArgumentException.class, NoSuchElementException.class})
+    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
     public M update(Q request, Long id) {
         log.info("Updating user with id: {}", id);
 
@@ -61,7 +66,7 @@ public abstract class AbstractUserService<T extends UserHolder,
         return result;
     }
 
-    @Transactional(rollbackOn = {IllegalArgumentException.class, NoSuchElementException.class})
+    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
     public void delete(Long id) {
         log.info("Deleting user with id: {}", id);
 
@@ -73,7 +78,7 @@ public abstract class AbstractUserService<T extends UserHolder,
         log.info("User deleted with id: {}", id);
     }
 
-    @Transactional(dontRollbackOn = NoSuchElementException.class)
+    @Transactional(noRollbackFor = NoSuchElementException.class)
     public M select(Long id) {
         log.info("Selecting user with id: {}", id);
         T entity = repository.findById(id);
@@ -83,7 +88,7 @@ public abstract class AbstractUserService<T extends UserHolder,
         return mapper.toModel(entity);
     }
 
-    @Transactional(rollbackOn = {IllegalArgumentException.class, NoSuchElementException.class})
+    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
     public void activate(Long id) {
         log.info("Activating user with id: {}", id);
         T entity = repository.findById(id);
@@ -99,7 +104,7 @@ public abstract class AbstractUserService<T extends UserHolder,
         }
     }
 
-    @Transactional(rollbackOn = {IllegalArgumentException.class, NoSuchElementException.class})
+    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
     public void deactivate(Long id) {
         log.info("Deactivating user with id: {}", id);
         T entity = repository.findById(id);
@@ -115,7 +120,7 @@ public abstract class AbstractUserService<T extends UserHolder,
         }
     }
 
-    @Transactional(rollbackOn = {IllegalArgumentException.class, NoSuchElementException.class})
+    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
     public void changePassword(Long id, String newPassword) {
         log.info("Changing password for user with id: {}", id);
         T entity = repository.findById(id);

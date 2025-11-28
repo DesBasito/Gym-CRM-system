@@ -1,6 +1,7 @@
 package epam.gym.domain.services;
 
 import epam.gym.domain.dto.request.TrainerRequest;
+import epam.gym.domain.dto.response.RegistrationResponse;
 import epam.gym.domain.models.TrainerModel;
 import epam.gym.domain.services.impl.TrainerServiceImpl;
 import epam.gym.infrastructure.entities.Trainee;
@@ -55,7 +56,6 @@ class TrainerServiceImplTest {
         trainerRequest.setFirstName("John");
         trainerRequest.setLastName("Smith");
         trainerRequest.setSpecialization("FITNESS");
-        trainerRequest.setIsActive(true);
 
         trainerModel = new TrainerModel();
         trainerModel.setId(1L);
@@ -85,17 +85,16 @@ class TrainerServiceImplTest {
     }
 
     @Test
-    void testCreate_withValidSpecialization_shouldCreateTrainer() {
+    void testCreate_withValidSpecialization_shouldCreateTrainerAndReturnCredentials() {
         when(trainerMapper.requestToModel(trainerRequest)).thenReturn(trainerModel);
         when(trainerMapper.toEntity(trainerModel)).thenReturn(trainer);
         when(trainerRepository.save(trainer)).thenReturn(trainer);
-        when(trainerMapper.toModel(trainer)).thenReturn(trainerModel);
 
-        TrainerModel result = trainerService.create(trainerRequest);
+        RegistrationResponse result = trainerService.create(trainerRequest);
 
         assertNotNull(result);
         assertEquals("John.Smith", result.getUsername());
-        assertEquals("FITNESS", result.getSpecialization());
+        assertEquals("password123", result.getPassword());
         verify(trainerRepository).save(any(Trainer.class));
     }
 

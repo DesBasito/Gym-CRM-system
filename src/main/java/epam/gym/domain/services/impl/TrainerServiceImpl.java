@@ -1,6 +1,7 @@
 package epam.gym.domain.services.impl;
 
 import epam.gym.domain.dto.request.TrainerRequest;
+import epam.gym.domain.dto.response.RegistrationResponse;
 import epam.gym.domain.models.TrainerModel;
 import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TrainerService;
@@ -39,7 +40,7 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
     }
 
     @Override
-    public TrainerModel create(TrainerRequest request) {
+    public RegistrationResponse create(TrainerRequest request) {
         TrainingTypeValidator.parse(request.getSpecialization());
         return super.create(request);
     }
@@ -54,7 +55,6 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
     protected void updateEntityFields(Trainer entity, TrainerRequest request) {
         entity.getUser().setFirstName(request.getFirstName());
         entity.getUser().setLastName(request.getLastName());
-        entity.getUser().setIsActive(request.getIsActive());
         entity.setSpecialization(trainingTypeRepository.findByName(request.getSpecialization()));
     }
 

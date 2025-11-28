@@ -33,7 +33,6 @@ class TraineeMapperTest {
         request.setLastName("Doe");
         request.setDateOfBirth(LocalDate.of(1990, 1, 1));
         request.setAddress("123 Main St");
-        request.setIsActive(true);
 
         TraineeModel model = traineeMapper.requestToModel(request);
 

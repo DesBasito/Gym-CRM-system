@@ -4,6 +4,7 @@ import epam.gym.config.TestConfig;
 import epam.gym.domain.dto.request.TraineeRequest;
 import epam.gym.domain.dto.request.TrainerRequest;
 import epam.gym.domain.dto.request.TrainingRequest;
+import epam.gym.domain.dto.response.RegistrationResponse;
 import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.models.TrainerModel;
 import epam.gym.domain.models.TrainingModel;
@@ -50,6 +51,7 @@ class TrainingServiceIntegrationTest {
 
     private TraineeModel traineeModel;
     private TrainerModel trainerModel;
+    private RegistrationResponse response;
 
     @BeforeEach
     void setUp() {
@@ -70,15 +72,13 @@ class TrainingServiceIntegrationTest {
         traineeRequest.setLastName("Doe");
         traineeRequest.setDateOfBirth(LocalDate.of(1990, 1, 1));
         traineeRequest.setAddress("123 Main St");
-        traineeRequest.setIsActive(true);
-        traineeModel = traineeService.create(traineeRequest);
+        response = traineeService.create(traineeRequest);
 
         TrainerRequest trainerRequest = new TrainerRequest();
         trainerRequest.setFirstName("Jane");
         trainerRequest.setLastName("Smith");
         trainerRequest.setSpecialization("FITNESS");
-        trainerRequest.setIsActive(true);
-        trainerModel = trainerService.create(trainerRequest);
+        response = trainerService.create(trainerRequest);
 
         entityManager.flush();
         entityManager.clear();

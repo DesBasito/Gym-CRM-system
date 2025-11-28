@@ -25,7 +25,6 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
     protected void updateEntityFields(Trainee entity, TraineeRequest request) {
         entity.getUser().setFirstName(request.getFirstName());
         entity.getUser().setLastName(request.getLastName());
-        entity.getUser().setIsActive(request.getIsActive());
         entity.setAddress(request.getAddress());
         entity.setDateOfBirth(request.getDateOfBirth());
     }

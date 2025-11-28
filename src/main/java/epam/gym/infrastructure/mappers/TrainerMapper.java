@@ -1,17 +1,17 @@
 package epam.gym.infrastructure.mappers;
 
 import epam.gym.domain.dto.request.TrainerRequest;
+import epam.gym.domain.dto.response.TrainerProfileDto;
 import epam.gym.domain.models.TrainerModel;
 import epam.gym.infrastructure.entities.Trainer;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingConstants;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, componentModel = MappingConstants.ComponentModel.SPRING)
-public interface TrainerMapper extends BaseMapper<Trainer, TrainerModel, TrainerRequest>{
+public interface TrainerMapper extends BaseMapper<Trainer, TrainerModel, TrainerRequest, TrainerProfileDto>{
+    @Mapping(target = "isActive", constant = "true")
     TrainerModel requestToModel(TrainerRequest request);
 
+    @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "user.firstName", source = "firstName")
     @Mapping(target = "user.lastName", source = "lastName")
     @Mapping(target = "user.isActive", source = "isActive")
@@ -21,6 +21,9 @@ public interface TrainerMapper extends BaseMapper<Trainer, TrainerModel, Trainer
     @Mapping(target = "trainings", ignore = true)
     @Mapping(target = "specialization", ignore = true)
     Trainer toEntity(TrainerModel model);
+
+
+    TrainerProfileDto toDto(Trainer trainer);
 
     @Mapping(source = "user.firstName", target = "firstName")
     @Mapping(source = "user.lastName", target = "lastName")

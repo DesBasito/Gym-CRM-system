@@ -19,8 +19,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
         "epam.gym.infrastructure.repositories",
         "epam.gym.infrastructure.mappers",
         "epam.gym.domain.services",
-        "epam.gym.application",
-        "epam.gym.infrastructure.security"
+        "epam.gym.infrastructure.security",
+        "epam.gym.infrastructure.controller"
 })
 public class TestConfig {
 

@@ -1,6 +1,7 @@
 package epam.gym.domain.services;
 
 import epam.gym.domain.dto.request.TraineeRequest;
+import epam.gym.domain.dto.response.RegistrationResponse;
 import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.services.impl.TraineeServiceImpl;
 import epam.gym.infrastructure.entities.Trainee;
@@ -45,7 +46,7 @@ class TraineeServiceImplTest {
         traineeRequest.setLastName("Doe");
         traineeRequest.setDateOfBirth(LocalDate.of(1990, 1, 1));
         traineeRequest.setAddress("123 Main St");
-        traineeRequest.setIsActive(true);
+
 
         traineeModel = new TraineeModel();
         traineeModel.setId(1L);
@@ -73,20 +74,19 @@ class TraineeServiceImplTest {
     }
 
     @Test
-    void testCreate_shouldCreateTrainee() {
+    void testCreate_shouldCreateTraineeAndReturnCredentials() {
         when(traineeMapper.requestToModel(traineeRequest)).thenReturn(traineeModel);
         when(traineeMapper.toEntity(traineeModel)).thenReturn(trainee);
         when(traineeRepository.save(trainee)).thenReturn(trainee);
-        when(traineeMapper.toModel(trainee)).thenReturn(traineeModel);
 
-        TraineeModel result = traineeService.create(traineeRequest);
+        RegistrationResponse result = traineeService.create(traineeRequest);
 
         assertNotNull(result);
         assertEquals("John.Doe", result.getUsername());
+        assertEquals("password123", result.getPassword());
         verify(traineeRepository).save(any(Trainee.class));
         verify(traineeMapper).requestToModel(traineeRequest);
         verify(traineeMapper).toEntity(traineeModel);
-        verify(traineeMapper).toModel(trainee);
     }
 
     @Test
