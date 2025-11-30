@@ -7,9 +7,8 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -21,13 +20,13 @@ import java.util.Set;
 @NoArgsConstructor
 public class Trainer implements UserHolder {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "user_id", nullable = false)
     Long id;
 
     @NotNull
     @OneToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
+    @MapsId
     @JoinColumn(name = "user_id", nullable = false)
     User user;
 
@@ -41,14 +40,14 @@ public class Trainer implements UserHolder {
             CascadeType.MERGE
     })
     @JoinTable(name = "trainers_trainees",
-            joinColumns = @JoinColumn(name = "trainee_id"),
-            inverseJoinColumns = @JoinColumn(name = "trainer_id")
+            joinColumns = @JoinColumn(name = "trainer_id"),
+            inverseJoinColumns = @JoinColumn(name = "trainee_id")
     )
-    List<Trainee> trainees = new ArrayList<>();
+    Set<Trainee> trainees = new HashSet<>();
 
     @PreRemove
     private void removeAssociations() {
-        for (Trainee trainee : new ArrayList<>(trainees)) {
+        for (Trainee trainee : new HashSet<>(trainees)) {
             trainee.getTrainers().remove(this);
         }
     }

@@ -42,12 +42,10 @@ public class TrainingTypeRepository {
         }
     }
 
-    public List<TrainingType> findAll(int offset, int limit) {
+    public List<TrainingType> findAll() {
         Query query = entityManager.createQuery(
                 "SELECT t FROM " + TrainingType.class.getSimpleName() + " t",
                 TrainingType.class);
-        query.setFirstResult(offset);
-        query.setMaxResults(limit);
         return query.getResultList();
     }
 

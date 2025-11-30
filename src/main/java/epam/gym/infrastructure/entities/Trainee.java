@@ -9,9 +9,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -23,11 +22,11 @@ import java.util.Set;
 @NoArgsConstructor
 public class Trainee implements UserHolder {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
+    @Column(name = "user_id", nullable = false)
     Long id;
 
     @NotNull
+    @MapsId
     @OneToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id", nullable = false)
@@ -42,11 +41,11 @@ public class Trainee implements UserHolder {
 
 
     @ManyToMany(mappedBy = "trainees")
-    List<Trainer> trainers = new ArrayList<>();
+    Set<Trainer> trainers = new HashSet<>();
 
     @PreRemove
     private void removeAssociations() {
-        for (Trainer trainer : new ArrayList<>(trainers)) {
+        for (Trainer trainer : new HashSet<>(trainers)) {
             trainer.getTrainees().remove(this);
         }
     }

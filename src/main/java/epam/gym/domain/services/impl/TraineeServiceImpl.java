@@ -1,24 +1,40 @@
 package epam.gym.domain.services.impl;
 
 import epam.gym.domain.dto.request.TraineeRequest;
+import epam.gym.domain.dto.request.UpdateTraineeRequest;
+import epam.gym.domain.dto.response.TraineeProfileDto;
+import epam.gym.domain.dto.response.TrainerInfoDto;
 import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TraineeService;
 import epam.gym.infrastructure.entities.Trainee;
+import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.mappers.TraineeMapper;
+import epam.gym.infrastructure.mappers.TrainerMapper;
 import epam.gym.infrastructure.repositories.TraineeRepository;
+import epam.gym.infrastructure.repositories.TrainerRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @Slf4j
-public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeModel, TraineeRepository, TraineeRequest>
+public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeModel, TraineeRepository, TraineeRequest, TraineeProfileDto>
         implements TraineeService {
 
+    private final TrainerRepository trainerRepository;
+    private final TrainerMapper trainerMapper;
+
     @Autowired
-    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper) {
+    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper, TrainerRepository trainerRepository, TrainerMapper trainerMapper) {
         super(repo, mapper);
+        this.trainerRepository = trainerRepository;
+        this.trainerMapper = trainerMapper;
     }
 
     @Override
@@ -32,6 +48,58 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
     @Override
     protected String getFullName(TraineeRequest request) {
         return String.format("%s %s",request.getFirstName(), request.getLastName());
+    }
+
+    @Override
+    protected void updateEntityFieldsFromUpdateRequest(Trainee entity, Object updateRequest) {
+        UpdateTraineeRequest request = (UpdateTraineeRequest) updateRequest;
+        entity.getUser().setFirstName(request.getFirstName());
+        entity.getUser().setLastName(request.getLastName());
+        entity.setDateOfBirth(request.getDateOfBirth());
+        entity.setAddress(request.getAddress());
+    }
+
+    @Override
+    protected void setIsActiveFromUpdateRequest(Trainee entity, Object updateRequest) {
+        UpdateTraineeRequest request = (UpdateTraineeRequest) updateRequest;
+        entity.getUser().setIsActive(request.getIsActive());
+    }
+
+    @Override
+    public TraineeProfileDto updateByUsername(UpdateTraineeRequest request) {
+        return super.updateByUsername(request, request.getUsername());
+    }
+
+    @Override
+    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
+    public List<TrainerInfoDto> updateTrainersList(String traineeUsername, List<String> trainerUsernames) {
+        log.info("Updating trainers list for trainee: {}", traineeUsername);
+
+        Trainee trainee = repository.findByUsername(traineeUsername);
+        if (trainee == null) {
+            throw new NoSuchElementException("Trainee not found with username: " + traineeUsername);
+        }
+
+        List<Trainer> newTrainers = trainerUsernames.stream()
+                .map(username -> {
+                    Trainer trainer = trainerRepository.findByUsername(username);
+                    if (trainer == null) {
+                        throw new NoSuchElementException("Trainer not found with username: " + username);
+                    }
+                    return trainer;
+                })
+                .toList();
+
+        trainee.setTrainers(new HashSet<>(newTrainers));
+        repository.save(trainee);
+
+        List<TrainerInfoDto> result = newTrainers.stream()
+                .map(trainerMapper::toModel)
+                .map(trainerMapper::modelToInfoDto)
+                .toList();
+
+        log.info("Updated trainers list for trainee: {}, new trainers count: {}", traineeUsername, result.size());
+        return result;
     }
 }
 

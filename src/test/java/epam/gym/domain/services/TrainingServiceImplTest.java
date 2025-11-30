@@ -1,6 +1,7 @@
 package epam.gym.domain.services;
 
 import epam.gym.domain.dto.request.TrainingRequest;
+import epam.gym.domain.dto.response.TrainingDto;
 import epam.gym.domain.models.TrainingModel;
 import epam.gym.domain.services.impl.TrainingServiceImpl;
 import epam.gym.infrastructure.entities.Trainee;
@@ -139,23 +140,21 @@ class TrainingServiceImplTest {
         training2.setId(2L);
         List<Training> trainings = Arrays.asList(training1, training2);
 
-        TrainingModel model1 = new TrainingModel();
-        model1.setId(1L);
-        TrainingModel model2 = new TrainingModel();
-        model2.setId(2L);
+        TrainingDto dto1 = new TrainingDto();
+        TrainingDto dto2 = new TrainingDto();
 
         when(trainingRepository.findTraineeTrainings(traineeUsername, fromDate, toDate, trainingTypeName))
                 .thenReturn(trainings);
-        when(trainingMapper.entityToModel(training1)).thenReturn(model1);
-        when(trainingMapper.entityToModel(training2)).thenReturn(model2);
+        when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
+        when(trainingMapper.entityToDto(training2)).thenReturn(dto2);
 
-        List<TrainingModel> result = trainingService.selectTraineeTrainings(
+        List<TrainingDto> result = trainingService.selectTraineeTrainings(
                 traineeUsername, fromDate, toDate, trainingTypeName);
 
         assertNotNull(result);
         assertEquals(2, result.size());
         verify(trainingRepository).findTraineeTrainings(traineeUsername, fromDate, toDate, trainingTypeName);
-        verify(trainingMapper, times(2)).entityToModel(any(Training.class));
+        verify(trainingMapper, times(2)).entityToDto(any(Training.class));
     }
 
     @Test
@@ -166,14 +165,13 @@ class TrainingServiceImplTest {
         training1.setId(1L);
         List<Training> trainings = List.of(training1);
 
-        TrainingModel model1 = new TrainingModel();
-        model1.setId(1L);
+        TrainingDto dto1 = new TrainingDto();
 
         when(trainingRepository.findTraineeTrainings(traineeUsername, null, null, null))
                 .thenReturn(trainings);
-        when(trainingMapper.entityToModel(training1)).thenReturn(model1);
+        when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
 
-        List<TrainingModel> result = trainingService.selectTraineeTrainings(
+        List<TrainingDto> result = trainingService.selectTraineeTrainings(
                 traineeUsername, null, null, null);
 
         assertNotNull(result);
@@ -187,7 +185,7 @@ class TrainingServiceImplTest {
         when(trainingRepository.findTraineeTrainings(traineeUsername, null, null, null))
                 .thenReturn(List.of());
 
-        List<TrainingModel> result = trainingService.selectTraineeTrainings(
+        List<TrainingDto> result = trainingService.selectTraineeTrainings(
                 traineeUsername, null, null, null);
 
         assertNotNull(result);
@@ -207,23 +205,21 @@ class TrainingServiceImplTest {
         training2.setId(2L);
         List<Training> trainings = Arrays.asList(training1, training2);
 
-        TrainingModel model1 = new TrainingModel();
-        model1.setId(1L);
-        TrainingModel model2 = new TrainingModel();
-        model2.setId(2L);
+        TrainingDto dto1 = new TrainingDto();
+        TrainingDto dto2 = new TrainingDto();
 
         when(trainingRepository.findTrainerTrainings(trainerUsername, fromDate, toDate))
                 .thenReturn(trainings);
-        when(trainingMapper.entityToModel(training1)).thenReturn(model1);
-        when(trainingMapper.entityToModel(training2)).thenReturn(model2);
+        when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
+        when(trainingMapper.entityToDto(training2)).thenReturn(dto2);
 
-        List<TrainingModel> result = trainingService.selectTrainerTrainings(
+        List<TrainingDto> result = trainingService.selectTrainerTrainings(
                 trainerUsername, fromDate, toDate);
 
         assertNotNull(result);
         assertEquals(2, result.size());
         verify(trainingRepository).findTrainerTrainings(trainerUsername, fromDate, toDate);
-        verify(trainingMapper, times(2)).entityToModel(any(Training.class));
+        verify(trainingMapper, times(2)).entityToDto(any(Training.class));
     }
 
     @Test
@@ -234,14 +230,13 @@ class TrainingServiceImplTest {
         training1.setId(1L);
         List<Training> trainings = List.of(training1);
 
-        TrainingModel model1 = new TrainingModel();
-        model1.setId(1L);
+        TrainingDto dto1 = new TrainingDto();
 
         when(trainingRepository.findTrainerTrainings(trainerUsername, null, null))
                 .thenReturn(trainings);
-        when(trainingMapper.entityToModel(training1)).thenReturn(model1);
+        when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
 
-        List<TrainingModel> result = trainingService.selectTrainerTrainings(
+        List<TrainingDto> result = trainingService.selectTrainerTrainings(
                 trainerUsername, null, null);
 
         assertNotNull(result);
@@ -255,7 +250,7 @@ class TrainingServiceImplTest {
         when(trainingRepository.findTrainerTrainings(trainerUsername, null, null))
                 .thenReturn(List.of());
 
-        List<TrainingModel> result = trainingService.selectTrainerTrainings(
+        List<TrainingDto> result = trainingService.selectTrainerTrainings(
                 trainerUsername, null, null);
 
         assertNotNull(result);

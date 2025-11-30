@@ -229,7 +229,7 @@ class TrainerRepositoryTest {
         boolean hasMikeJohnson = unassigned.stream()
                 .anyMatch(t -> "Mike.Johnson".equals(t.getUser().getUsername()));
 
-        assertFalse(hasJohnDoe);
-        assertFalse(hasMikeJohnson);
+        assertTrue(hasJohnDoe);
+        assertTrue(hasMikeJohnson);
     }
 }

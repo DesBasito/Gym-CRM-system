@@ -5,8 +5,6 @@ import epam.gym.domain.dto.request.TraineeRequest;
 import epam.gym.domain.dto.request.TrainerRequest;
 import epam.gym.domain.dto.request.TrainingRequest;
 import epam.gym.domain.dto.response.RegistrationResponse;
-import epam.gym.domain.models.TraineeModel;
-import epam.gym.domain.models.TrainerModel;
 import epam.gym.domain.models.TrainingModel;
 import epam.gym.domain.services.interfaces.TraineeService;
 import epam.gym.domain.services.interfaces.TrainerService;
@@ -49,9 +47,8 @@ class TrainingServiceIntegrationTest {
         this.trainingService = trainingService;
     }
 
-    private TraineeModel traineeModel;
-    private TrainerModel trainerModel;
-    private RegistrationResponse response;
+    private String traineeUsername;
+    private String trainerUsername;
 
     @BeforeEach
     void setUp() {
@@ -62,8 +59,6 @@ class TrainingServiceIntegrationTest {
         entityManager.createNativeQuery("DELETE FROM users").executeUpdate();
 
         entityManager.createNativeQuery("ALTER TABLE users ALTER COLUMN id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE trainees ALTER COLUMN id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE trainers ALTER COLUMN id RESTART WITH 1").executeUpdate();
         entityManager.createNativeQuery("ALTER TABLE trainings ALTER COLUMN id RESTART WITH 1").executeUpdate();
         entityManager.flush();
 
@@ -72,13 +67,15 @@ class TrainingServiceIntegrationTest {
         traineeRequest.setLastName("Doe");
         traineeRequest.setDateOfBirth(LocalDate.of(1990, 1, 1));
         traineeRequest.setAddress("123 Main St");
-        response = traineeService.create(traineeRequest);
+        RegistrationResponse traineeResponse = traineeService.create(traineeRequest);
+        traineeUsername = traineeResponse.getUsername();
 
         TrainerRequest trainerRequest = new TrainerRequest();
         trainerRequest.setFirstName("Jane");
         trainerRequest.setLastName("Smith");
         trainerRequest.setSpecialization("FITNESS");
-        response = trainerService.create(trainerRequest);
+        RegistrationResponse trainerResponse = trainerService.create(trainerRequest);
+        trainerUsername = trainerResponse.getUsername();
 
         entityManager.flush();
         entityManager.clear();
@@ -87,8 +84,8 @@ class TrainingServiceIntegrationTest {
     @Test
     void testCreateTraining_shouldUpdateTrainersTraineesRelationship() {
         TrainingRequest trainingRequest = new TrainingRequest();
-        trainingRequest.setTraineeUsername(traineeModel.getUsername());
-        trainingRequest.setTrainerUsername(trainerModel.getUsername());
+        trainingRequest.setTraineeUsername(traineeUsername);
+        trainingRequest.setTrainerUsername(trainerUsername);
         trainingRequest.setTrainingName("Morning Workout");
         trainingRequest.setTrainingType("FITNESS");
         trainingRequest.setTrainingDate(LocalDate.of(2024, 1, 15));
@@ -101,8 +98,8 @@ class TrainingServiceIntegrationTest {
         assertNotNull(createdTraining);
         assertEquals("Morning Workout", createdTraining.getTrainingName());
 
-        Trainee trainee = traineeRepository.findByUsername(traineeModel.getUsername());
-        Trainer trainer = trainerRepository.findByUsername(trainerModel.getUsername());
+        Trainee trainee = traineeRepository.findByUsername(traineeUsername);
+        Trainer trainer = trainerRepository.findByUsername(trainerUsername);
 
         assertNotNull(trainee, "Trainee should exist");
         assertNotNull(trainer, "Trainer should exist");
@@ -121,16 +118,16 @@ class TrainingServiceIntegrationTest {
     @Test
     void testCreateMultipleTrainings_shouldNotDuplicateRelationship() {
         TrainingRequest firstRequest = new TrainingRequest();
-        firstRequest.setTraineeUsername(traineeModel.getUsername());
-        firstRequest.setTrainerUsername(trainerModel.getUsername());
+        firstRequest.setTraineeUsername(traineeUsername);
+        firstRequest.setTrainerUsername(trainerUsername);
         firstRequest.setTrainingName("Morning Workout");
         firstRequest.setTrainingType("FITNESS");
         firstRequest.setTrainingDate(LocalDate.of(2024, 1, 15));
         firstRequest.setTrainingDuration(60);
 
         TrainingRequest secondRequest = new TrainingRequest();
-        secondRequest.setTraineeUsername(traineeModel.getUsername());
-        secondRequest.setTrainerUsername(trainerModel.getUsername());
+        secondRequest.setTraineeUsername(traineeUsername);
+        secondRequest.setTrainerUsername(trainerUsername);
         secondRequest.setTrainingName("Evening Workout");
         secondRequest.setTrainingType("FITNESS");
         secondRequest.setTrainingDate(LocalDate.of(2024, 1, 16));
@@ -144,8 +141,8 @@ class TrainingServiceIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        Trainee trainee = traineeRepository.findByUsername(traineeModel.getUsername());
-        Trainer trainer = trainerRepository.findByUsername(trainerModel.getUsername());
+        Trainee trainee = traineeRepository.findByUsername(traineeUsername);
+        Trainer trainer = trainerRepository.findByUsername(trainerUsername);
 
         assertEquals(1, trainee.getTrainers().size(),
                 "Trainee should still have exactly 1 trainer (no duplicates)");
@@ -161,8 +158,8 @@ class TrainingServiceIntegrationTest {
     @Test
     void testDeleteTrainer_shouldCascadeDeleteTrainingsButNotTrainee() {
         TrainingRequest trainingRequest = new TrainingRequest();
-        trainingRequest.setTraineeUsername(traineeModel.getUsername());
-        trainingRequest.setTrainerUsername(trainerModel.getUsername());
+        trainingRequest.setTraineeUsername(traineeUsername);
+        trainingRequest.setTrainerUsername(trainerUsername);
         trainingRequest.setTrainingName("Morning Workout");
         trainingRequest.setTrainingType("FITNESS");
         trainingRequest.setTrainingDate(LocalDate.of(2024, 1, 15));
@@ -172,30 +169,30 @@ class TrainingServiceIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        Trainee traineeBefore = traineeRepository.findByUsername(traineeModel.getUsername());
+        Trainee traineeBefore = traineeRepository.findByUsername(traineeUsername);
         assertEquals(1, traineeBefore.getTrainers().size(), "Trainee should have 1 trainer before deletion");
         assertEquals(1, traineeBefore.getTrainings().size(), "Trainee should have 1 training before deletion");
 
-        trainerService.delete(trainerModel.getId());
+        trainerService.delete(trainerUsername);
         entityManager.flush();
         entityManager.clear();
 
-        Trainee traineeAfter = traineeRepository.findByUsername(traineeModel.getUsername());
+        Trainee traineeAfter = traineeRepository.findByUsername(traineeUsername);
         assertNotNull(traineeAfter, "Trainee should still exist after trainer deletion");
         assertEquals(0, traineeAfter.getTrainers().size(),
                 "Trainee's trainers list should be empty after trainer deletion");
         assertEquals(0, traineeAfter.getTrainings().size(),
                 "Trainee's trainings should be cascade deleted");
 
-        assertNull(trainerRepository.findByUsername(trainerModel.getUsername()),
+        assertNull(trainerRepository.findByUsername(trainerUsername),
                 "Trainer should be deleted");
     }
 
     @Test
     void testDeleteTrainee_shouldCascadeDeleteTrainingsButNotTrainer() {
         TrainingRequest trainingRequest = new TrainingRequest();
-        trainingRequest.setTraineeUsername(traineeModel.getUsername());
-        trainingRequest.setTrainerUsername(trainerModel.getUsername());
+        trainingRequest.setTraineeUsername(traineeUsername);
+        trainingRequest.setTrainerUsername(trainerUsername);
         trainingRequest.setTrainingName("Morning Workout");
         trainingRequest.setTrainingType("FITNESS");
         trainingRequest.setTrainingDate(LocalDate.of(2024, 1, 15));
@@ -205,22 +202,22 @@ class TrainingServiceIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        Trainer trainerBefore = trainerRepository.findByUsername(trainerModel.getUsername());
+        Trainer trainerBefore = trainerRepository.findByUsername(trainerUsername);
         assertEquals(1, trainerBefore.getTrainees().size(), "Trainer should have 1 trainee before deletion");
         assertEquals(1, trainerBefore.getTrainings().size(), "Trainer should have 1 training before deletion");
 
-        traineeService.delete(traineeModel.getId());
+        traineeService.delete(traineeUsername);
         entityManager.flush();
         entityManager.clear();
 
-        Trainer trainerAfter = trainerRepository.findByUsername(trainerModel.getUsername());
+        Trainer trainerAfter = trainerRepository.findByUsername(trainerUsername);
         assertNotNull(trainerAfter, "Trainer should still exist after trainee deletion");
         assertEquals(0, trainerAfter.getTrainees().size(),
                 "Trainer's trainees list should be empty after trainee deletion");
         assertEquals(0, trainerAfter.getTrainings().size(),
                 "Trainer's trainings should be cascade deleted");
 
-        assertNull(traineeRepository.findByUsername(traineeModel.getUsername()),
+        assertNull(traineeRepository.findByUsername(traineeUsername),
                 "Trainee should be deleted");
     }
 }

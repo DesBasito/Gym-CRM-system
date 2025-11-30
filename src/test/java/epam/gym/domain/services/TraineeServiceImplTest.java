@@ -147,113 +147,109 @@ class TraineeServiceImplTest {
 
     @Test
     void testDelete_shouldDeleteTrainee() {
-        Long traineeId = 1L;
-        when(traineeRepository.findById(traineeId)).thenReturn(trainee);
-        doNothing().when(traineeRepository).delete(traineeId);
+        String username = "bla.bla";
+        when(traineeRepository.findByUsername(username)).thenReturn(trainee);
+        doNothing().when(traineeRepository).delete(trainee.getId());
 
-        traineeService.delete(traineeId);
+        traineeService.delete(username);
 
-        verify(traineeRepository).findById(traineeId);
-        verify(traineeRepository).delete(traineeId);
+        verify(traineeRepository).findByUsername(username);
+        verify(traineeRepository).delete(trainee.getId());
     }
 
     @Test
-    void testActivate_whenTraineeIsInactive_shouldActivate() {
-        Long traineeId = 1L;
+    void testSetActiveStatus_shouldActivateTrainee() {
+        String username = "John.Doe";
         user.setIsActive(false);
-        when(traineeRepository.findById(traineeId)).thenReturn(trainee);
-        doNothing().when(traineeRepository).activate(traineeId);
+        when(traineeRepository.findByUsername(username)).thenReturn(trainee);
+        doNothing().when(traineeRepository).activate(trainee.getId());
 
-        traineeService.activate(traineeId);
+        traineeService.setActiveStatus(username, true);
 
-        verify(traineeRepository).findById(traineeId);
-        verify(traineeRepository).activate(traineeId);
+        verify(traineeRepository).findByUsername(username);
+        verify(traineeRepository).activate(trainee.getId());
     }
 
     @Test
-    void testActivate_whenTraineeIsActive_shouldSkipActivation() {
-        Long traineeId = 1L;
+    void testSetActiveStatus_shouldDeactivateTrainee() {
+        String username = "John.Doe";
         user.setIsActive(true);
-        when(traineeRepository.findById(traineeId)).thenReturn(trainee);
+        when(traineeRepository.findByUsername(username)).thenReturn(trainee);
+        doNothing().when(traineeRepository).deactivate(trainee.getId());
 
-        traineeService.activate(traineeId);
+        traineeService.setActiveStatus(username, false);
 
-        verify(traineeRepository).findById(traineeId);
-        verify(traineeRepository, never()).activate(traineeId);
+        verify(traineeRepository).findByUsername(username);
+        verify(traineeRepository).deactivate(trainee.getId());
     }
 
     @Test
-    void testActivate_whenTraineeNotExists_shouldThrowException() {
-        Long traineeId = 999L;
-        when(traineeRepository.findById(traineeId)).thenReturn(null);
+    void testSetActiveStatus_whenAlreadyActive_shouldStillActivate() {
+        String username = "John.Doe";
+        user.setIsActive(true);
+        when(traineeRepository.findByUsername(username)).thenReturn(trainee);
+        doNothing().when(traineeRepository).activate(trainee.getId());
+
+        traineeService.setActiveStatus(username, true);
+
+        verify(traineeRepository).findByUsername(username);
+        verify(traineeRepository).activate(trainee.getId());
+    }
+
+    @Test
+    void testSetActiveStatus_whenAlreadyInactive_shouldStillDeactivate() {
+        String username = "John.Doe";
+        user.setIsActive(false);
+        when(traineeRepository.findByUsername(username)).thenReturn(trainee);
+        doNothing().when(traineeRepository).deactivate(trainee.getId());
+
+        traineeService.setActiveStatus(username, false);
+
+        verify(traineeRepository).findByUsername(username);
+        verify(traineeRepository).deactivate(trainee.getId());
+    }
+
+    @Test
+    void testSetActiveStatus_whenTraineeNotExists_shouldThrowException() {
+        String username = "NonExistent.User";
+        when(traineeRepository.findByUsername(username)).thenReturn(null);
 
         assertThrows(NoSuchElementException.class, () ->
-            traineeService.activate(traineeId)
+            traineeService.setActiveStatus(username, true)
         );
-        verify(traineeRepository).findById(traineeId);
+        verify(traineeRepository).findByUsername(username);
         verify(traineeRepository, never()).activate(any(Long.class));
-    }
-
-    @Test
-    void testDeactivate_whenTraineeIsActive_shouldDeactivate() {
-        Long traineeId = 1L;
-        user.setIsActive(true);
-        when(traineeRepository.findById(traineeId)).thenReturn(trainee);
-        doNothing().when(traineeRepository).deactivate(traineeId);
-
-        traineeService.deactivate(traineeId);
-
-        verify(traineeRepository).findById(traineeId);
-        verify(traineeRepository).deactivate(traineeId);
-    }
-
-    @Test
-    void testDeactivate_whenTraineeIsInactive_shouldSkipDeactivation() {
-        Long traineeId = 1L;
-        user.setIsActive(false);
-        when(traineeRepository.findById(traineeId)).thenReturn(trainee);
-
-        traineeService.deactivate(traineeId);
-
-        verify(traineeRepository).findById(traineeId);
-        verify(traineeRepository, never()).deactivate(traineeId);
-    }
-
-    @Test
-    void testDeactivate_whenTraineeNotExists_shouldThrowException() {
-        Long traineeId = 999L;
-        when(traineeRepository.findById(traineeId)).thenReturn(null);
-
-        assertThrows(NoSuchElementException.class, () ->
-            traineeService.deactivate(traineeId)
-        );
-        verify(traineeRepository).findById(traineeId);
         verify(traineeRepository, never()).deactivate(any(Long.class));
     }
 
     @Test
     void testChangePassword_whenTraineeExists_shouldChangePassword() {
-        Long traineeId = 1L;
+        String trainerUsername = "Sushka";
+        String oldPassword = "password123";
         String newPassword = "newPassword123";
-        when(traineeRepository.findById(traineeId)).thenReturn(trainee);
-        doNothing().when(traineeRepository).changePassword(traineeId, newPassword);
+        when(traineeRepository.authenticate(trainerUsername, oldPassword)).thenReturn(true);
+        when(traineeRepository.findByUsername(trainerUsername)).thenReturn(trainee);
+        doNothing().when(traineeRepository).changePassword(trainee.getId(), newPassword);
 
-        traineeService.changePassword(traineeId, newPassword);
+        traineeService.changePassword(trainerUsername, oldPassword, newPassword);
 
-        verify(traineeRepository).findById(traineeId);
-        verify(traineeRepository).changePassword(traineeId, newPassword);
+        verify(traineeRepository).authenticate(trainerUsername, oldPassword);
+        verify(traineeRepository).findByUsername(trainerUsername);
+        verify(traineeRepository).changePassword(trainee.getId(), newPassword);
     }
 
     @Test
     void testChangePassword_whenTraineeNotExists_shouldThrowException() {
-        Long traineeId = 999L;
+        String trainerUsername = "Sushka.Bl";
+        String oldPassword = "wrongPassword";
         String newPassword = "newPassword123";
-        when(traineeRepository.findById(traineeId)).thenReturn(null);
+        when(traineeRepository.authenticate(trainerUsername, oldPassword)).thenReturn(false);
 
-        assertThrows(NoSuchElementException.class, () ->
-            traineeService.changePassword(traineeId, newPassword)
+        assertThrows(IllegalArgumentException.class, () ->
+                traineeService.changePassword(trainerUsername, oldPassword, newPassword)
         );
-        verify(traineeRepository).findById(traineeId);
+        verify(traineeRepository).authenticate(trainerUsername, oldPassword);
+        verify(traineeRepository, never()).findByUsername(any());
         verify(traineeRepository, never()).changePassword(any(Long.class), any(String.class));
     }
 }

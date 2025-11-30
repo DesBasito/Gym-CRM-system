@@ -25,6 +25,8 @@ public abstract class AbstractUserService<T extends UserHolder,
 
     protected abstract void updateEntityFields(T entity, Q request);
     protected abstract String getFullName(Q request);
+    protected abstract void updateEntityFieldsFromUpdateRequest(T entity, Object updateRequest);
+    protected abstract void setIsActiveFromUpdateRequest(T entity, Object updateRequest);
 
     protected void beforeCreate(T entity, Q request) {}
 
@@ -67,15 +69,16 @@ public abstract class AbstractUserService<T extends UserHolder,
     }
 
     @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
-    public void delete(Long id) {
-        log.info("Deleting user with id: {}", id);
+    public void delete(String username) {
+        log.info("Deleting user by username: {}", username);
 
-        T current = repository.findById(id);
-        if (current == null) {
-            throw new NoSuchElementException("User not found with id: " + id);
+        T entity = repository.findByUsername(username);
+        if (entity == null) {
+            throw new NoSuchElementException("User not found with username: " + username);
         }
-        repository.delete(id);
-        log.info("User deleted with id: {}", id);
+
+        repository.delete(entity.getUser().getId());
+        log.info("User deleted successfully with username: {}", username);
     }
 
     @Transactional(noRollbackFor = NoSuchElementException.class)
@@ -88,47 +91,72 @@ public abstract class AbstractUserService<T extends UserHolder,
         return mapper.toModel(entity);
     }
 
-    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
-    public void activate(Long id) {
-        log.info("Activating user with id: {}", id);
-        T entity = repository.findById(id);
+    @Transactional(readOnly = true)
+    public D selectByUsername(String username) {
+        log.info("Selecting user profile by username: {}", username);
+
+        T entity = repository.findByUsername(username);
         if (entity == null) {
-            throw new NoSuchElementException("User not found with id: " + id);
+            throw new NoSuchElementException("User not found with username: " + username);
         }
 
-        if (Boolean.FALSE.equals(entity.getUser().getIsActive())) {
-            repository.activate(id);
-            log.info("User activated successfully with id: {}", id);
+        D dto = mapper.toDto(entity);
+        log.info("User profile found for username: {}", username);
+        return dto;
+    }
+
+    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
+    public void changePassword(String username, String oldPassword, String newPassword) {
+        log.info("Changing password for user: {}", username);
+
+        if (!repository.authenticate(username, oldPassword)) {
+            throw new IllegalArgumentException("Invalid username or password");
+        }
+
+        T entity = repository.findByUsername(username);
+        if (entity == null) {
+            throw new NoSuchElementException("User not found with username: " + username);
+        }
+
+        repository.changePassword(entity.getUser().getId(), newPassword);
+        log.info("Password changed successfully for user: {}", username);
+    }
+
+    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
+    public void setActiveStatus(String username, Boolean isActive) {
+        log.info("Setting active status for user: {} to {}", username, isActive);
+
+        T entity = repository.findByUsername(username);
+        if (entity == null) {
+            throw new NoSuchElementException("User not found with username: " + username);
+        }
+
+        if (Boolean.TRUE.equals(isActive)) {
+            repository.activate(entity.getUser().getId());
+            log.info("User activated with username: {}", username);
         } else {
-            log.info("User with id {} is already active, skipping activation", id);
+            repository.deactivate(entity.getUser().getId());
+            log.info("User deactivated with username: {}", username);
         }
     }
 
     @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
-    public void deactivate(Long id) {
-        log.info("Deactivating user with id: {}", id);
-        T entity = repository.findById(id);
+    public D updateByUsername(Object updateRequest, String username) {
+        log.info("Updating user profile by username: {}", username);
+
+        T entity = repository.findByUsername(username);
         if (entity == null) {
-            throw new NoSuchElementException("User not found with id: " + id);
+            throw new NoSuchElementException("User not found with username: " + username);
         }
 
-        if (Boolean.TRUE.equals(entity.getUser().getIsActive())) {
-            repository.deactivate(id);
-            log.info("User deactivated successfully with id: {}", id);
-        } else {
-            log.info("User with id {} is already inactive, skipping deactivation", id);
-        }
-    }
+        updateEntityFieldsFromUpdateRequest(entity, updateRequest);
+        setIsActiveFromUpdateRequest(entity, updateRequest);
 
-    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
-    public void changePassword(Long id, String newPassword) {
-        log.info("Changing password for user with id: {}", id);
-        T entity = repository.findById(id);
-        if (entity == null) {
-            throw new NoSuchElementException("User not found with id: " + id);
-        }
-        repository.changePassword(id, newPassword);
-        log.info("Password changed successfully for user with id: {}", id);
+        repository.save(entity);
+        D dto = mapper.toDto(entity);
+
+        log.info("User profile updated successfully for username: {}", username);
+        return dto;
     }
 
     protected void setGeneratedCredentials(M model) {
