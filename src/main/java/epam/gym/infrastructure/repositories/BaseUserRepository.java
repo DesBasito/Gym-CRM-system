@@ -60,8 +60,9 @@ public abstract class BaseUserRepository<T extends UserHolder> {
             log.warn("{} not found for deletion with id: {}", getEntityName(), id);
             throw new IllegalArgumentException(getEntityName() + " not found with id: " + id);
         }
-
+        entity.removeAssociations();
         entityManager.remove(entity);
+        entityManager.flush();
         log.info("{} deleted with id: {}", getEntityName(), id);
     }
 

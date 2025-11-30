@@ -9,6 +9,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 
 @Getter
 @Setter
@@ -24,14 +25,12 @@ public class Training {
     Long id;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "trainee_id", nullable = false)
     Trainee trainee;
 
     @NotNull
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "trainer_id", nullable = false)
     Trainer trainer;
 
@@ -52,5 +51,15 @@ public class Training {
     @NotNull
     @Column(name = "training_duration", nullable = false)
     Integer trainingDuration;
+
+    @PreRemove
+    private void removeAssociations() {
+        if (trainee != null && trainee.getTrainings() != null) {
+            trainee.getTrainings().remove(this);
+        }
+        if (trainer != null && trainer.getTrainings() != null) {
+            trainer.getTrainings().remove(this);
+        }
+    }
 
 }

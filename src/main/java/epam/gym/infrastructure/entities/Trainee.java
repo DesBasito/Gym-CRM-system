@@ -43,14 +43,21 @@ public class Trainee implements UserHolder {
     @ManyToMany(mappedBy = "trainees")
     Set<Trainer> trainers = new HashSet<>();
 
-    @PreRemove
-    private void removeAssociations() {
+
+    public void removeAssociations() {
         for (Trainer trainer : new HashSet<>(trainers)) {
             trainer.getTrainees().remove(this);
         }
+        for (Training t : new LinkedHashSet<>(trainings)) {
+            t.setTrainee(null);
+        }
+        trainings.clear();
     }
 
-    @OneToMany(mappedBy = "trainee")
+    @OneToMany(mappedBy = "trainee", cascade = CascadeType.ALL, orphanRemoval = true)
     Set<Training> trainings = new LinkedHashSet<>();
 
+    public void addTraining(Training training) {
+        trainings.add(training);
+    }
 }

@@ -47,6 +47,9 @@ public class TrainingServiceImpl implements TrainingService {
             training.getTrainee().getTrainers().add(training.getTrainer());
         }
 
+        training.getTrainee().addTraining(training);
+        training.getTrainer().addTraining(training);
+
         Training createdTraining = trainingRepository.save(training);
         TrainingModel trainingModel = mapper.entityToModel(createdTraining);
 

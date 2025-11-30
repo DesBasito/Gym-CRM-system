@@ -78,7 +78,6 @@ class TrainingServiceIntegrationTest {
         trainerUsername = trainerResponse.getUsername();
 
         entityManager.flush();
-        entityManager.clear();
     }
 
     @Test
@@ -93,7 +92,6 @@ class TrainingServiceIntegrationTest {
 
         TrainingModel createdTraining = trainingService.create(trainingRequest);
         entityManager.flush();
-        entityManager.clear();
 
         assertNotNull(createdTraining);
         assertEquals("Morning Workout", createdTraining.getTrainingName());
@@ -167,7 +165,6 @@ class TrainingServiceIntegrationTest {
 
         trainingService.create(trainingRequest);
         entityManager.flush();
-        entityManager.clear();
 
         Trainee traineeBefore = traineeRepository.findByUsername(traineeUsername);
         assertEquals(1, traineeBefore.getTrainers().size(), "Trainee should have 1 trainer before deletion");
@@ -175,14 +172,13 @@ class TrainingServiceIntegrationTest {
 
         trainerService.delete(trainerUsername);
         entityManager.flush();
-        entityManager.clear();
 
         Trainee traineeAfter = traineeRepository.findByUsername(traineeUsername);
         assertNotNull(traineeAfter, "Trainee should still exist after trainer deletion");
         assertEquals(0, traineeAfter.getTrainers().size(),
                 "Trainee's trainers list should be empty after trainer deletion");
         assertEquals(0, traineeAfter.getTrainings().size(),
-                "Trainee's trainings should be cascade deleted");
+                "Trainee's trainings should be cascade deleted when trainer is deleted (DB level)");
 
         assertNull(trainerRepository.findByUsername(trainerUsername),
                 "Trainer should be deleted");
@@ -200,7 +196,6 @@ class TrainingServiceIntegrationTest {
 
         trainingService.create(trainingRequest);
         entityManager.flush();
-        entityManager.clear();
 
         Trainer trainerBefore = trainerRepository.findByUsername(trainerUsername);
         assertEquals(1, trainerBefore.getTrainees().size(), "Trainer should have 1 trainee before deletion");
@@ -208,14 +203,13 @@ class TrainingServiceIntegrationTest {
 
         traineeService.delete(traineeUsername);
         entityManager.flush();
-        entityManager.clear();
 
         Trainer trainerAfter = trainerRepository.findByUsername(trainerUsername);
         assertNotNull(trainerAfter, "Trainer should still exist after trainee deletion");
         assertEquals(0, trainerAfter.getTrainees().size(),
                 "Trainer's trainees list should be empty after trainee deletion");
         assertEquals(0, trainerAfter.getTrainings().size(),
-                "Trainer's trainings should be cascade deleted");
+                "Trainer's trainings should be cascade deleted when trainee is deleted (DB level)");
 
         assertNull(traineeRepository.findByUsername(traineeUsername),
                 "Trainee should be deleted");

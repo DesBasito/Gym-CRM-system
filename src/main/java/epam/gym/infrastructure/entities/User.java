@@ -47,12 +47,10 @@ public class User {
     @Column(name = "is_active", nullable = false)
     Boolean isActive = true;
 
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     Trainee trainee;
 
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     Trainer trainer;
 
 }
