@@ -1,6 +1,8 @@
 package epam.gym.infrastructure.repositories;
 
 import epam.gym.config.TestConfig;
+import epam.gym.domain.dto.request.TraineeTrainingsFilterRequest;
+import epam.gym.domain.dto.request.TrainerTrainingsFilterRequest;
 import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.entities.Training;
@@ -68,52 +70,64 @@ class TrainingRepositoryTest {
 
     @Test
     void testFindTraineeTrainings_withAllFilters_shouldReturnMatchingTrainings() {
-        String traineeUsername = "Alice.Brown";
-        LocalDate fromDate = LocalDate.of(2024, 1, 1);
-        LocalDate toDate = LocalDate.of(2024, 1, 31);
-        String trainingType = "FITNESS";
+        TraineeTrainingsFilterRequest filterRequest = new TraineeTrainingsFilterRequest(
+                "Alice.Brown",
+                LocalDate.of(2024, 1, 1),
+                LocalDate.of(2024, 1, 31),
+                null,
+                "FITNESS"
+        );
 
-        List<Training> trainings = trainingRepository.findTraineeTrainings(traineeUsername, fromDate, toDate, trainingType);
+        List<Training> trainings = trainingRepository.findTraineeTrainings(filterRequest);
 
         assertNotNull(trainings);
         assertFalse(trainings.isEmpty());
         trainings.forEach(t -> {
-            assertEquals(traineeUsername, t.getTrainee().getUser().getUsername());
-            assertTrue(t.getTrainingDate().isAfter(fromDate.minusDays(1)) && t.getTrainingDate().isBefore(toDate.plusDays(1)));
+            assertEquals(filterRequest.getUsername(), t.getTrainee().getUser().getUsername());
+            assertTrue(t.getTrainingDate().isAfter(filterRequest.getPeriodFrom().minusDays(1)) &&
+                      t.getTrainingDate().isBefore(filterRequest.getPeriodTo().plusDays(1)));
         });
     }
 
     @Test
     void testFindTraineeTrainings_withOnlyUsername_shouldReturnAllTrainings() {
-        String traineeUsername = "Alice.Brown";
+        TraineeTrainingsFilterRequest filterRequest = new TraineeTrainingsFilterRequest(
+                "Alice.Brown", null, null, null, null
+        );
 
-        List<Training> trainings = trainingRepository.findTraineeTrainings(traineeUsername, null, null, null);
+        List<Training> trainings = trainingRepository.findTraineeTrainings(filterRequest);
 
         assertNotNull(trainings);
         assertTrue(trainings.size() >= 2);
-        trainings.forEach(t -> assertEquals(traineeUsername, t.getTrainee().getUser().getUsername()));
+        trainings.forEach(t -> assertEquals(filterRequest.getUsername(), t.getTrainee().getUser().getUsername()));
     }
 
     @Test
     void testFindTraineeTrainings_withDateRange_shouldFilterByDate() {
-        String traineeUsername = "Alice.Brown";
-        LocalDate fromDate = LocalDate.of(2024, 1, 15);
-        LocalDate toDate = LocalDate.of(2024, 1, 16);
+        TraineeTrainingsFilterRequest filterRequest = new TraineeTrainingsFilterRequest(
+                "Alice.Brown",
+                LocalDate.of(2024, 1, 15),
+                LocalDate.of(2024, 1, 16),
+                null,
+                null
+        );
 
-        List<Training> trainings = trainingRepository.findTraineeTrainings(traineeUsername, fromDate, toDate, null);
+        List<Training> trainings = trainingRepository.findTraineeTrainings(filterRequest);
 
         assertNotNull(trainings);
         trainings.forEach(t -> {
-            assertTrue(t.getTrainingDate().isAfter(fromDate.minusDays(1)));
-            assertTrue(t.getTrainingDate().isBefore(toDate.plusDays(1)));
+            assertTrue(t.getTrainingDate().isAfter(filterRequest.getPeriodFrom().minusDays(1)));
+            assertTrue(t.getTrainingDate().isBefore(filterRequest.getPeriodTo().plusDays(1)));
         });
     }
 
     @Test
     void testFindTraineeTrainings_withNonExistentTrainee_shouldReturnEmptyList() {
-        String traineeUsername = "NonExistent.Trainee";
+        TraineeTrainingsFilterRequest filterRequest = new TraineeTrainingsFilterRequest(
+                "NonExistent.Trainee", null, null, null, null
+        );
 
-        List<Training> trainings = trainingRepository.findTraineeTrainings(traineeUsername, null, null, null);
+        List<Training> trainings = trainingRepository.findTraineeTrainings(filterRequest);
 
         assertNotNull(trainings);
         assertTrue(trainings.isEmpty());
@@ -121,51 +135,62 @@ class TrainingRepositoryTest {
 
     @Test
     void testFindTrainerTrainings_withAllFilters_shouldReturnMatchingTrainings() {
-        String trainerUsername = "John.Doe";
-        LocalDate fromDate = LocalDate.of(2024, 1, 1);
-        LocalDate toDate = LocalDate.of(2024, 1, 31);
+        TrainerTrainingsFilterRequest filterRequest = new TrainerTrainingsFilterRequest(
+                "John.Doe",
+                LocalDate.of(2024, 1, 1),
+                LocalDate.of(2024, 1, 31),
+                null
+        );
 
-        List<Training> trainings = trainingRepository.findTrainerTrainings(trainerUsername, fromDate, toDate);
+        List<Training> trainings = trainingRepository.findTrainerTrainings(filterRequest);
 
         assertNotNull(trainings);
         assertFalse(trainings.isEmpty());
         trainings.forEach(t -> {
-            assertEquals(trainerUsername, t.getTrainer().getUser().getUsername());
-            assertTrue(t.getTrainingDate().isAfter(fromDate.minusDays(1)) && t.getTrainingDate().isBefore(toDate.plusDays(1)));
+            assertEquals(filterRequest.getUsername(), t.getTrainer().getUser().getUsername());
+            assertTrue(t.getTrainingDate().isAfter(filterRequest.getPeriodFrom().minusDays(1)) &&
+                      t.getTrainingDate().isBefore(filterRequest.getPeriodTo().plusDays(1)));
         });
     }
 
     @Test
     void testFindTrainerTrainings_withOnlyUsername_shouldReturnAllTrainings() {
-        String trainerUsername = "John.Doe";
+        TrainerTrainingsFilterRequest filterRequest = new TrainerTrainingsFilterRequest(
+                "John.Doe", null, null, null
+        );
 
-        List<Training> trainings = trainingRepository.findTrainerTrainings(trainerUsername, null, null);
+        List<Training> trainings = trainingRepository.findTrainerTrainings(filterRequest);
 
         assertNotNull(trainings);
         assertTrue(trainings.size() >= 2);
-        trainings.forEach(t -> assertEquals(trainerUsername, t.getTrainer().getUser().getUsername()));
+        trainings.forEach(t -> assertEquals(filterRequest.getUsername(), t.getTrainer().getUser().getUsername()));
     }
 
     @Test
     void testFindTrainerTrainings_withDateRange_shouldFilterByDate() {
-        String trainerUsername = "John.Doe";
-        LocalDate fromDate = LocalDate.of(2024, 1, 15);
-        LocalDate toDate = LocalDate.of(2024, 1, 16);
+        TrainerTrainingsFilterRequest filterRequest = new TrainerTrainingsFilterRequest(
+                "John.Doe",
+                LocalDate.of(2024, 1, 15),
+                LocalDate.of(2024, 1, 16),
+                null
+        );
 
-        List<Training> trainings = trainingRepository.findTrainerTrainings(trainerUsername, fromDate, toDate);
+        List<Training> trainings = trainingRepository.findTrainerTrainings(filterRequest);
 
         assertNotNull(trainings);
         trainings.forEach(t -> {
-            assertTrue(t.getTrainingDate().isAfter(fromDate.minusDays(1)));
-            assertTrue(t.getTrainingDate().isBefore(toDate.plusDays(1)));
+            assertTrue(t.getTrainingDate().isAfter(filterRequest.getPeriodFrom().minusDays(1)));
+            assertTrue(t.getTrainingDate().isBefore(filterRequest.getPeriodTo().plusDays(1)));
         });
     }
 
     @Test
     void testFindTrainerTrainings_withNonExistentTrainer_shouldReturnEmptyList() {
-        String trainerUsername = "NonExistent.Trainer";
+        TrainerTrainingsFilterRequest filterRequest = new TrainerTrainingsFilterRequest(
+                "NonExistent.Trainer", null, null, null
+        );
 
-        List<Training> trainings = trainingRepository.findTrainerTrainings(trainerUsername, null, null);
+        List<Training> trainings = trainingRepository.findTrainerTrainings(filterRequest);
 
         assertNotNull(trainings);
         assertTrue(trainings.isEmpty());

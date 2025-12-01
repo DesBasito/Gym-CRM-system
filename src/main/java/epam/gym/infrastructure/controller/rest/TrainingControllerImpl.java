@@ -1,12 +1,12 @@
 package epam.gym.infrastructure.controller.rest;
 
+import epam.gym.domain.dto.request.TraineeTrainingsFilterRequest;
+import epam.gym.domain.dto.request.TrainerTrainingsFilterRequest;
 import epam.gym.domain.dto.request.TrainingRequest;
-import epam.gym.domain.dto.response.TrainerProfileDto;
 import epam.gym.domain.dto.response.TrainingDto;
 import epam.gym.domain.dto.response.TrainingTypeDto;
 import epam.gym.domain.services.interfaces.TrainingService;
 import epam.gym.infrastructure.controller.interfaces.TrainingController;
-import epam.gym.infrastructure.entities.TrainingType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +51,10 @@ public class TrainingControllerImpl implements TrainingController {
         log.info("Get trainee trainings request received for username: {}, filters: from={}, to={}, trainer={}, type={}",
                 username, periodFrom, periodTo, trainerName, trainingType);
 
-        List<TrainingDto> trainings = trainingService.selectTraineeTrainings(username, periodFrom, periodTo, trainingType);
+        TraineeTrainingsFilterRequest filterRequest = new TraineeTrainingsFilterRequest(
+                username, periodFrom, periodTo, trainerName, trainingType
+        );
+        List<TrainingDto> trainings = trainingService.selectTraineeTrainings(filterRequest);
 
         log.info("Trainee trainings retrieved successfully for username: {}, count: {}", username, trainings.size());
         return ResponseEntity.ok(trainings);
@@ -63,7 +66,10 @@ public class TrainingControllerImpl implements TrainingController {
         log.info("Get trainer trainings request received for username: {}, filters: from={}, to={}, trainee={}",
                 username, periodFrom, periodTo, traineeName);
 
-        List<TrainingDto> trainings = trainingService.selectTrainerTrainings(username, periodFrom, periodTo);
+        TrainerTrainingsFilterRequest filterRequest = new TrainerTrainingsFilterRequest(
+                username, periodFrom, periodTo, traineeName
+        );
+        List<TrainingDto> trainings = trainingService.selectTrainerTrainings(filterRequest);
 
         log.info("Trainer trainings retrieved successfully for username: {}, count: {}", username, trainings.size());
         return ResponseEntity.ok(trainings);

@@ -1,5 +1,7 @@
 package epam.gym.domain.services;
 
+import epam.gym.domain.dto.request.TraineeTrainingsFilterRequest;
+import epam.gym.domain.dto.request.TrainerTrainingsFilterRequest;
 import epam.gym.domain.dto.request.TrainingRequest;
 import epam.gym.domain.dto.response.TrainingDto;
 import epam.gym.domain.models.TrainingModel;
@@ -129,10 +131,13 @@ class TrainingServiceImplTest {
 
     @Test
     void testSelectTraineeTrainings_withAllParameters_shouldReturnTrainings() {
-        String traineeUsername = "John.Doe";
-        LocalDate fromDate = LocalDate.of(2024, 1, 1);
-        LocalDate toDate = LocalDate.of(2024, 12, 31);
-        String trainingTypeName = "FITNESS";
+        TraineeTrainingsFilterRequest filterRequest = new TraineeTrainingsFilterRequest(
+                "John.Doe",
+                LocalDate.of(2024, 1, 1),
+                LocalDate.of(2024, 12, 31),
+                "Jane.Smith",
+                "FITNESS"
+        );
 
         Training training1 = new Training();
         training1.setId(1L);
@@ -143,23 +148,24 @@ class TrainingServiceImplTest {
         TrainingDto dto1 = new TrainingDto();
         TrainingDto dto2 = new TrainingDto();
 
-        when(trainingRepository.findTraineeTrainings(traineeUsername, fromDate, toDate, trainingTypeName))
+        when(trainingRepository.findTraineeTrainings(any(TraineeTrainingsFilterRequest.class)))
                 .thenReturn(trainings);
         when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
         when(trainingMapper.entityToDto(training2)).thenReturn(dto2);
 
-        List<TrainingDto> result = trainingService.selectTraineeTrainings(
-                traineeUsername, fromDate, toDate, trainingTypeName);
+        List<TrainingDto> result = trainingService.selectTraineeTrainings(filterRequest);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(trainingRepository).findTraineeTrainings(traineeUsername, fromDate, toDate, trainingTypeName);
+        verify(trainingRepository).findTraineeTrainings(any(TraineeTrainingsFilterRequest.class));
         verify(trainingMapper, times(2)).entityToDto(any(Training.class));
     }
 
     @Test
     void testSelectTraineeTrainings_withNullDates_shouldReturnTrainings() {
-        String traineeUsername = "John.Doe";
+        TraineeTrainingsFilterRequest filterRequest = new TraineeTrainingsFilterRequest(
+                "John.Doe", null, null, null, null
+        );
 
         Training training1 = new Training();
         training1.setId(1L);
@@ -167,37 +173,41 @@ class TrainingServiceImplTest {
 
         TrainingDto dto1 = new TrainingDto();
 
-        when(trainingRepository.findTraineeTrainings(traineeUsername, null, null, null))
+        when(trainingRepository.findTraineeTrainings(any(TraineeTrainingsFilterRequest.class)))
                 .thenReturn(trainings);
         when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
 
-        List<TrainingDto> result = trainingService.selectTraineeTrainings(
-                traineeUsername, null, null, null);
+        List<TrainingDto> result = trainingService.selectTraineeTrainings(filterRequest);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(trainingRepository).findTraineeTrainings(traineeUsername, null, null, null);
+        verify(trainingRepository).findTraineeTrainings(any(TraineeTrainingsFilterRequest.class));
     }
 
     @Test
     void testSelectTraineeTrainings_whenNoTrainingsFound_shouldReturnEmptyList() {
-        String traineeUsername = "John.Doe";
-        when(trainingRepository.findTraineeTrainings(traineeUsername, null, null, null))
+        TraineeTrainingsFilterRequest filterRequest = new TraineeTrainingsFilterRequest(
+                "John.Doe", null, null, null, null
+        );
+
+        when(trainingRepository.findTraineeTrainings(any(TraineeTrainingsFilterRequest.class)))
                 .thenReturn(List.of());
 
-        List<TrainingDto> result = trainingService.selectTraineeTrainings(
-                traineeUsername, null, null, null);
+        List<TrainingDto> result = trainingService.selectTraineeTrainings(filterRequest);
 
         assertNotNull(result);
         assertEquals(0, result.size());
-        verify(trainingRepository).findTraineeTrainings(traineeUsername, null, null, null);
+        verify(trainingRepository).findTraineeTrainings(any(TraineeTrainingsFilterRequest.class));
     }
 
     @Test
     void testSelectTrainerTrainings_withAllParameters_shouldReturnTrainings() {
-        String trainerUsername = "Jane.Smith";
-        LocalDate fromDate = LocalDate.of(2024, 1, 1);
-        LocalDate toDate = LocalDate.of(2024, 12, 31);
+        TrainerTrainingsFilterRequest filterRequest = new TrainerTrainingsFilterRequest(
+                "Jane.Smith",
+                LocalDate.of(2024, 1, 1),
+                LocalDate.of(2024, 12, 31),
+                "John.Doe"
+        );
 
         Training training1 = new Training();
         training1.setId(1L);
@@ -208,23 +218,24 @@ class TrainingServiceImplTest {
         TrainingDto dto1 = new TrainingDto();
         TrainingDto dto2 = new TrainingDto();
 
-        when(trainingRepository.findTrainerTrainings(trainerUsername, fromDate, toDate))
+        when(trainingRepository.findTrainerTrainings(any(TrainerTrainingsFilterRequest.class)))
                 .thenReturn(trainings);
         when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
         when(trainingMapper.entityToDto(training2)).thenReturn(dto2);
 
-        List<TrainingDto> result = trainingService.selectTrainerTrainings(
-                trainerUsername, fromDate, toDate);
+        List<TrainingDto> result = trainingService.selectTrainerTrainings(filterRequest);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(trainingRepository).findTrainerTrainings(trainerUsername, fromDate, toDate);
+        verify(trainingRepository).findTrainerTrainings(any(TrainerTrainingsFilterRequest.class));
         verify(trainingMapper, times(2)).entityToDto(any(Training.class));
     }
 
     @Test
     void testSelectTrainerTrainings_withNullDates_shouldReturnTrainings() {
-        String trainerUsername = "Jane.Smith";
+        TrainerTrainingsFilterRequest filterRequest = new TrainerTrainingsFilterRequest(
+                "Jane.Smith", null, null, null
+        );
 
         Training training1 = new Training();
         training1.setId(1L);
@@ -232,29 +243,30 @@ class TrainingServiceImplTest {
 
         TrainingDto dto1 = new TrainingDto();
 
-        when(trainingRepository.findTrainerTrainings(trainerUsername, null, null))
+        when(trainingRepository.findTrainerTrainings(any(TrainerTrainingsFilterRequest.class)))
                 .thenReturn(trainings);
         when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
 
-        List<TrainingDto> result = trainingService.selectTrainerTrainings(
-                trainerUsername, null, null);
+        List<TrainingDto> result = trainingService.selectTrainerTrainings(filterRequest);
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(trainingRepository).findTrainerTrainings(trainerUsername, null, null);
+        verify(trainingRepository).findTrainerTrainings(any(TrainerTrainingsFilterRequest.class));
     }
 
     @Test
     void testSelectTrainerTrainings_whenNoTrainingsFound_shouldReturnEmptyList() {
-        String trainerUsername = "Jane.Smith";
-        when(trainingRepository.findTrainerTrainings(trainerUsername, null, null))
+        TrainerTrainingsFilterRequest filterRequest = new TrainerTrainingsFilterRequest(
+                "Jane.Smith", null, null, null
+        );
+
+        when(trainingRepository.findTrainerTrainings(any(TrainerTrainingsFilterRequest.class)))
                 .thenReturn(List.of());
 
-        List<TrainingDto> result = trainingService.selectTrainerTrainings(
-                trainerUsername, null, null);
+        List<TrainingDto> result = trainingService.selectTrainerTrainings(filterRequest);
 
         assertNotNull(result);
         assertEquals(0, result.size());
-        verify(trainingRepository).findTrainerTrainings(trainerUsername, null, null);
+        verify(trainingRepository).findTrainerTrainings(any(TrainerTrainingsFilterRequest.class));
     }
 }
