@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -46,32 +45,28 @@ public class TrainingControllerImpl implements TrainingController {
     }
 
     @Override
-    public ResponseEntity<List<TrainingDto>> getTraineeTrainings(String username, LocalDate periodFrom,
-                                                                  LocalDate periodTo, String trainerName, String trainingType) {
+    public ResponseEntity<List<TrainingDto>> getTraineeTrainings(TraineeTrainingsFilterRequest filterRequest) {
         log.info("Get trainee trainings request received for username: {}, filters: from={}, to={}, trainer={}, type={}",
-                username, periodFrom, periodTo, trainerName, trainingType);
+                filterRequest.getUsername(), filterRequest.getPeriodFrom(), filterRequest.getPeriodTo(),
+                filterRequest.getTrainerName(), filterRequest.getTrainingType());
 
-        TraineeTrainingsFilterRequest filterRequest = new TraineeTrainingsFilterRequest(
-                username, periodFrom, periodTo, trainerName, trainingType
-        );
         List<TrainingDto> trainings = trainingService.selectTraineeTrainings(filterRequest);
 
-        log.info("Trainee trainings retrieved successfully for username: {}, count: {}", username, trainings.size());
+        log.info("Trainee trainings retrieved successfully for username: {}, count: {}",
+                filterRequest.getUsername(), trainings.size());
         return ResponseEntity.ok(trainings);
     }
 
     @Override
-    public ResponseEntity<List<TrainingDto>> getTrainerTrainings(String username, LocalDate periodFrom,
-                                                                  LocalDate periodTo, String traineeName) {
+    public ResponseEntity<List<TrainingDto>> getTrainerTrainings(TrainerTrainingsFilterRequest filterRequest) {
         log.info("Get trainer trainings request received for username: {}, filters: from={}, to={}, trainee={}",
-                username, periodFrom, periodTo, traineeName);
+                filterRequest.getUsername(), filterRequest.getPeriodFrom(), filterRequest.getPeriodTo(),
+                filterRequest.getTraineeName());
 
-        TrainerTrainingsFilterRequest filterRequest = new TrainerTrainingsFilterRequest(
-                username, periodFrom, periodTo, traineeName
-        );
         List<TrainingDto> trainings = trainingService.selectTrainerTrainings(filterRequest);
 
-        log.info("Trainer trainings retrieved successfully for username: {}, count: {}", username, trainings.size());
+        log.info("Trainer trainings retrieved successfully for username: {}, count: {}",
+                filterRequest.getUsername(), trainings.size());
         return ResponseEntity.ok(trainings);
     }
 }

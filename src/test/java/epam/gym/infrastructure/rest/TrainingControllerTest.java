@@ -136,7 +136,8 @@ class TrainingControllerTest {
                         .content(trainingRequestJson))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/v1/trainings/trainee/" + traineeUsername))
+        mockMvc.perform(get("/api/v1/trainings/trainee")
+                        .param("username", traineeUsername))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())
@@ -176,7 +177,8 @@ class TrainingControllerTest {
                         .content(trainingRequestJson))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/api/v1/trainings/trainer/" + trainerUsername))
+        mockMvc.perform(get("/api/v1/trainings/trainer")
+                        .param("username", trainerUsername))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$").isArray())

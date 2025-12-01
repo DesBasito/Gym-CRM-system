@@ -1,6 +1,8 @@
 package epam.gym.domain.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -13,6 +15,7 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Schema(description = "Filter request for trainee trainings")
 public class TraineeTrainingsFilterRequest {
+    @NotBlank@NotNull
     @Schema(description = "Trainee username", requiredMode = Schema.RequiredMode.REQUIRED, example = "John.Doe")
     String username;
 
