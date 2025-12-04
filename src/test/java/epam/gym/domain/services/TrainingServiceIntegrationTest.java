@@ -1,6 +1,5 @@
 package epam.gym.domain.services;
 
-import epam.gym.config.TestConfig;
 import epam.gym.domain.dto.request.TraineeRequest;
 import epam.gym.domain.dto.request.TrainerRequest;
 import epam.gym.domain.dto.request.TrainingRequest;
@@ -16,18 +15,17 @@ import epam.gym.infrastructure.repositories.TrainerRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfig.class})
+@SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 class TrainingServiceIntegrationTest {
     private final TrainingService trainingService;

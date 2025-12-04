@@ -1,20 +1,19 @@
 package epam.gym.infrastructure.repositories;
 
-import epam.gym.config.TestConfig;
 import epam.gym.infrastructure.entities.Trainer;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfig.class})
+@SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 class TrainerRepositoryTest {
 
@@ -201,7 +200,7 @@ class TrainerRepositoryTest {
     void testDelete_byId_whenNotExists_shouldThrowException() {
         Long nonExistentId = 999L;
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> {
             trainerRepository.delete(nonExistentId);
         });
     }
@@ -210,7 +209,7 @@ class TrainerRepositoryTest {
     void testDelete_byUsername_whenNotExists_shouldThrowException() {
         Long nonExistentUserId = 1234L;
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(InvalidDataAccessApiUsageException.class, () -> {
             trainerRepository.delete(nonExistentUserId);
         });
     }

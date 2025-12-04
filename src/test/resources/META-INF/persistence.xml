@@ -6,7 +6,6 @@
 
     <persistence-unit name="test" transaction-type="RESOURCE_LOCAL">
 
-        <!-- Entity classes -->
         <class>epam.gym.infrastructure.entities.User</class>
         <class>epam.gym.infrastructure.entities.Trainee</class>
         <class>epam.gym.infrastructure.entities.Trainer</class>
@@ -14,15 +13,8 @@
         <class>epam.gym.infrastructure.entities.TrainingType</class>
 
         <properties>
-            <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL"/>
-            <property name="jakarta.persistence.jdbc.user" value="sa"/>
-            <property name="jakarta.persistence.jdbc.password" value=""/>
-
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
-
             <property name="jakarta.persistence.schema-generation.database.action" value="none"/>
-
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="true"/>
             <property name="hibernate.jdbc.time_zone" value="UTC"/>
