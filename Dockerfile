@@ -20,6 +20,6 @@ WORKDIR /app/
 COPY --from=build /build/target/Gym_CRM-system*jar ./Gym_CRM-system.jar
 COPY ./config /app/config
 
-EXPOSE 9778
+EXPOSE 8080
 
 CMD ["java", "-jar", "Gym_CRM-system.jar", "--spring.config.location=file:/app/config/application-prod.yml"]

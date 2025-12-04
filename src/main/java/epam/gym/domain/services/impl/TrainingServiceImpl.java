@@ -8,9 +8,9 @@ import epam.gym.domain.dto.response.TrainingTypeDto;
 import epam.gym.domain.models.TrainingModel;
 import epam.gym.domain.services.interfaces.TrainingService;
 import epam.gym.infrastructure.entities.Training;
-import epam.gym.infrastructure.mappers.TraineeMapper;
 import epam.gym.infrastructure.mappers.TrainingMapper;
 import epam.gym.infrastructure.mappers.TrainingTypeMapper;
+import epam.gym.infrastructure.monitoring.metrics.TrainingMetrics;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.repositories.TrainingRepository;
@@ -33,7 +33,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TraineeRepository traineeRepository;
     private final TrainingMapper mapper;
     private final TrainingTypeMapper trainingTypeMapper;
-    private final TraineeMapper traineeMapper;
+    private final TrainingMetrics trainingMetrics;
 
     @Transactional
     @Override
@@ -52,6 +52,9 @@ public class TrainingServiceImpl implements TrainingService {
 
         Training createdTraining = trainingRepository.save(training);
         TrainingModel trainingModel = mapper.entityToModel(createdTraining);
+
+        trainingMetrics.incrementTrainingCreated();
+        trainingMetrics.incrementActiveTrainings();
 
         log.info("Training created successfully: {}", trainingModel.getTrainingName());
         return trainingModel;

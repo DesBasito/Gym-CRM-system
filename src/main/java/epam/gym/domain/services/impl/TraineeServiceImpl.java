@@ -11,6 +11,7 @@ import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.mappers.TraineeMapper;
 import epam.gym.infrastructure.mappers.TrainerMapper;
+import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +32,8 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
     private final TrainerMapper trainerMapper;
 
     @Autowired
-    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper, TrainerRepository trainerRepository, TrainerMapper trainerMapper) {
-        super(repo, mapper);
+    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper, TrainerRepository trainerRepository, TrainerMapper trainerMapper, UserMetrics userMetrics) {
+        super(repo, mapper, userMetrics);
         this.trainerRepository = trainerRepository;
         this.trainerMapper = trainerMapper;
     }
@@ -47,7 +48,7 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
 
     @Override
     protected String getFullName(TraineeRequest request) {
-        return String.format("%s %s",request.getFirstName(), request.getLastName());
+        return String.format("%s %s", request.getFirstName(), request.getLastName());
     }
 
     @Override
