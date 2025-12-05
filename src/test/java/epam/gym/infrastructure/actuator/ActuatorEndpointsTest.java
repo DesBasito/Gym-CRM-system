@@ -31,7 +31,7 @@ class ActuatorEndpointsTest {
                 .andExpect(jsonPath("$.components.database.details.database").value("PostgreSQL"))
                 .andExpect(jsonPath("$.components.diskSpace").exists())
                 .andExpect(jsonPath("$.components.diskSpace.details.total").exists())
-                .andExpect(jsonPath("$.components.externalService").exists());
+                .andExpect(jsonPath("$.components.memory").exists());
     }
 
     @Test
