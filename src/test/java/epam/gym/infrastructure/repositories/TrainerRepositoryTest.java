@@ -224,12 +224,12 @@ class TrainerRepositoryTest {
         assertNotNull(unassigned);
         assertTrue(unassigned.size() >= 2);
 
-        boolean hasJohnDoe = unassigned.stream()
-                .anyMatch(t -> "John.Doe".equals(t.getUser().getUsername()));
-        boolean hasMikeJohnson = unassigned.stream()
-                .anyMatch(t -> "Mike.Johnson".equals(t.getUser().getUsername()));
+        boolean hasJaneSmith = unassigned.stream()
+                .anyMatch(t -> "Jane.Smith".equals(t.getUser().getUsername()));
+        boolean hasSarahConnor = unassigned.stream()
+                .anyMatch(t -> "Sarah.Connor".equals(t.getUser().getUsername()));
 
-        assertFalse(hasJohnDoe);
-        assertFalse(hasMikeJohnson);
+        assertTrue(hasJaneSmith);
+        assertTrue(hasSarahConnor);
     }
 }

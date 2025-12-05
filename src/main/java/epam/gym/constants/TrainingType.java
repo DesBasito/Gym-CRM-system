@@ -1,7 +1,5 @@
 package epam.gym.constants;
 
-import java.util.Arrays;
-
 public enum TrainingType {
     FITNESS,
     YOGA,

@@ -8,7 +8,6 @@ import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.validator.constraints.UniqueElements;
 
 @Getter
 @Setter
@@ -35,7 +34,6 @@ public class User {
 
     @Size(max = 255)
     @NotNull
-    @UniqueElements
     @Column(name = "username", nullable = false)
     String username;
 
@@ -47,14 +45,12 @@ public class User {
     @NotNull
     @ColumnDefault("true")
     @Column(name = "is_active", nullable = false)
-    Boolean isActive = false;
+    Boolean isActive = true;
 
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     Trainee trainee;
 
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @OneToOne(mappedBy = "user")
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     Trainer trainer;
 
 }

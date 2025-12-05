@@ -21,16 +21,13 @@ public class TrainerRepository extends epam.gym.infrastructure.repositories.Base
             throw new IllegalArgumentException("Trainee username cannot be null");
         }
 
-        Query query = entityManager.createNativeQuery(
+        Query query = entityManager.createQuery(
                 """
-                SELECT t.id, t.user_id, t.specialization_id FROM trainers t \s
-                INNER JOIN users u ON t.user_id = u.id \s
-                WHERE t.id NOT IN \s
-                (SELECT tt.trainer_id FROM trainers_trainees tt \s
-                INNER JOIN trainees tr ON tt.trainee_id = tr.id \s
-                WHERE tr.user_id IN \s
-                (SELECT id FROM users WHERE username = :traineeUsername)) \s
-                AND u.is_active = true \s
+                SELECT DISTINCT tr FROM Trainer tr
+                LEFT JOIN tr.trainees t
+                LEFT JOIN t.user tu
+                WHERE tr.user.isActive = true
+                AND (tu.username IS NULL OR tu.username != :traineeUsername)
                 """,
                 Trainer.class);
         query.setParameter("traineeUsername", traineeUsername);

@@ -1,5 +1,7 @@
 package epam.gym.infrastructure.repositories;
 
+import epam.gym.domain.dto.request.TraineeTrainingsFilterRequest;
+import epam.gym.domain.dto.request.TrainerTrainingsFilterRequest;
 import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.entities.Training;
@@ -8,10 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.*;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 @Slf4j
 @Repository
@@ -31,44 +33,72 @@ public class TrainingRepository {
         return training;
     }
 
-    public List<Training> findTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainingType) {
-        return buildTrainingsQuery(training -> {
-            Join<Training, Trainee> trainee = training.join("trainee");
-            return trainee.get("user").get("username");
-        }, traineeUsername, fromDate, toDate, trainingType);
+    public List<Training> findTraineeTrainings(TraineeTrainingsFilterRequest filterRequest) {
+        return findTrainingsByParams(
+                "trainee",
+                filterRequest.getUsername(),
+                filterRequest.getPeriodFrom(),
+                filterRequest.getPeriodTo(),
+                "trainer",
+                filterRequest.getTrainerName(),
+                filterRequest.getTrainingType()
+        );
     }
 
-    public List<Training> findTrainerTrainings(String trainerUsername, LocalDate fromDate, LocalDate toDate) {
-        return buildTrainingsQuery(training -> {
-            Join<Training, Trainer> trainer = training.join("trainer");
-            return trainer.get("user").get("username");
-        }, trainerUsername, fromDate, toDate, null);
+    public List<Training> findTrainerTrainings(TrainerTrainingsFilterRequest filterRequest) {
+        return findTrainingsByParams(
+                "trainer",
+                filterRequest.getUsername(),
+                filterRequest.getPeriodFrom(),
+                filterRequest.getPeriodTo(),
+                "trainee",
+                filterRequest.getTraineeName(),
+                null
+        );
     }
 
-    private List<Training> buildTrainingsQuery(Function<Root<Training>, Expression<String>> usernameGetter,
-                                               String username, LocalDate fromDate, LocalDate toDate, String trainingType) {
+    private List<Training> findTrainingsByParams(
+            String mainRole,
+            String mainUsername,
+            LocalDate periodFrom,
+            LocalDate periodTo,
+            String otherRole,
+            String otherUsername,
+            String trainingTypeName
+    ) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Training> query = cb.createQuery(Training.class);
         Root<Training> training = query.from(Training.class);
 
-        List<Predicate> predicates = new ArrayList<>();
-        predicates.add(cb.equal(usernameGetter.apply(training), username));
-        addDatePredicates(cb, training, fromDate, toDate, predicates, trainingType);
+        Join<Training, ?> mainJoin = training.join(mainRole);
+        Join<Training, ?> otherJoin = null;
+        if (otherRole != null && !otherRole.isBlank()) {
+            otherJoin = training.join(otherRole);
+        }
 
-        query.where(cb.and(predicates.toArray(new Predicate[0])));
+        List<Predicate> predicates = new ArrayList<>();
+
+        if (mainUsername != null && !mainUsername.isBlank()) {
+            predicates.add(cb.equal(mainJoin.get("user").get("username"), mainUsername));
+        }
+
+        if (periodFrom != null) {
+            predicates.add(cb.greaterThanOrEqualTo(training.get("trainingDate"), periodFrom));
+        }
+        if (periodTo != null) {
+            predicates.add(cb.lessThanOrEqualTo(training.get("trainingDate"), periodTo));
+        }
+
+        if (otherJoin != null && otherUsername != null && !otherUsername.isBlank()) {
+            predicates.add(cb.equal(otherJoin.get("user").get("username"), otherUsername));
+        }
+
+        if (trainingTypeName != null && !trainingTypeName.isBlank()) {
+            predicates.add(cb.equal(training.get("trainingType").get("trainingTypeName"), trainingTypeName));
+        }
+
+        query.select(training).distinct(true).where(cb.and(predicates.toArray(new Predicate[0])));
         return entityManager.createQuery(query).getResultList();
     }
 
-    private void addDatePredicates(CriteriaBuilder cb, Root<Training> training,
-                                   LocalDate fromDate, LocalDate toDate, List<Predicate> predicates, String trainingType) {
-        if (fromDate != null) {
-            predicates.add(cb.greaterThanOrEqualTo(training.get("trainingDate"), fromDate));
-        }
-        if (toDate != null) {
-            predicates.add(cb.lessThanOrEqualTo(training.get("trainingDate"), toDate));
-        }
-        if (trainingType != null && !trainingType.isBlank()) {
-            predicates.add(cb.equal(training.get("trainingType").get("trainingTypeName"), trainingType));
-        }
-    }
 }

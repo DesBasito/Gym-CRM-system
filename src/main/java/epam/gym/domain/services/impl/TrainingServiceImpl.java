@@ -1,10 +1,16 @@
 package epam.gym.domain.services.impl;
 
+import epam.gym.domain.dto.request.TraineeTrainingsFilterRequest;
+import epam.gym.domain.dto.request.TrainerTrainingsFilterRequest;
 import epam.gym.domain.dto.request.TrainingRequest;
+import epam.gym.domain.dto.response.TrainingDto;
+import epam.gym.domain.dto.response.TrainingTypeDto;
 import epam.gym.domain.models.TrainingModel;
 import epam.gym.domain.services.interfaces.TrainingService;
 import epam.gym.infrastructure.entities.Training;
+import epam.gym.infrastructure.mappers.TraineeMapper;
 import epam.gym.infrastructure.mappers.TrainingMapper;
+import epam.gym.infrastructure.mappers.TrainingTypeMapper;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.repositories.TrainingRepository;
@@ -15,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -27,6 +32,8 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainerRepository trainerRepository;
     private final TraineeRepository traineeRepository;
     private final TrainingMapper mapper;
+    private final TrainingTypeMapper trainingTypeMapper;
+    private final TraineeMapper traineeMapper;
 
     @Transactional
     @Override
@@ -39,6 +46,9 @@ public class TrainingServiceImpl implements TrainingService {
             training.getTrainer().getTrainees().add(training.getTrainee());
             training.getTrainee().getTrainers().add(training.getTrainer());
         }
+
+        training.getTrainee().addTraining(training);
+        training.getTrainer().addTraining(training);
 
         Training createdTraining = trainingRepository.save(training);
         TrainingModel trainingModel = mapper.entityToModel(createdTraining);
@@ -58,23 +68,33 @@ public class TrainingServiceImpl implements TrainingService {
 
     @Transactional
     @Override
-    public List<TrainingModel> selectTraineeTrainings(String traineeUsername, LocalDate fromDate, LocalDate toDate, String trainingType) {
-        log.info("Selecting trainee trainings for username: {}", traineeUsername);
+    public List<TrainingDto> selectTraineeTrainings(TraineeTrainingsFilterRequest filterRequest) {
+        log.info("Selecting trainee trainings for username: {} with filters: from={}, to={}, trainer={}, type={}",
+                filterRequest.getUsername(), filterRequest.getPeriodFrom(), filterRequest.getPeriodTo(),
+                filterRequest.getTrainerName(), filterRequest.getTrainingType());
 
-        List<Training> trainings = trainingRepository.findTraineeTrainings(traineeUsername, fromDate, toDate, trainingType);
+        List<Training> trainings = trainingRepository.findTraineeTrainings(filterRequest);
         return trainings.stream()
-                .map(mapper::entityToModel)
+                .map(mapper::entityToDto)
                 .toList();
     }
 
     @Transactional
     @Override
-    public List<TrainingModel> selectTrainerTrainings(String trainerUsername, LocalDate fromDate, LocalDate toDate) {
-        log.info("Selecting trainer trainings for username: {}", trainerUsername);
+    public List<TrainingDto> selectTrainerTrainings(TrainerTrainingsFilterRequest filterRequest) {
+        log.info("Selecting trainer trainings for username: {} with filters: from={}, to={}, trainee={}",
+                filterRequest.getUsername(), filterRequest.getPeriodFrom(), filterRequest.getPeriodTo(),
+                filterRequest.getTraineeName());
 
-        List<Training> trainings = trainingRepository.findTrainerTrainings(trainerUsername, fromDate, toDate);
+        List<Training> trainings = trainingRepository.findTrainerTrainings(filterRequest);
         return trainings.stream()
-                .map(mapper::entityToModel)
+                .map(mapper::entityToDto)
                 .toList();
+    }
+
+    @Override
+    public List<TrainingTypeDto> getAllTrainingTypes() {
+        log.info("Getting all Training types");
+        return trainingTypeRepository.findAll().stream().map(trainingTypeMapper::toDto).toList();
     }
 }

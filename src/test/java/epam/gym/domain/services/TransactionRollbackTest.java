@@ -3,8 +3,11 @@ package epam.gym.domain.services;
 import epam.gym.config.TestConfig;
 import epam.gym.domain.dto.request.TraineeRequest;
 import epam.gym.domain.dto.request.TrainerRequest;
-import epam.gym.domain.models.TraineeModel;
-import epam.gym.domain.models.TrainerModel;
+import epam.gym.domain.dto.request.UpdateTraineeRequest;
+import epam.gym.domain.dto.request.UpdateTrainerRequest;
+import epam.gym.domain.dto.response.RegistrationResponse;
+import epam.gym.domain.dto.response.TraineeProfileDto;
+import epam.gym.domain.dto.response.TrainerProfileDto;
 import epam.gym.domain.services.interfaces.TraineeService;
 import epam.gym.domain.services.interfaces.TrainerService;
 import jakarta.persistence.EntityManager;
@@ -40,13 +43,12 @@ class TransactionRollbackTest {
     @BeforeEach
     void setUp() {
         entityManager.createNativeQuery("DELETE FROM trainings").executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM trainers_trainees").executeUpdate();
         entityManager.createNativeQuery("DELETE FROM trainers").executeUpdate();
         entityManager.createNativeQuery("DELETE FROM trainees").executeUpdate();
         entityManager.createNativeQuery("DELETE FROM users").executeUpdate();
 
         entityManager.createNativeQuery("ALTER TABLE users ALTER COLUMN id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE trainees ALTER COLUMN id RESTART WITH 1").executeUpdate();
-        entityManager.createNativeQuery("ALTER TABLE trainers ALTER COLUMN id RESTART WITH 1").executeUpdate();
         entityManager.createNativeQuery("ALTER TABLE trainings ALTER COLUMN id RESTART WITH 1").executeUpdate();
         entityManager.flush();
     }
@@ -58,28 +60,29 @@ class TransactionRollbackTest {
         createRequest.setLastName("Doe");
         createRequest.setDateOfBirth(LocalDate.of(1990, 1, 1));
         createRequest.setAddress("123 Main St");
-        createRequest.setIsActive(true);
 
-        TraineeModel created = traineeService.create(createRequest);
-        Long traineeId = created.getId();
-        String originalFirstName = created.getFirstName();
-        String originalAddress = created.getAddress();
+        RegistrationResponse created = traineeService.create(createRequest);
+        String traineeUsername = created.getUsername();
+        String originalFirstName = createRequest.getFirstName();
+        String originalAddress = createRequest.getAddress();
 
-        TraineeRequest updateRequest = new TraineeRequest();
+        UpdateTraineeRequest updateRequest = new UpdateTraineeRequest();
+        updateRequest.setUsername("NonExistent.User");
         updateRequest.setFirstName("Jane");
         updateRequest.setLastName("Doe");
+        updateRequest.setDateOfBirth(LocalDate.of(1990, 1, 1));
         updateRequest.setAddress("456 Oak Ave");
         updateRequest.setIsActive(true);
 
         try {
-            assertThrows(NoSuchElementException.class, () -> {
-                traineeService.update(updateRequest, 999L);
-            });
+            assertThrows(NoSuchElementException.class, () ->
+                traineeService.updateByUsername(updateRequest)
+            );
         } catch (Exception ignored) {
             System.out.println("Rollback transaction!");
         }
 
-        TraineeModel afterFailedUpdate = traineeService.select(traineeId);
+        TraineeProfileDto afterFailedUpdate = traineeService.selectByUsername(traineeUsername);
         assertEquals(originalFirstName, afterFailedUpdate.getFirstName());
         assertEquals(originalAddress, afterFailedUpdate.getAddress());
     }
@@ -90,28 +93,28 @@ class TransactionRollbackTest {
         createRequest.setFirstName("Jane");
         createRequest.setLastName("Smith");
         createRequest.setSpecialization("FITNESS");
-        createRequest.setIsActive(true);
 
-        TrainerModel created = trainerService.create(createRequest);
-        Long trainerId = created.getId();
-        String originalFirstName = created.getFirstName();
-        String originalSpecialization = created.getSpecialization();
+        RegistrationResponse created = trainerService.create(createRequest);
+        String trainerUsername = created.getUsername();
+        String originalFirstName = createRequest.getFirstName();
+        String originalSpecialization = createRequest.getSpecialization();
 
-        TrainerRequest updateRequest = new TrainerRequest();
+        UpdateTrainerRequest updateRequest = new UpdateTrainerRequest();
+        updateRequest.setUsername("NonExistent.Trainer");
         updateRequest.setFirstName("Janet");
         updateRequest.setLastName("Smith");
         updateRequest.setSpecialization("YOGA");
         updateRequest.setIsActive(true);
 
         try {
-            assertThrows(NoSuchElementException.class, () -> {
-                trainerService.update(updateRequest, 999L);
-            });
+            assertThrows(NoSuchElementException.class, () ->
+                trainerService.updateByUsername(updateRequest)
+            );
         } catch (Exception ignored) {
             System.out.println("Rollback transaction!");
         }
 
-        TrainerModel afterFailedUpdate = trainerService.select(trainerId);
+        TrainerProfileDto afterFailedUpdate = trainerService.selectByUsername(trainerUsername);
         assertEquals(originalFirstName, afterFailedUpdate.getFirstName());
         assertEquals(originalSpecialization, afterFailedUpdate.getSpecialization());
     }

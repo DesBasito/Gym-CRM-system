@@ -26,7 +26,7 @@ class TrainingTypeRepositoryTest {
 
     @Test
     void testFindAll_shouldReturnAllTrainingTypes() {
-        List<TrainingType> types = trainingTypeRepository.findAll(0,7);
+        List<TrainingType> types = trainingTypeRepository.findAll();
 
         assertNotNull(types);
         assertEquals(7, types.size());
@@ -71,7 +71,7 @@ class TrainingTypeRepositoryTest {
 
     @Test
     void testFindById_whenExists_shouldReturnTrainingType() {
-        List<TrainingType> types = trainingTypeRepository.findAll(0,7);
+        List<TrainingType> types = trainingTypeRepository.findAll();
         assertFalse(types.isEmpty());
         Long firstId = types.get(0).getId();
 

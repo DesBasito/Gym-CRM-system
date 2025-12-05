@@ -1,6 +1,10 @@
 package epam.gym.domain.services.impl;
 
 import epam.gym.domain.dto.request.TrainerRequest;
+import epam.gym.domain.dto.request.UpdateTrainerRequest;
+import epam.gym.domain.dto.response.RegistrationResponse;
+import epam.gym.domain.dto.response.TrainerInfoDto;
+import epam.gym.domain.dto.response.TrainerProfileDto;
 import epam.gym.domain.models.TrainerModel;
 import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TrainerService;
@@ -20,17 +24,20 @@ import java.util.NoSuchElementException;
 
 @Service
 @Slf4j
-public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerModel, TrainerRepository, TrainerRequest>
+public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerModel, TrainerRepository, TrainerRequest, TrainerProfileDto>
         implements TrainerService {
+    private final TrainerMapper trainerMapper;
 
     private final TrainingTypeRepository trainingTypeRepository;
     private final TraineeRepository traineeRepository;
 
     @Autowired
-    public TrainerServiceImpl(TrainerRepository repo, TrainerMapper mapper, TrainingTypeRepository typeRepo, TraineeRepository traineeRepository) {
+    public TrainerServiceImpl(TrainerRepository repo, TrainerMapper mapper, TrainingTypeRepository typeRepo, TraineeRepository traineeRepository,
+                              TrainerMapper trainerMapper) {
         super(repo, mapper);
         this.trainingTypeRepository = typeRepo;
         this.traineeRepository = traineeRepository;
+        this.trainerMapper = trainerMapper;
     }
 
     @Override
@@ -39,7 +46,7 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
     }
 
     @Override
-    public TrainerModel create(TrainerRequest request) {
+    public RegistrationResponse create(TrainerRequest request) {
         TrainingTypeValidator.parse(request.getSpecialization());
         return super.create(request);
     }
@@ -54,7 +61,6 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
     protected void updateEntityFields(Trainer entity, TrainerRequest request) {
         entity.getUser().setFirstName(request.getFirstName());
         entity.getUser().setLastName(request.getLastName());
-        entity.getUser().setIsActive(request.getIsActive());
         entity.setSpecialization(trainingTypeRepository.findByName(request.getSpecialization()));
     }
 
@@ -64,7 +70,25 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
     }
 
     @Override
-    public List<TrainerModel> findAllNotAssignedToTrainee(String traineeUsername) {
+    protected void updateEntityFieldsFromUpdateRequest(Trainer entity, Object updateRequest) {
+        UpdateTrainerRequest request = (UpdateTrainerRequest) updateRequest;
+        entity.getUser().setFirstName(request.getFirstName());
+        entity.getUser().setLastName(request.getLastName());
+    }
+
+    @Override
+    protected void setIsActiveFromUpdateRequest(Trainer entity, Object updateRequest) {
+        UpdateTrainerRequest request = (UpdateTrainerRequest) updateRequest;
+        entity.getUser().setIsActive(request.getIsActive());
+    }
+
+    @Override
+    public TrainerProfileDto updateByUsername(UpdateTrainerRequest request) {
+        return super.updateByUsername(request, request.getUsername());
+    }
+
+    @Override
+    public List<TrainerInfoDto> findAllNotAssignedToTrainee(String traineeUsername) {
         log.info("Finding trainers not assigned to trainee: {}", traineeUsername);
 
         Trainee trainee = traineeRepository.findByUsername(traineeUsername);
@@ -73,11 +97,12 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
         }
 
         List<Trainer> trainers = repository.findAllNotAssignedToTrainee(traineeUsername);
-        List<TrainerModel> trainerModels = trainers.stream()
+        List<TrainerInfoDto> trainerInfoList = trainers.stream()
                 .map(mapper::toModel)
+                .map(trainerMapper::modelToInfoDto)
                 .toList();
 
-        log.info("Found {} trainers not assigned to trainee: {}", trainerModels.size(), traineeUsername);
-        return trainerModels;
+        log.info("Found {} trainers not assigned to trainee: {}", trainerInfoList.size(), traineeUsername);
+        return trainerInfoList;
     }
 }

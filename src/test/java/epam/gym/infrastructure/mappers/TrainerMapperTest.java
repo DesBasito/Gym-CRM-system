@@ -31,7 +31,6 @@ class TrainerMapperTest {
         request.setFirstName("Jane");
         request.setLastName("Smith");
         request.setSpecialization("FITNESS");
-        request.setIsActive(true);
 
         TrainerModel model = trainerMapper.requestToModel(request);
 
