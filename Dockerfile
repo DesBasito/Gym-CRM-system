@@ -18,8 +18,7 @@ LABEL org.opencontainers.image.description="Gym CRM Management System"
 WORKDIR /app/
 
 COPY --from=build /build/target/Gym_CRM-system*jar ./Gym_CRM-system.jar
-COPY ./config /app/config
 
-EXPOSE 8080
+EXPOSE 8082
 
-CMD ["java", "-jar", "Gym_CRM-system.jar", "--spring.config.location=file:/app/config/application-prod.yml"]
+CMD ["java", "-jar", "Gym_CRM-system.jar", "--spring.profiles.active=prod"]

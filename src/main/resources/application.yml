@@ -1,11 +1,5 @@
-server:
-  port: 8080
-
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:6543/gym_db
-    username: postgres
-    password: qwe
     driver-class-name: org.postgresql.Driver
 
   jpa:
