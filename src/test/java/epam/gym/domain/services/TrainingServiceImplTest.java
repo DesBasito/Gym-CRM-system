@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -105,8 +106,8 @@ class TrainingServiceImplTest {
     void testCreate_withValidData_shouldCreateTraining() {
         when(trainingMapper.requestToEntity(trainingRequest)).thenReturn(training);
         when(trainingTypeRepository.findByName("FITNESS")).thenReturn(trainingType);
-        when(traineeRepository.findByUsername("John.Doe")).thenReturn(trainee);
-        when(trainerRepository.findByUsername("Jane.Smith")).thenReturn(trainer);
+        when(traineeRepository.findByUser_Username("John.Doe")).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findByUser_Username("Jane.Smith")).thenReturn(Optional.of(trainer));
         when(trainingRepository.save(training)).thenReturn(training);
         when(trainingMapper.entityToModel(training)).thenReturn(trainingModel);
 
@@ -119,8 +120,8 @@ class TrainingServiceImplTest {
         assertEquals(1L, result.getTrainerId());
         verify(trainingRepository).save(any(Training.class));
         verify(trainingTypeRepository).findByName("FITNESS");
-        verify(traineeRepository).findByUsername("John.Doe");
-        verify(trainerRepository).findByUsername("Jane.Smith");
+        verify(traineeRepository).findByUser_Username("John.Doe");
+        verify(trainerRepository).findByUser_Username("Jane.Smith");
         verify(trainingMetrics).incrementTrainingCreated();
         verify(trainingMetrics).incrementActiveTrainings();
     }

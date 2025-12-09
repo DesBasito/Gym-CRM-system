@@ -10,7 +10,7 @@ import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +19,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@DataJpaTest
 @ActiveProfiles("test")
 @Transactional
 class TrainingRepositoryTest {
@@ -46,8 +46,8 @@ class TrainingRepositoryTest {
 
     @Test
     void testSave_newTraining_shouldPersist() {
-        Trainee trainee = traineeRepository.findByUsername("Alice.Brown");
-        Trainer trainer = trainerRepository.findByUsername("John.Doe");
+        Trainee trainee = traineeRepository.findByUser_Username("Alice.Brown").orElseThrow();
+        Trainer trainer = trainerRepository.findByUser_Username("John.Doe").orElseThrow();
         TrainingType type = trainingTypeRepository.findByName("FITNESS");
 
         Training training = new Training();
@@ -195,8 +195,8 @@ class TrainingRepositoryTest {
 
     @Test
     void testSave_updateExistingTraining_shouldUpdate() {
-        Trainee trainee = traineeRepository.findByUsername("Alice.Brown");
-        Trainer trainer = trainerRepository.findByUsername("John.Doe");
+        Trainee trainee = traineeRepository.findByUser_Username("Alice.Brown").orElseThrow();
+        Trainer trainer = trainerRepository.findByUser_Username("John.Doe").orElseThrow();
         TrainingType type = trainingTypeRepository.findByName("FITNESS");
 
         Training training = new Training();

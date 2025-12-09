@@ -5,17 +5,17 @@ import epam.gym.domain.models.UserModel;
 import epam.gym.infrastructure.entities.UserHolder;
 import epam.gym.infrastructure.mappers.BaseMapper;
 import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
-import epam.gym.infrastructure.repositories.BaseUserRepository;
 import epam.gym.util.UsernameAndPasswordGenerator;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Slf4j
 public abstract class AbstractUserService<T extends UserHolder,
-        M extends UserModel, R extends BaseUserRepository<T>, Q, D> {
+        M extends UserModel, R extends JpaRepository<T, Long>, Q, D> {
 
     protected final R repository;
     protected final BaseMapper<T, M, Q, D> mapper;
@@ -32,6 +32,8 @@ public abstract class AbstractUserService<T extends UserHolder,
     protected abstract String getFullName(Q request);
     protected abstract void updateEntityFieldsFromUpdateRequest(T entity, Object updateRequest);
     protected abstract void setIsActiveFromUpdateRequest(T entity, Object updateRequest);
+    protected abstract Optional<T> findByUsername(String username);
+    protected abstract boolean authenticate(String username, String password);
 
     protected void beforeCreate(T entity, Q request) {}
 
@@ -64,10 +66,8 @@ public abstract class AbstractUserService<T extends UserHolder,
     public M update(Q request, Long id) {
         log.info("Updating user with id: {}", id);
 
-        T current = repository.findById(id);
-        if (current == null) {
-            throw new NoSuchElementException("User not found with id: " + id);
-        }
+        T current = repository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + id));
 
         updateEntityFields(current, request);
         T updated = repository.save(current);
@@ -81,22 +81,18 @@ public abstract class AbstractUserService<T extends UserHolder,
     public void delete(String username) {
         log.info("Deleting user by username: {}", username);
 
-        T entity = repository.findByUsername(username);
-        if (entity == null) {
-            throw new NoSuchElementException("User not found with username: " + username);
-        }
+        T entity = findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found with username: " + username));
 
-        repository.delete(entity.getUser().getId());
+        repository.deleteById(entity.getUser().getId());
         log.info("User deleted successfully with username: {}", username);
     }
 
     @Transactional(noRollbackFor = NoSuchElementException.class)
     public M select(Long id) {
         log.info("Selecting user with id: {}", id);
-        T entity = repository.findById(id);
-        if (entity == null) {
-            throw new NoSuchElementException("User not found with id: " + id);
-        }
+        T entity = repository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + id));
         return mapper.toModel(entity);
     }
 
@@ -104,10 +100,8 @@ public abstract class AbstractUserService<T extends UserHolder,
     public D selectByUsername(String username) {
         log.info("Selecting user profile by username: {}", username);
 
-        T entity = repository.findByUsername(username);
-        if (entity == null) {
-            throw new NoSuchElementException("User not found with username: " + username);
-        }
+        T entity = findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found with username: " + username));
 
         D dto = mapper.toDto(entity);
         log.info("User profile found for username: {}", username);
@@ -118,16 +112,15 @@ public abstract class AbstractUserService<T extends UserHolder,
     public void changePassword(String username, String oldPassword, String newPassword) {
         log.info("Changing password for user: {}", username);
 
-        if (!repository.authenticate(username, oldPassword)) {
+        if (!authenticate(username, oldPassword)) {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
-        T entity = repository.findByUsername(username);
-        if (entity == null) {
-            throw new NoSuchElementException("User not found with username: " + username);
-        }
+        T entity = findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found with username: " + username));
 
-        repository.changePassword(entity.getUser().getId(), newPassword);
+        entity.getUser().setPassword(newPassword);
+        repository.save(entity);
         log.info("Password changed successfully for user: {}", username);
     }
 
@@ -135,16 +128,15 @@ public abstract class AbstractUserService<T extends UserHolder,
     public void setActiveStatus(String username, Boolean isActive) {
         log.info("Setting active status for user: {} to {}", username, isActive);
 
-        T entity = repository.findByUsername(username);
-        if (entity == null) {
-            throw new NoSuchElementException("User not found with username: " + username);
-        }
+        T entity = findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found with username: " + username));
+
+        entity.getUser().setIsActive(isActive);
+        repository.save(entity);
 
         if (Boolean.TRUE.equals(isActive)) {
-            repository.activate(entity.getUser().getId());
             log.info("User activated with username: {}", username);
         } else {
-            repository.deactivate(entity.getUser().getId());
             log.info("User deactivated with username: {}", username);
         }
     }
@@ -153,10 +145,8 @@ public abstract class AbstractUserService<T extends UserHolder,
     public D updateByUsername(Object updateRequest, String username) {
         log.info("Updating user profile by username: {}", username);
 
-        T entity = repository.findByUsername(username);
-        if (entity == null) {
-            throw new NoSuchElementException("User not found with username: " + username);
-        }
+        T entity = findByUsername(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found with username: " + username));
 
         updateEntityFieldsFromUpdateRequest(entity, updateRequest);
         setIsActiveFromUpdateRequest(entity, updateRequest);
@@ -173,7 +163,7 @@ public abstract class AbstractUserService<T extends UserHolder,
         String username = baseUsername;
         int suffix = 1;
 
-        while (repository.findByUsername(username) != null) {
+        while (findByUsername(username).isPresent()) {
             username = baseUsername + suffix;
             suffix++;
         }

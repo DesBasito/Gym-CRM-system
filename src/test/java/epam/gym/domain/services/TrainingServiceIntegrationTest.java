@@ -94,8 +94,8 @@ class TrainingServiceIntegrationTest {
         assertNotNull(createdTraining);
         assertEquals("Morning Workout", createdTraining.getTrainingName());
 
-        Trainee trainee = traineeRepository.findByUsername(traineeUsername);
-        Trainer trainer = trainerRepository.findByUsername(trainerUsername);
+        Trainee trainee = traineeRepository.findByUser_Username(traineeUsername).orElse(null);
+        Trainer trainer = trainerRepository.findByUser_Username(trainerUsername).orElse(null);
 
         assertNotNull(trainee, "Trainee should exist");
         assertNotNull(trainer, "Trainer should exist");
@@ -137,8 +137,8 @@ class TrainingServiceIntegrationTest {
         entityManager.flush();
         entityManager.clear();
 
-        Trainee trainee = traineeRepository.findByUsername(traineeUsername);
-        Trainer trainer = trainerRepository.findByUsername(trainerUsername);
+        Trainee trainee = traineeRepository.findByUser_Username(traineeUsername).orElseThrow();
+        Trainer trainer = trainerRepository.findByUser_Username(trainerUsername).orElseThrow();
 
         assertEquals(1, trainee.getTrainers().size(),
                 "Trainee should still have exactly 1 trainer (no duplicates)");
@@ -164,21 +164,21 @@ class TrainingServiceIntegrationTest {
         trainingService.create(trainingRequest);
         entityManager.flush();
 
-        Trainee traineeBefore = traineeRepository.findByUsername(traineeUsername);
+        Trainee traineeBefore = traineeRepository.findByUser_Username(traineeUsername).orElseThrow();
         assertEquals(1, traineeBefore.getTrainers().size(), "Trainee should have 1 trainer before deletion");
         assertEquals(1, traineeBefore.getTrainings().size(), "Trainee should have 1 training before deletion");
 
         trainerService.delete(trainerUsername);
         entityManager.flush();
 
-        Trainee traineeAfter = traineeRepository.findByUsername(traineeUsername);
+        Trainee traineeAfter = traineeRepository.findByUser_Username(traineeUsername).orElse(null);
         assertNotNull(traineeAfter, "Trainee should still exist after trainer deletion");
         assertEquals(0, traineeAfter.getTrainers().size(),
                 "Trainee's trainers list should be empty after trainer deletion");
         assertEquals(0, traineeAfter.getTrainings().size(),
                 "Trainee's trainings should be cascade deleted when trainer is deleted (DB level)");
 
-        assertNull(trainerRepository.findByUsername(trainerUsername),
+        assertTrue(trainerRepository.findByUser_Username(trainerUsername).isEmpty(),
                 "Trainer should be deleted");
     }
 
@@ -195,21 +195,21 @@ class TrainingServiceIntegrationTest {
         trainingService.create(trainingRequest);
         entityManager.flush();
 
-        Trainer trainerBefore = trainerRepository.findByUsername(trainerUsername);
+        Trainer trainerBefore = trainerRepository.findByUser_Username(trainerUsername).orElseThrow();
         assertEquals(1, trainerBefore.getTrainees().size(), "Trainer should have 1 trainee before deletion");
         assertEquals(1, trainerBefore.getTrainings().size(), "Trainer should have 1 training before deletion");
 
         traineeService.delete(traineeUsername);
         entityManager.flush();
 
-        Trainer trainerAfter = trainerRepository.findByUsername(trainerUsername);
+        Trainer trainerAfter = trainerRepository.findByUser_Username(trainerUsername).orElse(null);
         assertNotNull(trainerAfter, "Trainer should still exist after trainee deletion");
         assertEquals(0, trainerAfter.getTrainees().size(),
                 "Trainer's trainees list should be empty after trainee deletion");
         assertEquals(0, trainerAfter.getTrainings().size(),
                 "Trainer's trainings should be cascade deleted when trainee is deleted (DB level)");
 
-        assertNull(traineeRepository.findByUsername(traineeUsername),
+        assertTrue(traineeRepository.findByUser_Username(traineeUsername).isEmpty(),
                 "Trainee should be deleted");
     }
 }

@@ -2,103 +2,72 @@ package epam.gym.infrastructure.repositories;
 
 import epam.gym.domain.dto.request.TraineeTrainingsFilterRequest;
 import epam.gym.domain.dto.request.TrainerTrainingsFilterRequest;
-import epam.gym.infrastructure.entities.Trainee;
-import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.entities.Training;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.*;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 @Repository
-@RequiredArgsConstructor
-public class TrainingRepository {
+public interface TrainingRepository extends JpaRepository<Training, Long> {
 
-    private final EntityManager entityManager;
+    @Query("""
+            SELECT DISTINCT t FROM Training t
+            WHERE (:username IS NULL OR t.trainee.user.username = :username)
+            AND (:periodFrom IS NULL OR t.trainingDate >= :periodFrom)
+            AND (:periodTo IS NULL OR t.trainingDate <= :periodTo)
+            AND (:trainerName IS NULL OR t.trainer.user.username = :trainerName)
+            AND (:trainingType IS NULL OR t.trainingType.trainingTypeName = :trainingType)
+            """)
+    List<Training> findTraineeTrainings(
+            @Param("username") String username,
+            @Param("periodFrom") LocalDate periodFrom,
+            @Param("periodTo") LocalDate periodTo,
+            @Param("trainerName") String trainerName,
+            @Param("trainingType") epam.gym.constants.TrainingType trainingType
+    );
 
-    public Training save(Training training) {
-        if (training.getId() == null) {
-            entityManager.persist(training);
-            log.info("Training created: {}", training.getTrainingName());
-        } else {
-            training = entityManager.merge(training);
-            log.info("Training updated: {}", training.getTrainingName());
+    @Query("""
+            SELECT DISTINCT t FROM Training t
+            WHERE (:username IS NULL OR t.trainer.user.username = :username)
+            AND (:periodFrom IS NULL OR t.trainingDate >= :periodFrom)
+            AND (:periodTo IS NULL OR t.trainingDate <= :periodTo)
+            AND (:traineeName IS NULL OR t.trainee.user.username = :traineeName)
+            """)
+    List<Training> findTrainerTrainings(
+            @Param("username") String username,
+            @Param("periodFrom") LocalDate periodFrom,
+            @Param("periodTo") LocalDate periodTo,
+            @Param("traineeName") String traineeName
+    );
+
+    default List<Training> findTraineeTrainings(TraineeTrainingsFilterRequest filterRequest) {
+        epam.gym.constants.TrainingType trainingType = null;
+        if (filterRequest.getTrainingType() != null && !filterRequest.getTrainingType().isBlank()) {
+            try {
+                trainingType = epam.gym.constants.TrainingType.valueOf(filterRequest.getTrainingType().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // Invalid training type, will be treated as null
+            }
         }
-        return training;
-    }
-
-    public List<Training> findTraineeTrainings(TraineeTrainingsFilterRequest filterRequest) {
-        return findTrainingsByParams(
-                "trainee",
+        return findTraineeTrainings(
                 filterRequest.getUsername(),
                 filterRequest.getPeriodFrom(),
                 filterRequest.getPeriodTo(),
-                "trainer",
                 filterRequest.getTrainerName(),
-                filterRequest.getTrainingType()
+                trainingType
         );
     }
 
-    public List<Training> findTrainerTrainings(TrainerTrainingsFilterRequest filterRequest) {
-        return findTrainingsByParams(
-                "trainer",
+    default List<Training> findTrainerTrainings(TrainerTrainingsFilterRequest filterRequest) {
+        return findTrainerTrainings(
                 filterRequest.getUsername(),
                 filterRequest.getPeriodFrom(),
                 filterRequest.getPeriodTo(),
-                "trainee",
-                filterRequest.getTraineeName(),
-                null
+                filterRequest.getTraineeName()
         );
     }
-
-    private List<Training> findTrainingsByParams(
-            String mainRole,
-            String mainUsername,
-            LocalDate periodFrom,
-            LocalDate periodTo,
-            String otherRole,
-            String otherUsername,
-            String trainingTypeName
-    ) {
-        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<Training> query = cb.createQuery(Training.class);
-        Root<Training> training = query.from(Training.class);
-
-        Join<Training, ?> mainJoin = training.join(mainRole);
-        Join<Training, ?> otherJoin = null;
-        if (otherRole != null && !otherRole.isBlank()) {
-            otherJoin = training.join(otherRole);
-        }
-
-        List<Predicate> predicates = new ArrayList<>();
-
-        if (mainUsername != null && !mainUsername.isBlank()) {
-            predicates.add(cb.equal(mainJoin.get("user").get("username"), mainUsername));
-        }
-
-        if (periodFrom != null) {
-            predicates.add(cb.greaterThanOrEqualTo(training.get("trainingDate"), periodFrom));
-        }
-        if (periodTo != null) {
-            predicates.add(cb.lessThanOrEqualTo(training.get("trainingDate"), periodTo));
-        }
-
-        if (otherJoin != null && otherUsername != null && !otherUsername.isBlank()) {
-            predicates.add(cb.equal(otherJoin.get("user").get("username"), otherUsername));
-        }
-
-        if (trainingTypeName != null && !trainingTypeName.isBlank()) {
-            predicates.add(cb.equal(training.get("trainingType").get("trainingTypeName"), trainingTypeName));
-        }
-
-        query.select(training).distinct(true).where(cb.and(predicates.toArray(new Predicate[0])));
-        return entityManager.createQuery(query).getResultList();
-    }
-
 }

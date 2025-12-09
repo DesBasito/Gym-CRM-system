@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
@@ -64,8 +65,10 @@ public class TrainingServiceImpl implements TrainingService {
         TrainingTypeValidator.parse(trainingRequest.getTrainingType());
         Training training = mapper.requestToEntity(trainingRequest);
         training.setTrainingType(trainingTypeRepository.findByName(trainingRequest.getTrainingType()));
-        training.setTrainee(traineeRepository.findByUsername(trainingRequest.getTraineeUsername()));
-        training.setTrainer(trainerRepository.findByUsername(trainingRequest.getTrainerUsername()));
+        training.setTrainee(traineeRepository.findByUser_Username(trainingRequest.getTraineeUsername())
+                .orElseThrow(() -> new NoSuchElementException("Trainee not found with username: " + trainingRequest.getTraineeUsername())));
+        training.setTrainer(trainerRepository.findByUser_Username(trainingRequest.getTrainerUsername())
+                .orElseThrow(() -> new NoSuchElementException("Trainer not found with username: " + trainingRequest.getTrainerUsername())));
         return training;
     }
 

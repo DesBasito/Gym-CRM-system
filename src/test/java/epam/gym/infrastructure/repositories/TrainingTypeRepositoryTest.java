@@ -3,15 +3,16 @@ package epam.gym.infrastructure.repositories;
 import epam.gym.infrastructure.entities.TrainingType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@DataJpaTest
 @ActiveProfiles("test")
 @Transactional
 class TrainingTypeRepositoryTest {
@@ -73,7 +74,7 @@ class TrainingTypeRepositoryTest {
         assertFalse(types.isEmpty());
         Long firstId = types.get(0).getId();
 
-        TrainingType type = trainingTypeRepository.findById(firstId);
+        TrainingType type = trainingTypeRepository.findById(firstId).orElse(null);
 
         assertNotNull(type);
         assertEquals(firstId, type.getId());
@@ -81,8 +82,8 @@ class TrainingTypeRepositoryTest {
     }
 
     @Test
-    void testFindById_whenNotExists_shouldReturnNull() {
-        TrainingType type = trainingTypeRepository.findById(999L);
-        assertNull(type);
+    void testFindById_whenNotExists_shouldReturnEmpty() {
+        Optional<TrainingType> type = trainingTypeRepository.findById(999L);
+        assertTrue(type.isEmpty());
     }
 }

@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -39,6 +40,16 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
         this.trainingTypeRepository = typeRepo;
         this.traineeRepository = traineeRepository;
         this.trainerMapper = trainerMapper;
+    }
+
+    @Override
+    protected Optional<Trainer> findByUsername(String username) {
+        return repository.findByUser_Username(username);
+    }
+
+    @Override
+    protected boolean authenticate(String username, String password) {
+        return repository.authenticate(username, password);
     }
 
     @Override
@@ -92,10 +103,8 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
     public List<TrainerInfoDto> findAllNotAssignedToTrainee(String traineeUsername) {
         log.info("Finding trainers not assigned to trainee: {}", traineeUsername);
 
-        Trainee trainee = traineeRepository.findByUsername(traineeUsername);
-        if (trainee == null) {
-            throw new NoSuchElementException("Trainee not found with username: " + traineeUsername);
-        }
+        traineeRepository.findByUser_Username(traineeUsername)
+                .orElseThrow(() -> new NoSuchElementException("Trainee not found with username: " + traineeUsername));
 
         List<Trainer> trainers = repository.findAllNotAssignedToTrainee(traineeUsername);
         List<TrainerInfoDto> trainerInfoList = trainers.stream()
