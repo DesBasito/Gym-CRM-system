@@ -1,20 +1,17 @@
 package epam.gym.infrastructure.repositories;
 
-import epam.gym.config.TestConfig;
 import epam.gym.domain.dto.request.TraineeTrainingsFilterRequest;
 import epam.gym.domain.dto.request.TrainerTrainingsFilterRequest;
 import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.entities.TrainingType;
-import jakarta.persistence.EntityManager;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -22,8 +19,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfig.class})
+@SpringBootTest
+@ActiveProfiles("test")
 @Transactional
 class TrainingRepositoryTest {
     private final TrainingRepository trainingRepository;

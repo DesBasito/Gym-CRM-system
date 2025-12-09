@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Docker
+docker-compose.yml
+Dockerfile
+.dockerignore
+
+# Monitoring
+prometheus/
+grafana/
+MONITORING.md
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Build
+target/
+*.log
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github/

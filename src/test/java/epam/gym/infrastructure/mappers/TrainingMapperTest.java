@@ -1,6 +1,5 @@
 package epam.gym.infrastructure.mappers;
 
-import epam.gym.config.TestConfig;
 import epam.gym.domain.dto.request.TrainingRequest;
 import epam.gym.domain.models.TrainingModel;
 import epam.gym.infrastructure.entities.Trainee;
@@ -8,17 +7,16 @@ import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.entities.TrainingType;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {TestConfig.class})
+@SpringBootTest
+@ActiveProfiles("test")
 class TrainingMapperTest {
 
     private TrainingMapper trainingMapper;

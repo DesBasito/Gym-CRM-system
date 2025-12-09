@@ -11,6 +11,7 @@ import epam.gym.domain.services.interfaces.TrainerService;
 import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.mappers.TrainerMapper;
+import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.repositories.TrainingTypeRepository;
@@ -33,8 +34,8 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
 
     @Autowired
     public TrainerServiceImpl(TrainerRepository repo, TrainerMapper mapper, TrainingTypeRepository typeRepo, TraineeRepository traineeRepository,
-                              TrainerMapper trainerMapper) {
-        super(repo, mapper);
+                              TrainerMapper trainerMapper, UserMetrics userMetrics) {
+        super(repo, mapper, userMetrics);
         this.trainingTypeRepository = typeRepo;
         this.traineeRepository = traineeRepository;
         this.trainerMapper = trainerMapper;
@@ -66,7 +67,7 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
 
     @Override
     protected String getFullName(TrainerRequest request) {
-        return String.format("%s %s",request.getFirstName(), request.getLastName());
+        return String.format("%s %s", request.getFirstName(), request.getLastName());
     }
 
     @Override

@@ -11,6 +11,7 @@ import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.entities.TrainingType;
 import epam.gym.infrastructure.mappers.TrainingMapper;
+import epam.gym.infrastructure.monitoring.metrics.TrainingMetrics;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.repositories.TrainingRepository;
@@ -47,6 +48,9 @@ class TrainingServiceImplTest {
 
     @Mock
     private TrainingMapper trainingMapper;
+
+    @Mock
+    private TrainingMetrics trainingMetrics;
 
     @InjectMocks
     private TrainingServiceImpl trainingService;
@@ -117,6 +121,8 @@ class TrainingServiceImplTest {
         verify(trainingTypeRepository).findByName("FITNESS");
         verify(traineeRepository).findByUsername("John.Doe");
         verify(trainerRepository).findByUsername("Jane.Smith");
+        verify(trainingMetrics).incrementTrainingCreated();
+        verify(trainingMetrics).incrementActiveTrainings();
     }
 
     @Test

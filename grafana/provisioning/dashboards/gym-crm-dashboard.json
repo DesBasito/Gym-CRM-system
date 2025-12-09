@@ -1,0 +1,226 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "gym-crm-metrics",
+    "title": "Gym CRM System Metrics",
+    "tags": ["gym", "crm"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 0,
+    "refresh": "5s",
+    "panels": [
+      {
+        "id": 1,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "type": "graph",
+        "title": "Training Metrics",
+        "targets": [
+          {
+            "expr": "gym_trainings_created_total",
+            "legendFormat": "Total Trainings Created",
+            "refId": "A"
+          },
+          {
+            "expr": "gym_trainings_active",
+            "legendFormat": "Active Trainings",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": null, "logBase": 1, "show": true},
+          {"format": "short", "label": null, "logBase": 1, "show": true}
+        ],
+        "xaxis": {"show": true, "mode": "time", "values": []},
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "pointradius": 5,
+        "legend": {"show": true, "values": true, "current": true}
+      },
+      {
+        "id": 2,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "type": "graph",
+        "title": "User Metrics",
+        "targets": [
+          {
+            "expr": "gym_users_registered_total",
+            "legendFormat": "Total Users Registered",
+            "refId": "A"
+          },
+          {
+            "expr": "gym_users_logins_total",
+            "legendFormat": "Total Logins",
+            "refId": "B"
+          },
+          {
+            "expr": "gym_users_active",
+            "legendFormat": "Active Users",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": null, "logBase": 1, "show": true},
+          {"format": "short", "label": null, "logBase": 1, "show": true}
+        ],
+        "xaxis": {"show": true, "mode": "time", "values": []},
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "pointradius": 5,
+        "legend": {"show": true, "values": true, "current": true}
+      },
+      {
+        "id": 3,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "type": "graph",
+        "title": "HTTP Request Rate",
+        "targets": [
+          {
+            "expr": "rate(gym_requests_total[1m])",
+            "legendFormat": "Requests/sec",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(gym_requests_errors_total[1m])",
+            "legendFormat": "Errors/sec",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "reqps", "label": null, "logBase": 1, "show": true},
+          {"format": "short", "label": null, "logBase": 1, "show": true}
+        ],
+        "xaxis": {"show": true, "mode": "time", "values": []},
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "pointradius": 5,
+        "legend": {"show": true, "values": true, "current": true}
+      },
+      {
+        "id": 4,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "type": "graph",
+        "title": "Request Duration",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(gym_requests_duration_seconds_bucket[1m])) by (le))",
+            "legendFormat": "p50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gym_requests_duration_seconds_bucket[1m])) by (le))",
+            "legendFormat": "p95",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(gym_requests_duration_seconds_bucket[1m])) by (le))",
+            "legendFormat": "p99",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": null, "logBase": 1, "show": true},
+          {"format": "short", "label": null, "logBase": 1, "show": true}
+        ],
+        "xaxis": {"show": true, "mode": "time", "values": []},
+        "lines": true,
+        "fill": 1,
+        "linewidth": 2,
+        "pointradius": 5,
+        "legend": {"show": true, "values": true, "current": true}
+      },
+      {
+        "id": 5,
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 16},
+        "type": "stat",
+        "title": "Health Status",
+        "targets": [
+          {
+            "expr": "up{job=\"gym-crm-app\"}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          },
+          "textMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"type": "value", "value": "1", "text": "UP"},
+              {"type": "value", "value": "0", "text": "DOWN"}
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "green", "value": 1}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 16},
+        "type": "stat",
+        "title": "Total Trainings",
+        "targets": [
+          {
+            "expr": "gym_trainings_created_total",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          }
+        }
+      },
+      {
+        "id": 7,
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 16},
+        "type": "stat",
+        "title": "Total Users",
+        "targets": [
+          {
+            "expr": "gym_users_registered_total",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": ["lastNotNull"],
+            "fields": "",
+            "values": false
+          }
+        }
+      }
+    ],
+    "time": {"from": "now-15m", "to": "now"},
+    "timepicker": {
+      "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m"]
+    }
+  },
+  "overwrite": true
+}

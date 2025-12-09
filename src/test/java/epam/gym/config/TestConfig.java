@@ -2,10 +2,12 @@ package epam.gym.config;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import org.flywaydb.core.Flyway;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.SharedEntityManagerCreator;
@@ -13,20 +15,45 @@ import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.sql.DataSource;
+
 @Configuration
 @EnableTransactionManagement
+@Profile("test")
 @ComponentScan(basePackages = {
         "epam.gym.infrastructure.repositories",
         "epam.gym.infrastructure.mappers",
         "epam.gym.domain.services",
-        "epam.gym.infrastructure.security",
         "epam.gym.infrastructure.controller"
 })
 public class TestConfig {
 
+    @Value("${spring.datasource.url}")
+    private String datasourceUrl;
+
+    @Value("${spring.datasource.username}")
+    private String datasourceUsername;
+
+    @Value("${spring.datasource.password}")
+    private String datasourcePassword;
+
+    @Value("${spring.datasource.driver-class-name}")
+    private String driverClassName;
+
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+    public DataSource dataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setUrl(datasourceUrl);
+        dataSource.setUsername(datasourceUsername);
+        dataSource.setPassword(datasourcePassword);
+        dataSource.setDriverClassName(driverClassName);
+        return dataSource;
+    }
+
+    @Bean
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setDataSource(dataSource);
         em.setPersistenceXmlLocation("classpath:META-INF/persistence.xml");
         em.setPersistenceUnitName("test");
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
@@ -43,16 +70,5 @@ public class TestConfig {
     @Bean
     public EntityManager entityManager(EntityManagerFactory entityManagerFactory) {
         return SharedEntityManagerCreator.createSharedEntityManager(entityManagerFactory);
-    }
-
-    @Bean(initMethod = "migrate")
-    public Flyway flyway() {
-        Flyway flyway = Flyway.configure()
-                .dataSource("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL", "sa", "")
-                .locations("classpath:db/test-migrations")
-                .cleanDisabled(false)
-                .load();
-        flyway.clean();
-        return flyway;
     }
 }

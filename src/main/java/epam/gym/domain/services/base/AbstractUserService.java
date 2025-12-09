@@ -4,9 +4,11 @@ import epam.gym.domain.dto.response.RegistrationResponse;
 import epam.gym.domain.models.UserModel;
 import epam.gym.infrastructure.entities.UserHolder;
 import epam.gym.infrastructure.mappers.BaseMapper;
+import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
 import epam.gym.infrastructure.repositories.BaseUserRepository;
 import epam.gym.util.UsernameAndPasswordGenerator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
@@ -18,9 +20,12 @@ public abstract class AbstractUserService<T extends UserHolder,
     protected final R repository;
     protected final BaseMapper<T, M, Q, D> mapper;
 
-    protected AbstractUserService(R repository, BaseMapper<T, M, Q, D> mapper) {
+    protected UserMetrics userMetrics;
+
+    protected AbstractUserService(R repository, BaseMapper<T, M, Q, D> mapper, UserMetrics userMetrics) {
         this.repository = repository;
         this.mapper = mapper;
+        this.userMetrics = userMetrics;
     }
 
     protected abstract void updateEntityFields(T entity, Q request);
@@ -41,6 +46,10 @@ public abstract class AbstractUserService<T extends UserHolder,
         beforeCreate(entity, request);
 
         T created = repository.save(entity);
+
+        if (userMetrics != null) {
+            userMetrics.incrementUserRegistration();
+        }
 
         RegistrationResponse response = RegistrationResponse.builder()
                 .username(created.getUser().getUsername())

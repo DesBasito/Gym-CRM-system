@@ -1,0 +1,10 @@
+server:
+  port: 8082
+spring:
+  datasource:
+    url: jdbc:postgresql://host.docker.internal:6543/gym_db
+    username: postgres
+    password: qwe
+
+  flyway:
+    locations: classpath:db/migrations
