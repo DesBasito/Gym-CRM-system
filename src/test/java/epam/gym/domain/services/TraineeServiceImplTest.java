@@ -5,6 +5,7 @@ import epam.gym.domain.dto.response.RegistrationResponse;
 import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.services.impl.TraineeServiceImpl;
 import epam.gym.infrastructure.entities.Trainee;
+import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.entities.User;
 import epam.gym.infrastructure.mappers.TraineeMapper;
 import epam.gym.infrastructure.repositories.TraineeRepository;
@@ -16,8 +17,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -147,15 +150,59 @@ class TraineeServiceImplTest {
     }
 
     @Test
-    void testDelete_shouldDeleteTrainee() {
+    void testDelete_shouldDeleteTraineeWithoutTrainings() {
         String username = "bla.bla";
+        trainee.setTrainings(new LinkedHashSet<>());
+
         when(traineeRepository.findByUser_Username(username)).thenReturn(Optional.of(trainee));
-        doNothing().when(traineeRepository).deleteById(trainee.getId());
+        doNothing().when(traineeRepository).delete(trainee);
 
         traineeService.delete(username);
 
         verify(traineeRepository).findByUser_Username(username);
-        verify(traineeRepository).deleteById(trainee.getId());
+        verify(traineeRepository).delete(trainee);
+        assertTrue(trainee.getTrainings().isEmpty());
+    }
+
+    @Test
+    void testDelete_shouldDeleteTraineeAndClearTrainings() {
+        String username = "John.Doe";
+
+        Training training1 = new Training();
+        training1.setId(1L);
+        training1.setTrainingName("Morning Workout");
+
+        Training training2 = new Training();
+        training2.setId(2L);
+        training2.setTrainingName("Evening Run");
+
+        Set<Training> trainings = new LinkedHashSet<>();
+        trainings.add(training1);
+        trainings.add(training2);
+        trainee.setTrainings(trainings);
+
+        when(traineeRepository.findByUser_Username(username)).thenReturn(Optional.of(trainee));
+        doNothing().when(traineeRepository).delete(trainee);
+
+        traineeService.delete(username);
+
+        verify(traineeRepository).findByUser_Username(username);
+        verify(traineeRepository).delete(trainee);
+        assertTrue(trainee.getTrainings().isEmpty(), "Trainings should be cleared before deletion");
+    }
+
+    @Test
+    void testDelete_whenTraineeNotExists_shouldThrowNoSuchElementException() {
+        String username = "NonExistent.User";
+        when(traineeRepository.findByUser_Username(username)).thenReturn(Optional.empty());
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
+            traineeService.delete(username)
+        );
+
+        assertEquals("Trainee not found with username: " + username, exception.getMessage());
+        verify(traineeRepository).findByUser_Username(username);
+        verify(traineeRepository, never()).delete(any());
     }
 
     @Test

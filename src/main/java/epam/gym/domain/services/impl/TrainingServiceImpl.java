@@ -1,5 +1,6 @@
 package epam.gym.domain.services.impl;
 
+import epam.gym.constants.TrainingType;
 import epam.gym.domain.dto.request.TraineeTrainingsFilterRequest;
 import epam.gym.domain.dto.request.TrainerTrainingsFilterRequest;
 import epam.gym.domain.dto.request.TrainingRequest;
@@ -15,7 +16,7 @@ import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.repositories.TrainingRepository;
 import epam.gym.infrastructure.repositories.TrainingTypeRepository;
-import epam.gym.util.TrainingTypeValidator;
+import epam.gym.infrastructure.specifications.TrainingSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -62,9 +63,11 @@ public class TrainingServiceImpl implements TrainingService {
     }
 
     private Training getTraining(TrainingRequest trainingRequest) {
-        TrainingTypeValidator.parse(trainingRequest.getTrainingType());
         Training training = mapper.requestToEntity(trainingRequest);
-        training.setTrainingType(trainingTypeRepository.findByName(trainingRequest.getTrainingType()));
+        TrainingType type = TrainingType.valueOf(trainingRequest.getTrainingType().toUpperCase());
+        training.setTrainingType(trainingTypeRepository.findTrainingTypeByTrainingTypeName(type)
+                .orElseThrow()
+        );
         training.setTrainee(traineeRepository.findByUser_Username(trainingRequest.getTraineeUsername())
                 .orElseThrow(() -> new NoSuchElementException("Trainee not found with username: " + trainingRequest.getTraineeUsername())));
         training.setTrainer(trainerRepository.findByUser_Username(trainingRequest.getTrainerUsername())
@@ -79,7 +82,7 @@ public class TrainingServiceImpl implements TrainingService {
                 filterRequest.getUsername(), filterRequest.getPeriodFrom(), filterRequest.getPeriodTo(),
                 filterRequest.getTrainerName(), filterRequest.getTrainingType());
 
-        List<Training> trainings = trainingRepository.findTraineeTrainings(filterRequest);
+        List<Training> trainings = trainingRepository.findAll(TrainingSpecification.filterTraineeTrainings(filterRequest));
         return trainings.stream()
                 .map(mapper::entityToDto)
                 .toList();
@@ -92,7 +95,7 @@ public class TrainingServiceImpl implements TrainingService {
                 filterRequest.getUsername(), filterRequest.getPeriodFrom(), filterRequest.getPeriodTo(),
                 filterRequest.getTraineeName());
 
-        List<Training> trainings = trainingRepository.findTrainerTrainings(filterRequest);
+        List<Training> trainings = trainingRepository.findAll(TrainingSpecification.filterTrainerTrainings(filterRequest));
         return trainings.stream()
                 .map(mapper::entityToDto)
                 .toList();

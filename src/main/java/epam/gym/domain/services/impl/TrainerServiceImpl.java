@@ -1,5 +1,6 @@
 package epam.gym.domain.services.impl;
 
+import epam.gym.constants.TrainingType;
 import epam.gym.domain.dto.request.TrainerRequest;
 import epam.gym.domain.dto.request.UpdateTrainerRequest;
 import epam.gym.domain.dto.response.RegistrationResponse;
@@ -8,14 +9,12 @@ import epam.gym.domain.dto.response.TrainerProfileDto;
 import epam.gym.domain.models.TrainerModel;
 import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TrainerService;
-import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.mappers.TrainerMapper;
 import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.repositories.TrainingTypeRepository;
-import epam.gym.util.TrainingTypeValidator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,26 +53,16 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
 
     @Override
     protected void beforeCreate(Trainer entity, TrainerRequest request) {
-        entity.setSpecialization(trainingTypeRepository.findByName(request.getSpecialization()));
-    }
-
-    @Override
-    public RegistrationResponse create(TrainerRequest request) {
-        TrainingTypeValidator.parse(request.getSpecialization());
-        return super.create(request);
-    }
-
-    @Override
-    public TrainerModel update(TrainerRequest request, Long id) {
-        TrainingTypeValidator.parse(request.getSpecialization());
-        return super.update(request, id);
+        TrainingType type = TrainingType.valueOf(request.getSpecialization().toUpperCase());
+        entity.setSpecialization(trainingTypeRepository.findTrainingTypeByTrainingTypeName(type).orElseThrow());
     }
 
     @Override
     protected void updateEntityFields(Trainer entity, TrainerRequest request) {
         entity.getUser().setFirstName(request.getFirstName());
         entity.getUser().setLastName(request.getLastName());
-        entity.setSpecialization(trainingTypeRepository.findByName(request.getSpecialization()));
+        TrainingType type = TrainingType.valueOf(request.getSpecialization().toUpperCase());
+        entity.setSpecialization(trainingTypeRepository.findTrainingTypeByTrainingTypeName(type).orElseThrow());
     }
 
     @Override

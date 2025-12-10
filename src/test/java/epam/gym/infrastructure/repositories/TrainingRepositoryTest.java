@@ -6,6 +6,7 @@ import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.entities.TrainingType;
+import epam.gym.infrastructure.specifications.TrainingSpecification;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +49,8 @@ class TrainingRepositoryTest {
     void testSave_newTraining_shouldPersist() {
         Trainee trainee = traineeRepository.findByUser_Username("Alice.Brown").orElseThrow();
         Trainer trainer = trainerRepository.findByUser_Username("John.Doe").orElseThrow();
-        TrainingType type = trainingTypeRepository.findByName("FITNESS");
+        epam.gym.constants.TrainingType tType = epam.gym.constants.TrainingType.valueOf("FITNESS");
+        TrainingType type = trainingTypeRepository.findTrainingTypeByTrainingTypeName(tType).orElse(null);
 
         Training training = new Training();
         training.setTrainee(trainee);
@@ -75,7 +77,7 @@ class TrainingRepositoryTest {
                 "FITNESS"
         );
 
-        List<Training> trainings = trainingRepository.findTraineeTrainings(filterRequest);
+        List<Training> trainings = trainingRepository.findAll(TrainingSpecification.filterTraineeTrainings(filterRequest));
 
         assertNotNull(trainings);
         assertFalse(trainings.isEmpty());
@@ -92,7 +94,7 @@ class TrainingRepositoryTest {
                 "Alice.Brown", null, null, null, null
         );
 
-        List<Training> trainings = trainingRepository.findTraineeTrainings(filterRequest);
+        List<Training> trainings = trainingRepository.findAll(TrainingSpecification.filterTraineeTrainings(filterRequest));
 
         assertNotNull(trainings);
         assertTrue(trainings.size() >= 2);
@@ -109,7 +111,7 @@ class TrainingRepositoryTest {
                 null
         );
 
-        List<Training> trainings = trainingRepository.findTraineeTrainings(filterRequest);
+        List<Training> trainings = trainingRepository.findAll(TrainingSpecification.filterTraineeTrainings(filterRequest));
 
         assertNotNull(trainings);
         trainings.forEach(t -> {
@@ -124,7 +126,7 @@ class TrainingRepositoryTest {
                 "NonExistent.Trainee", null, null, null, null
         );
 
-        List<Training> trainings = trainingRepository.findTraineeTrainings(filterRequest);
+        List<Training> trainings = trainingRepository.findAll(TrainingSpecification.filterTraineeTrainings(filterRequest));
 
         assertNotNull(trainings);
         assertTrue(trainings.isEmpty());
@@ -139,7 +141,7 @@ class TrainingRepositoryTest {
                 null
         );
 
-        List<Training> trainings = trainingRepository.findTrainerTrainings(filterRequest);
+        List<Training> trainings = trainingRepository.findAll(TrainingSpecification.filterTrainerTrainings(filterRequest));
 
         assertNotNull(trainings);
         assertFalse(trainings.isEmpty());
@@ -156,7 +158,7 @@ class TrainingRepositoryTest {
                 "John.Doe", null, null, null
         );
 
-        List<Training> trainings = trainingRepository.findTrainerTrainings(filterRequest);
+        List<Training> trainings = trainingRepository.findAll(TrainingSpecification.filterTrainerTrainings(filterRequest));
 
         assertNotNull(trainings);
         assertTrue(trainings.size() >= 2);
@@ -172,7 +174,7 @@ class TrainingRepositoryTest {
                 null
         );
 
-        List<Training> trainings = trainingRepository.findTrainerTrainings(filterRequest);
+        List<Training> trainings = trainingRepository.findAll(TrainingSpecification.filterTrainerTrainings(filterRequest));
 
         assertNotNull(trainings);
         trainings.forEach(t -> {
@@ -187,7 +189,7 @@ class TrainingRepositoryTest {
                 "NonExistent.Trainer", null, null, null
         );
 
-        List<Training> trainings = trainingRepository.findTrainerTrainings(filterRequest);
+        List<Training> trainings = trainingRepository.findAll(TrainingSpecification.filterTrainerTrainings(filterRequest));
 
         assertNotNull(trainings);
         assertTrue(trainings.isEmpty());
@@ -197,7 +199,8 @@ class TrainingRepositoryTest {
     void testSave_updateExistingTraining_shouldUpdate() {
         Trainee trainee = traineeRepository.findByUser_Username("Alice.Brown").orElseThrow();
         Trainer trainer = trainerRepository.findByUser_Username("John.Doe").orElseThrow();
-        TrainingType type = trainingTypeRepository.findByName("FITNESS");
+        epam.gym.constants.TrainingType tType = epam.gym.constants.TrainingType.valueOf("FITNESS");
+        TrainingType type = trainingTypeRepository.findTrainingTypeByTrainingTypeName(tType).orElse(null);
 
         Training training = new Training();
         training.setTrainee(trainee);

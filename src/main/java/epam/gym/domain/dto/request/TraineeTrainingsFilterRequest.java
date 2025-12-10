@@ -1,5 +1,6 @@
 package epam.gym.domain.dto.request;
 
+import epam.gym.infrastructure.validations.IsTrainingTypeValid;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -28,6 +29,7 @@ public class TraineeTrainingsFilterRequest {
     @Schema(description = "Trainer name to filter by", example = "Jane.Smith")
     String trainerName;
 
+    @IsTrainingTypeValid
     @Schema(description = "Training type to filter by", example = "FITNESS")
     String trainingType;
 }

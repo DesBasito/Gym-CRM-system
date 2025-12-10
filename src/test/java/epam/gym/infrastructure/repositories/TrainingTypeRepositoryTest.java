@@ -33,9 +33,8 @@ class TrainingTypeRepositoryTest {
 
     @Test
     void testFindByName_whenExists_shouldReturnTrainingType() {
-        String name = "FITNESS";
-
-        TrainingType type = trainingTypeRepository.findByName(name);
+        epam.gym.constants.TrainingType tType = epam.gym.constants.TrainingType.valueOf("FITNESS");
+        TrainingType type = trainingTypeRepository.findTrainingTypeByTrainingTypeName(tType).orElse(null);
 
         assertNotNull(type);
         assertEquals(epam.gym.constants.TrainingType.FITNESS, type.getTrainingTypeName());
@@ -54,7 +53,8 @@ class TrainingTypeRepositoryTest {
         String[] expectedTypes = {"FITNESS", "YOGA", "CARDIO", "BOXING", "PILATES", "CROSSFIT", "SWIMMING"};
 
         for (String typeName : expectedTypes) {
-            TrainingType type = trainingTypeRepository.findByName(typeName);
+            epam.gym.constants.TrainingType trType = epam.gym.constants.TrainingType.valueOf(typeName);
+            TrainingType type = trainingTypeRepository.findTrainingTypeByTrainingTypeName(trType).orElse(null);
 
             assertNotNull(type, "Training type " + typeName + " should exist");
             assertEquals(epam.gym.constants.TrainingType.valueOf(typeName), type.getTrainingTypeName());
@@ -62,10 +62,10 @@ class TrainingTypeRepositoryTest {
     }
 
     @Test
-    void testFindByName_whenNotExists_shouldReturnNull() {
-        String nonExistentName = "NONEXISTENT";
-        TrainingType type = trainingTypeRepository.findByName(nonExistentName);
-        assertNull(type);
+    void testFindAll_shouldReturnAllTypes() {
+        List<TrainingType> types = trainingTypeRepository.findAll();
+        assertNotNull(types);
+        assertEquals(7, types.size());
     }
 
     @Test

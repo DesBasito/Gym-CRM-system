@@ -82,22 +82,20 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
         return super.updateByUsername(request, request.getUsername());
     }
 
-//    @Override
-//    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
-//    public void delete(String username) {
-//        log.info("Deleting trainee by username: {}", username);
-//
-//        Trainee trainee = repository.findByUsername(username);
-//        if (trainee == null) {
-//            throw new NoSuchElementException("Trainee not found with username: " + username);
-//        }
-//
-//        // Clear trainings collection to avoid JPA trying to nullify foreign keys
-//        trainee.getTrainings().clear();
-//
-//        repository.delete(trainee.getUser().getId());
-//        log.info("Trainee deleted successfully with username: {}", username);
-//    }
+    @Override
+    @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
+    public void delete(String username) {
+        log.info("Deleting trainee by username: {}", username);
+
+        Trainee trainee = repository.findByUser_Username(username)
+                .orElseThrow(
+                        ()-> new NoSuchElementException("Trainee not found with username: " + username));
+
+        trainee.getTrainings().clear();
+
+        repository.delete(trainee);
+        log.info("Trainee deleted successfully with username: {}", username);
+    }
 
     @Override
     @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})

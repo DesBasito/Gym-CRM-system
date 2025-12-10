@@ -88,8 +88,14 @@ class TrainerServiceImplTest {
 
     @Test
     void testCreate_withValidSpecialization_shouldCreateTrainerAndReturnCredentials() {
+        TrainingType fitnessType = new TrainingType();
+        fitnessType.setId(1L);
+        fitnessType.setTrainingTypeName(epam.gym.constants.TrainingType.FITNESS);
+
         when(trainerMapper.requestToModel(trainerRequest)).thenReturn(trainerModel);
         when(trainerMapper.toEntity(trainerModel)).thenReturn(trainer);
+        when(trainingTypeRepository.findTrainingTypeByTrainingTypeName(epam.gym.constants.TrainingType.FITNESS))
+                .thenReturn(Optional.of(fitnessType));
         when(trainerRepository.save(trainer)).thenReturn(trainer);
 
         RegistrationResponse result = trainerService.create(trainerRequest);
@@ -101,27 +107,19 @@ class TrainerServiceImplTest {
     }
 
     @Test
-    void testCreate_withInvalidSpecialization_shouldThrowException() {
-        trainerRequest.setSpecialization("INVALID_TYPE");
-
-        assertThrows(IllegalArgumentException.class, () ->
-            trainerService.create(trainerRequest)
-        );
-        verify(trainerRepository, never()).save(any());
-    }
-
-    @Test
     void testUpdate_withValidSpecialization_shouldUpdateTrainer() {
         Long trainerId = 1L;
         trainerRequest.setFirstName("Jane");
         trainerRequest.setSpecialization("YOGA");
+        epam.gym.constants.TrainingType type = epam.gym.constants.TrainingType.valueOf(trainerRequest.getSpecialization().toUpperCase());
+
 
         TrainingType yogaType = new TrainingType();
         yogaType.setId(2L);
         yogaType.setTrainingTypeName(epam.gym.constants.TrainingType.YOGA);
 
         when(trainerRepository.findById(trainerId)).thenReturn(Optional.of(trainer));
-        when(trainingTypeRepository.findByName("YOGA")).thenReturn(yogaType);
+        when(trainingTypeRepository.findTrainingTypeByTrainingTypeName(type)).thenReturn(Optional.of(yogaType));
         when(trainerRepository.save(trainer)).thenReturn(trainer);
         when(trainerMapper.toModel(trainer)).thenReturn(trainerModel);
 
@@ -132,19 +130,7 @@ class TrainerServiceImplTest {
         assertEquals(yogaType, trainer.getSpecialization());
         verify(trainerRepository).findById(trainerId);
         verify(trainerRepository).save(trainer);
-        verify(trainingTypeRepository).findByName("YOGA");
-    }
-
-    @Test
-    void testUpdate_withInvalidSpecialization_shouldThrowException() {
-        Long trainerId = 1L;
-        trainerRequest.setSpecialization("INVALID_TYPE");
-
-        assertThrows(IllegalArgumentException.class, () ->
-            trainerService.update(trainerRequest, trainerId)
-        );
-        verify(trainerRepository, never()).findById(any());
-        verify(trainerRepository, never()).save(any());
+        verify(trainingTypeRepository).findTrainingTypeByTrainingTypeName(type);
     }
 
     @Test

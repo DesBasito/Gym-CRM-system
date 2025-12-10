@@ -1,5 +1,6 @@
 package epam.gym.domain.dto.request;
 
+import epam.gym.infrastructure.validations.IsTrainingTypeValid;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -21,6 +22,7 @@ public class TrainerRequest {
     String lastName;
 
     @NotBlank(message = "Specialization is required")
+    @IsTrainingTypeValid
     @Schema(description = "Training specialization", requiredMode = Schema.RequiredMode.REQUIRED, example = "YOGA")
     String specialization;
 }
