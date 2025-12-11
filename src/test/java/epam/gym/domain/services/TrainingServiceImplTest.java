@@ -26,10 +26,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith(MockitoExtension.class)
 class TrainingServiceImplTest {
@@ -104,9 +107,11 @@ class TrainingServiceImplTest {
     @Test
     void testCreate_withValidData_shouldCreateTraining() {
         when(trainingMapper.requestToEntity(trainingRequest)).thenReturn(training);
-        when(trainingTypeRepository.findByName("FITNESS")).thenReturn(trainingType);
-        when(traineeRepository.findByUsername("John.Doe")).thenReturn(trainee);
-        when(trainerRepository.findByUsername("Jane.Smith")).thenReturn(trainer);
+        when(trainingTypeRepository
+                .findTrainingTypeByTrainingTypeName(epam.gym.constants.TrainingType.valueOf("FITNESS")))
+                .thenReturn(Optional.of(trainingType));
+        when(traineeRepository.findByUser_Username("John.Doe")).thenReturn(Optional.of(trainee));
+        when(trainerRepository.findByUser_Username("Jane.Smith")).thenReturn(Optional.of(trainer));
         when(trainingRepository.save(training)).thenReturn(training);
         when(trainingMapper.entityToModel(training)).thenReturn(trainingModel);
 
@@ -118,21 +123,11 @@ class TrainingServiceImplTest {
         assertEquals(1L, result.getTraineeId());
         assertEquals(1L, result.getTrainerId());
         verify(trainingRepository).save(any(Training.class));
-        verify(trainingTypeRepository).findByName("FITNESS");
-        verify(traineeRepository).findByUsername("John.Doe");
-        verify(trainerRepository).findByUsername("Jane.Smith");
+        verify(trainingTypeRepository).findTrainingTypeByTrainingTypeName(epam.gym.constants.TrainingType.FITNESS);
+        verify(traineeRepository).findByUser_Username("John.Doe");
+        verify(trainerRepository).findByUser_Username("Jane.Smith");
         verify(trainingMetrics).incrementTrainingCreated();
         verify(trainingMetrics).incrementActiveTrainings();
-    }
-
-    @Test
-    void testCreate_withInvalidTrainingType_shouldThrowException() {
-        trainingRequest.setTrainingType("INVALID_TYPE");
-
-        assertThrows(IllegalArgumentException.class, () ->
-            trainingService.create(trainingRequest)
-        );
-        verify(trainingRepository, never()).save(any());
     }
 
     @Test
@@ -154,7 +149,7 @@ class TrainingServiceImplTest {
         TrainingDto dto1 = new TrainingDto();
         TrainingDto dto2 = new TrainingDto();
 
-        when(trainingRepository.findTraineeTrainings(any(TraineeTrainingsFilterRequest.class)))
+        when(trainingRepository.findAll(any(Specification.class)))
                 .thenReturn(trainings);
         when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
         when(trainingMapper.entityToDto(training2)).thenReturn(dto2);
@@ -163,7 +158,7 @@ class TrainingServiceImplTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(trainingRepository).findTraineeTrainings(any(TraineeTrainingsFilterRequest.class));
+        verify(trainingRepository).findAll(any(Specification.class));
         verify(trainingMapper, times(2)).entityToDto(any(Training.class));
     }
 
@@ -179,7 +174,7 @@ class TrainingServiceImplTest {
 
         TrainingDto dto1 = new TrainingDto();
 
-        when(trainingRepository.findTraineeTrainings(any(TraineeTrainingsFilterRequest.class)))
+        when(trainingRepository.findAll(any(Specification.class)))
                 .thenReturn(trainings);
         when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
 
@@ -187,7 +182,7 @@ class TrainingServiceImplTest {
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(trainingRepository).findTraineeTrainings(any(TraineeTrainingsFilterRequest.class));
+        verify(trainingRepository).findAll(any(Specification.class));
     }
 
     @Test
@@ -196,14 +191,14 @@ class TrainingServiceImplTest {
                 "John.Doe", null, null, null, null
         );
 
-        when(trainingRepository.findTraineeTrainings(any(TraineeTrainingsFilterRequest.class)))
+        when(trainingRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of());
 
         List<TrainingDto> result = trainingService.selectTraineeTrainings(filterRequest);
 
         assertNotNull(result);
         assertEquals(0, result.size());
-        verify(trainingRepository).findTraineeTrainings(any(TraineeTrainingsFilterRequest.class));
+        verify(trainingRepository).findAll(any(Specification.class));
     }
 
     @Test
@@ -224,7 +219,7 @@ class TrainingServiceImplTest {
         TrainingDto dto1 = new TrainingDto();
         TrainingDto dto2 = new TrainingDto();
 
-        when(trainingRepository.findTrainerTrainings(any(TrainerTrainingsFilterRequest.class)))
+        when(trainingRepository.findAll(any(Specification.class)))
                 .thenReturn(trainings);
         when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
         when(trainingMapper.entityToDto(training2)).thenReturn(dto2);
@@ -233,7 +228,7 @@ class TrainingServiceImplTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(trainingRepository).findTrainerTrainings(any(TrainerTrainingsFilterRequest.class));
+        verify(trainingRepository).findAll(any(Specification.class));
         verify(trainingMapper, times(2)).entityToDto(any(Training.class));
     }
 
@@ -249,7 +244,7 @@ class TrainingServiceImplTest {
 
         TrainingDto dto1 = new TrainingDto();
 
-        when(trainingRepository.findTrainerTrainings(any(TrainerTrainingsFilterRequest.class)))
+        when(trainingRepository.findAll(any(Specification.class)))
                 .thenReturn(trainings);
         when(trainingMapper.entityToDto(training1)).thenReturn(dto1);
 
@@ -257,7 +252,7 @@ class TrainingServiceImplTest {
 
         assertNotNull(result);
         assertEquals(1, result.size());
-        verify(trainingRepository).findTrainerTrainings(any(TrainerTrainingsFilterRequest.class));
+        verify(trainingRepository).findAll(any(Specification.class));
     }
 
     @Test
@@ -266,13 +261,13 @@ class TrainingServiceImplTest {
                 "Jane.Smith", null, null, null
         );
 
-        when(trainingRepository.findTrainerTrainings(any(TrainerTrainingsFilterRequest.class)))
+        when(trainingRepository.findAll(any(Specification.class)))
                 .thenReturn(List.of());
 
         List<TrainingDto> result = trainingService.selectTrainerTrainings(filterRequest);
 
         assertNotNull(result);
         assertEquals(0, result.size());
-        verify(trainingRepository).findTrainerTrainings(any(TrainerTrainingsFilterRequest.class));
+        verify(trainingRepository).findAll(any(Specification.class));
     }
 }

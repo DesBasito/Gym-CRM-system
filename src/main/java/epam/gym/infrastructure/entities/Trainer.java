@@ -46,6 +46,7 @@ public class Trainer implements UserHolder {
     Set<Trainee> trainees = new HashSet<>();
 
 
+    @PreRemove
     public void removeAssociations() {
         for (Trainee trainee : new HashSet<>(trainees)) {
             trainee.getTrainers().remove(this);

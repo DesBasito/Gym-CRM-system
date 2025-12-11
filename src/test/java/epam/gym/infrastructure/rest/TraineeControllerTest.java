@@ -86,7 +86,7 @@ class TraineeControllerTest {
         assertEquals("John.Doe", response.getUsername());
         assertEquals(10, response.getPassword().length());
 
-        Trainee trainee = traineeRepository.findByUsername(response.getUsername());
+        Trainee trainee = traineeRepository.findByUser_Username(response.getUsername()).orElseThrow();
         assertNotNull(trainee);
         assertEquals("John", trainee.getUser().getFirstName());
         assertEquals("Doe", trainee.getUser().getLastName());
@@ -151,7 +151,7 @@ class TraineeControllerTest {
                         .content(objectMapper.writeValueAsString(changePasswordRequest)))
                 .andExpect(status().isOk());
 
-        Trainee trainee = traineeRepository.findByUsername(username);
+        Trainee trainee = traineeRepository.findByUser_Username(username).orElseThrow();
         assertNotNull(trainee);
         assertEquals("newPassword123", trainee.getUser().getPassword());
     }
@@ -253,8 +253,7 @@ class TraineeControllerTest {
         mockMvc.perform(delete("/api/v1/trainees/" + username))
                 .andExpect(status().isOk());
 
-        Trainee trainee = traineeRepository.findByUsername(username);
-        assertNull(trainee);
+        assertTrue(traineeRepository.findByUser_Username(username).isEmpty());
     }
 
     @Test
@@ -312,7 +311,7 @@ class TraineeControllerTest {
                         .param("isActive", "true"))
                 .andExpect(status().isOk());
 
-        Trainee trainee = traineeRepository.findByUsername(username);
+        Trainee trainee = traineeRepository.findByUser_Username(username).orElseThrow();
         assertNotNull(trainee);
         assertTrue(trainee.getUser().getIsActive());
     }
@@ -338,7 +337,7 @@ class TraineeControllerTest {
                         .param("isActive", "false"))
                 .andExpect(status().isOk());
 
-        Trainee trainee = traineeRepository.findByUsername(username);
+        Trainee trainee = traineeRepository.findByUser_Username(username).orElseThrow();
         assertNotNull(trainee);
         assertFalse(trainee.getUser().getIsActive());
     }
@@ -391,7 +390,7 @@ class TraineeControllerTest {
                 .andExpect(jsonPath("$.address").value("456 Dunder Mifflin Ave"))
                 .andExpect(jsonPath("$.isActive").value(false));
 
-        Trainee trainee = traineeRepository.findByUsername(username);
+        Trainee trainee = traineeRepository.findByUser_Username(username).orElseThrow();
         assertNotNull(trainee);
         assertEquals("James", trainee.getUser().getFirstName());
         assertEquals("Halpert", trainee.getUser().getLastName());

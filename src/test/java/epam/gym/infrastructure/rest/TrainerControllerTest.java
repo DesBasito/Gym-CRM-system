@@ -83,7 +83,7 @@ class TrainerControllerTest {
         assertEquals("Jane.Smith", response.getUsername());
         assertEquals(10, response.getPassword().length());
 
-        var trainer = trainerRepository.findByUsername(response.getUsername());
+        var trainer = trainerRepository.findByUser_Username(response.getUsername()).orElseThrow();
         assertNotNull(trainer);
         assertEquals("Jane", trainer.getUser().getFirstName());
         assertEquals("Smith", trainer.getUser().getLastName());
@@ -151,7 +151,7 @@ class TrainerControllerTest {
                         .content(objectMapper.writeValueAsString(changePasswordRequest)))
                 .andExpect(status().isOk());
 
-        var trainer = trainerRepository.findByUsername(username);
+        var trainer = trainerRepository.findByUser_Username(username).orElseThrow();
         assertNotNull(trainer);
         assertEquals("newPassword456", trainer.getUser().getPassword());
     }
@@ -253,7 +253,7 @@ class TrainerControllerTest {
                         .param("isActive", "true"))
                 .andExpect(status().isOk());
 
-        Trainer trainer = trainerRepository.findByUsername(username);
+        Trainer trainer = trainerRepository.findByUser_Username(username).orElseThrow();
         assertNotNull(trainer);
         assertTrue(trainer.getUser().getIsActive());
     }
@@ -280,7 +280,7 @@ class TrainerControllerTest {
                         .param("isActive", "false"))
                 .andExpect(status().isOk());
 
-        Trainer trainer = trainerRepository.findByUsername(username);
+        Trainer trainer = trainerRepository.findByUser_Username(username).orElseThrow();
         assertNotNull(trainer);
         assertFalse(trainer.getUser().getIsActive());
     }
@@ -331,7 +331,7 @@ class TrainerControllerTest {
                 .andExpect(jsonPath("$.specialization").value("BOXING"))
                 .andExpect(jsonPath("$.isActive").value(false));
 
-        Trainer trainer = trainerRepository.findByUsername(username);
+        Trainer trainer = trainerRepository.findByUser_Username(username).orElseThrow();
         assertNotNull(trainer);
         assertEquals("Batman", trainer.getUser().getFirstName());
         assertEquals("Wayne", trainer.getUser().getLastName());

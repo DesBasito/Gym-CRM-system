@@ -1,5 +1,6 @@
 package epam.gym.domain.dto.request;
 
+import epam.gym.infrastructure.validations.IsTrainingTypeValid;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +28,7 @@ public class TrainingRequest {
     @Schema(description = "Training name", requiredMode = Schema.RequiredMode.REQUIRED, example = "Morning Yoga Session")
     String trainingName;
 
+    @IsTrainingTypeValid
     @Schema(description = "Training type", example = "YOGA")
     String trainingType;
 

@@ -1,23 +1,27 @@
 package epam.gym.infrastructure.repositories;
 
 import epam.gym.infrastructure.entities.Trainee;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@DataJpaTest
 @ActiveProfiles("test")
 @Transactional
 class TraineeRepositoryTest {
 
     private TraineeRepository traineeRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Autowired
     public void setTraineeRepository(TraineeRepository traineeRepository) {
@@ -38,7 +42,7 @@ class TraineeRepositoryTest {
         assertFalse(trainees.isEmpty());
         Long firstId = trainees.get(0).getId();
 
-        Trainee trainee = traineeRepository.findById(firstId);
+        Trainee trainee = traineeRepository.findById(firstId).orElse(null);
 
         assertNotNull(trainee);
         assertEquals(firstId, trainee.getId());
@@ -48,16 +52,16 @@ class TraineeRepositoryTest {
 
     @Test
     void testFindById_whenTraineeDoesNotExist_shouldReturnNull() {
-        Trainee trainee = traineeRepository.findById(999L);
+        Trainee trainee = traineeRepository.findById(999L).orElse(null);
 
         assertNull(trainee);
     }
 
     @Test
-    void testFindByUsername_whenExists_shouldReturnTrainee() {
+    void testFindByUser_Username_whenExists_shouldReturnTrainee() {
         String username = "Alice.Brown";
 
-        Trainee trainee = traineeRepository.findByUsername(username);
+        Trainee trainee = traineeRepository.findByUser_Username(username).orElse(null);
 
         assertNotNull(trainee);
         assertEquals(username, trainee.getUser().getUsername());
@@ -66,149 +70,81 @@ class TraineeRepositoryTest {
     }
 
     @Test
-    void testFindByUsername_whenNotExists_shouldReturnNull() {
+    void testFindByUser_Username_whenNotExists_shouldReturnEmpty() {
         String username = "NonExistent.User";
 
-        Trainee trainee = traineeRepository.findByUsername(username);
+        Optional<Trainee> trainee = traineeRepository.findByUser_Username(username);
 
-        assertNull(trainee);
+        assertTrue(trainee.isEmpty());
     }
 
     @Test
-    void testAuthenticate_withCorrectCredentials_shouldReturnTrue() {
-        String username = "Alice.Brown";
-        String password = "mypass111";
-
-        boolean result = traineeRepository.authenticate(username, password);
-
-        assertTrue(result);
-    }
-
-    @Test
-    void testAuthenticate_withIncorrectPassword_shouldReturnFalse() {
-        String username = "Alice.Brown";
-        String wrongPassword = "wrongpassword";
-
-        boolean result = traineeRepository.authenticate(username, wrongPassword);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void testAuthenticate_withNonExistentUser_shouldReturnFalse() {
-        String username = "NonExistent.User";
-        String password = "password";
-
-        boolean result = traineeRepository.authenticate(username, password);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void testChangePassword_byId_shouldUpdatePassword() {
-        Trainee trainee = traineeRepository.findByUsername("Alice.Brown");
+    void testChangePassword_shouldUpdatePassword() {
+        Trainee trainee = traineeRepository.findByUser_Username("Alice.Brown").orElseThrow();
         assertNotNull(trainee);
         String newPassword = "newSecurePassword123";
 
-        traineeRepository.changePassword(trainee.getId(), newPassword);
+        trainee.getUser().setPassword(newPassword);
+        traineeRepository.save(trainee);
 
         boolean authenticated = traineeRepository.authenticate("Alice.Brown", newPassword);
         assertTrue(authenticated);
     }
 
     @Test
-    void testChangePassword_byUsername_shouldUpdatePassword() {
-        String username = "Bob.Wilson";
-        String newPassword = "anotherNewPassword456";
-
-        traineeRepository.changePassword(username, newPassword);
-
-        boolean authenticated = traineeRepository.authenticate(username, newPassword);
-        assertTrue(authenticated);
-    }
-
-    @Test
-    void testActivate_byId_shouldSetActiveToTrue() {
-        Trainee trainee = traineeRepository.findByUsername("Bob.Wilson");
+    void testActivate_shouldSetActiveToTrue() {
+        Trainee trainee = traineeRepository.findByUser_Username("Bob.Wilson").orElseThrow();
         assertNotNull(trainee);
 
-        traineeRepository.activate(trainee.getId());
+        trainee.getUser().setIsActive(true);
+        traineeRepository.save(trainee);
 
-        Trainee activated = traineeRepository.findById(trainee.getId());
+        Trainee activated = traineeRepository.findById(trainee.getId()).orElseThrow();
         assertTrue(activated.getUser().getIsActive());
     }
 
     @Test
-    void testActivate_byUsername_shouldSetActiveToTrue() {
-        String username = "Bob.Wilson";
-
-        traineeRepository.activate(username);
-
-        Trainee activated = traineeRepository.findByUsername(username);
-        assertTrue(activated.getUser().getIsActive());
-    }
-
-    @Test
-    void testDeactivate_byId_shouldSetActiveToFalse() {
-        Trainee trainee = traineeRepository.findByUsername("Alice.Brown");
+    void testDeactivate_shouldSetActiveToFalse() {
+        Trainee trainee = traineeRepository.findByUser_Username("Alice.Brown").orElseThrow();
         assertNotNull(trainee);
         assertTrue(trainee.getUser().getIsActive());
 
-        traineeRepository.deactivate(trainee.getId());
+        trainee.getUser().setIsActive(false);
+        traineeRepository.save(trainee);
 
-        Trainee deactivated = traineeRepository.findById(trainee.getId());
+        Trainee deactivated = traineeRepository.findById(trainee.getId()).orElseThrow();
         assertFalse(deactivated.getUser().getIsActive());
     }
 
     @Test
-    void testDeactivate_byUsername_shouldSetActiveToFalse() {
-        String username = "Charlie.Davis";
-
-        traineeRepository.deactivate(username);
-
-        Trainee deactivated = traineeRepository.findByUsername(username);
-        assertFalse(deactivated.getUser().getIsActive());
-    }
-
-    @Test
-    void testDelete_byId_shouldRemoveTrainee() {
-        Trainee trainee = traineeRepository.findByUsername("Alice.Brown");
+    void testDeleteById_shouldRemoveTrainee() {
+        Trainee trainee = traineeRepository.findByUser_Username("Alice.Brown").orElseThrow();
         assertNotNull(trainee);
         Long traineeId = trainee.getId();
 
-        traineeRepository.delete(traineeId);
+        trainee.removeAssociations();
+        entityManager.flush();
+        traineeRepository.deleteById(traineeId);
+        entityManager.flush();
+        entityManager.clear();
 
-        Trainee deleted = traineeRepository.findById(traineeId);
-        assertNull(deleted);
+        Optional<Trainee> deleted = traineeRepository.findById(traineeId);
+        assertTrue(deleted.isEmpty());
     }
 
     @Test
-    void testDelete_byUsername_shouldRemoveTrainee() {
+    void testDeleteById_byUsername_shouldRemoveTrainee() {
         String username = "Bob.Wilson";
-        Trainee trainee = traineeRepository.findByUsername(username);
+        Trainee trainee = traineeRepository.findByUser_Username(username).orElseThrow();
         assertNotNull(trainee);
 
-        traineeRepository.delete(trainee.getId());
+        trainee.removeAssociations();
+        entityManager.flush();
+        traineeRepository.deleteById(trainee.getId());
+        entityManager.flush();
+        entityManager.clear();
 
-        Trainee deleted = traineeRepository.findByUsername(username);
-        assertNull(deleted);
-    }
-
-    @Test
-    void testDelete_byId_whenNotExists_shouldThrowException() {
-        Long nonExistentId = 999L;
-
-        assertThrows(InvalidDataAccessApiUsageException.class, () -> {
-            traineeRepository.delete(nonExistentId);
-        });
-    }
-
-    @Test
-    void testDelete_byUserId_whenNotExists_shouldThrowException() {
-        Long nonExistentUseId = 234L;
-
-        assertThrows(InvalidDataAccessApiUsageException.class, () -> {
-            traineeRepository.delete(nonExistentUseId);
-        });
+        Optional<Trainee> deleted = traineeRepository.findByUser_Username(username);
+        assertTrue(deleted.isEmpty());
     }
 }

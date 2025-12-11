@@ -5,6 +5,7 @@ import epam.gym.domain.dto.response.RegistrationResponse;
 import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.services.impl.TraineeServiceImpl;
 import epam.gym.infrastructure.entities.Trainee;
+import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.entities.User;
 import epam.gym.infrastructure.mappers.TraineeMapper;
 import epam.gym.infrastructure.repositories.TraineeRepository;
@@ -16,7 +17,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -95,7 +99,7 @@ class TraineeServiceImplTest {
         traineeRequest.setFirstName("Jane");
         traineeRequest.setAddress("456 Oak Ave");
 
-        when(traineeRepository.findById(traineeId)).thenReturn(trainee);
+        when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(trainee));
         when(traineeRepository.save(trainee)).thenReturn(trainee);
         when(traineeMapper.toModel(trainee)).thenReturn(traineeModel);
 
@@ -111,7 +115,7 @@ class TraineeServiceImplTest {
     @Test
     void testUpdate_whenTraineeNotExists_shouldThrowException() {
         Long traineeId = 999L;
-        when(traineeRepository.findById(traineeId)).thenReturn(null);
+        when(traineeRepository.findById(traineeId)).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () ->
             traineeService.update(traineeRequest, traineeId)
@@ -123,7 +127,7 @@ class TraineeServiceImplTest {
     @Test
     void testSelect_whenTraineeExists_shouldReturnTrainee() {
         Long traineeId = 1L;
-        when(traineeRepository.findById(traineeId)).thenReturn(trainee);
+        when(traineeRepository.findById(traineeId)).thenReturn(Optional.of(trainee));
         when(traineeMapper.toModel(trainee)).thenReturn(traineeModel);
 
         TraineeModel result = traineeService.select(traineeId);
@@ -137,7 +141,7 @@ class TraineeServiceImplTest {
     @Test
     void testSelect_whenTraineeNotExists_shouldThrowException() {
         Long traineeId = 999L;
-        when(traineeRepository.findById(traineeId)).thenReturn(null);
+        when(traineeRepository.findById(traineeId)).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () ->
             traineeService.select(traineeId)
@@ -146,80 +150,127 @@ class TraineeServiceImplTest {
     }
 
     @Test
-    void testDelete_shouldDeleteTrainee() {
+    void testDelete_shouldDeleteTraineeWithoutTrainings() {
         String username = "bla.bla";
-        when(traineeRepository.findByUsername(username)).thenReturn(trainee);
-        doNothing().when(traineeRepository).delete(trainee.getId());
+        trainee.setTrainings(new LinkedHashSet<>());
+
+        when(traineeRepository.findByUser_Username(username)).thenReturn(Optional.of(trainee));
+        doNothing().when(traineeRepository).delete(trainee);
 
         traineeService.delete(username);
 
-        verify(traineeRepository).findByUsername(username);
-        verify(traineeRepository).delete(trainee.getId());
+        verify(traineeRepository).findByUser_Username(username);
+        verify(traineeRepository).delete(trainee);
+        assertTrue(trainee.getTrainings().isEmpty());
+    }
+
+    @Test
+    void testDelete_shouldDeleteTraineeAndClearTrainings() {
+        String username = "John.Doe";
+
+        Training training1 = new Training();
+        training1.setId(1L);
+        training1.setTrainingName("Morning Workout");
+
+        Training training2 = new Training();
+        training2.setId(2L);
+        training2.setTrainingName("Evening Run");
+
+        Set<Training> trainings = new LinkedHashSet<>();
+        trainings.add(training1);
+        trainings.add(training2);
+        trainee.setTrainings(trainings);
+
+        when(traineeRepository.findByUser_Username(username)).thenReturn(Optional.of(trainee));
+        doNothing().when(traineeRepository).delete(trainee);
+
+        traineeService.delete(username);
+
+        verify(traineeRepository).findByUser_Username(username);
+        verify(traineeRepository).delete(trainee);
+        assertTrue(trainee.getTrainings().isEmpty(), "Trainings should be cleared before deletion");
+    }
+
+    @Test
+    void testDelete_whenTraineeNotExists_shouldThrowNoSuchElementException() {
+        String username = "NonExistent.User";
+        when(traineeRepository.findByUser_Username(username)).thenReturn(Optional.empty());
+
+        NoSuchElementException exception = assertThrows(NoSuchElementException.class, () ->
+            traineeService.delete(username)
+        );
+
+        assertEquals("Trainee not found with username: " + username, exception.getMessage());
+        verify(traineeRepository).findByUser_Username(username);
+        verify(traineeRepository, never()).delete(any());
     }
 
     @Test
     void testSetActiveStatus_shouldActivateTrainee() {
         String username = "John.Doe";
         user.setIsActive(false);
-        when(traineeRepository.findByUsername(username)).thenReturn(trainee);
-        doNothing().when(traineeRepository).activate(trainee.getId());
+        when(traineeRepository.findByUser_Username(username)).thenReturn(Optional.of(trainee));
+        when(traineeRepository.save(trainee)).thenReturn(trainee);
 
         traineeService.setActiveStatus(username, true);
 
-        verify(traineeRepository).findByUsername(username);
-        verify(traineeRepository).activate(trainee.getId());
+        verify(traineeRepository).findByUser_Username(username);
+        verify(traineeRepository).save(trainee);
+        assertTrue(trainee.getUser().getIsActive());
     }
 
     @Test
     void testSetActiveStatus_shouldDeactivateTrainee() {
         String username = "John.Doe";
         user.setIsActive(true);
-        when(traineeRepository.findByUsername(username)).thenReturn(trainee);
-        doNothing().when(traineeRepository).deactivate(trainee.getId());
+        when(traineeRepository.findByUser_Username(username)).thenReturn(Optional.of(trainee));
+        when(traineeRepository.save(trainee)).thenReturn(trainee);
 
         traineeService.setActiveStatus(username, false);
 
-        verify(traineeRepository).findByUsername(username);
-        verify(traineeRepository).deactivate(trainee.getId());
+        verify(traineeRepository).findByUser_Username(username);
+        verify(traineeRepository).save(trainee);
+        assertFalse(trainee.getUser().getIsActive());
     }
 
     @Test
     void testSetActiveStatus_whenAlreadyActive_shouldStillActivate() {
         String username = "John.Doe";
         user.setIsActive(true);
-        when(traineeRepository.findByUsername(username)).thenReturn(trainee);
-        doNothing().when(traineeRepository).activate(trainee.getId());
+        when(traineeRepository.findByUser_Username(username)).thenReturn(Optional.of(trainee));
+        when(traineeRepository.save(trainee)).thenReturn(trainee);
 
         traineeService.setActiveStatus(username, true);
 
-        verify(traineeRepository).findByUsername(username);
-        verify(traineeRepository).activate(trainee.getId());
+        verify(traineeRepository).findByUser_Username(username);
+        verify(traineeRepository).save(trainee);
+        assertTrue(trainee.getUser().getIsActive());
     }
 
     @Test
     void testSetActiveStatus_whenAlreadyInactive_shouldStillDeactivate() {
         String username = "John.Doe";
         user.setIsActive(false);
-        when(traineeRepository.findByUsername(username)).thenReturn(trainee);
-        doNothing().when(traineeRepository).deactivate(trainee.getId());
+        when(traineeRepository.findByUser_Username(username)).thenReturn(Optional.of(trainee));
+        when(traineeRepository.save(trainee)).thenReturn(trainee);
 
         traineeService.setActiveStatus(username, false);
 
-        verify(traineeRepository).findByUsername(username);
-        verify(traineeRepository).deactivate(trainee.getId());
+        verify(traineeRepository).findByUser_Username(username);
+        verify(traineeRepository).save(trainee);
+        assertFalse(trainee.getUser().getIsActive());
     }
 
     @Test
     void testSetActiveStatus_whenTraineeNotExists_shouldThrowException() {
         String username = "NonExistent.User";
-        when(traineeRepository.findByUsername(username)).thenReturn(null);
+        when(traineeRepository.findByUser_Username(username)).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () ->
             traineeService.setActiveStatus(username, true)
         );
-        verify(traineeRepository).findByUsername(username);
-        verify(traineeRepository, never()).activate(any(Long.class));
-        verify(traineeRepository, never()).deactivate(any(Long.class));
+        verify(traineeRepository).findByUser_Username(username);
+        verify(traineeRepository, never()).save(any());
     }
 
     @Test
@@ -228,14 +279,15 @@ class TraineeServiceImplTest {
         String oldPassword = "password123";
         String newPassword = "newPassword123";
         when(traineeRepository.authenticate(trainerUsername, oldPassword)).thenReturn(true);
-        when(traineeRepository.findByUsername(trainerUsername)).thenReturn(trainee);
-        doNothing().when(traineeRepository).changePassword(trainee.getId(), newPassword);
+        when(traineeRepository.findByUser_Username(trainerUsername)).thenReturn(Optional.of(trainee));
+        when(traineeRepository.save(trainee)).thenReturn(trainee);
 
         traineeService.changePassword(trainerUsername, oldPassword, newPassword);
 
         verify(traineeRepository).authenticate(trainerUsername, oldPassword);
-        verify(traineeRepository).findByUsername(trainerUsername);
-        verify(traineeRepository).changePassword(trainee.getId(), newPassword);
+        verify(traineeRepository).findByUser_Username(trainerUsername);
+        verify(traineeRepository).save(trainee);
+        assertEquals(newPassword, trainee.getUser().getPassword());
     }
 
     @Test
@@ -249,7 +301,7 @@ class TraineeServiceImplTest {
                 traineeService.changePassword(trainerUsername, oldPassword, newPassword)
         );
         verify(traineeRepository).authenticate(trainerUsername, oldPassword);
-        verify(traineeRepository, never()).findByUsername(any());
-        verify(traineeRepository, never()).changePassword(any(Long.class), any(String.class));
+        verify(traineeRepository, never()).findByUser_Username(any());
+        verify(traineeRepository, never()).save(any());
     }
 }

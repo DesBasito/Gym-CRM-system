@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -87,8 +88,14 @@ class TrainerServiceImplTest {
 
     @Test
     void testCreate_withValidSpecialization_shouldCreateTrainerAndReturnCredentials() {
+        TrainingType fitnessType = new TrainingType();
+        fitnessType.setId(1L);
+        fitnessType.setTrainingTypeName(epam.gym.constants.TrainingType.FITNESS);
+
         when(trainerMapper.requestToModel(trainerRequest)).thenReturn(trainerModel);
         when(trainerMapper.toEntity(trainerModel)).thenReturn(trainer);
+        when(trainingTypeRepository.findTrainingTypeByTrainingTypeName(epam.gym.constants.TrainingType.FITNESS))
+                .thenReturn(Optional.of(fitnessType));
         when(trainerRepository.save(trainer)).thenReturn(trainer);
 
         RegistrationResponse result = trainerService.create(trainerRequest);
@@ -100,27 +107,19 @@ class TrainerServiceImplTest {
     }
 
     @Test
-    void testCreate_withInvalidSpecialization_shouldThrowException() {
-        trainerRequest.setSpecialization("INVALID_TYPE");
-
-        assertThrows(IllegalArgumentException.class, () ->
-            trainerService.create(trainerRequest)
-        );
-        verify(trainerRepository, never()).save(any());
-    }
-
-    @Test
     void testUpdate_withValidSpecialization_shouldUpdateTrainer() {
         Long trainerId = 1L;
         trainerRequest.setFirstName("Jane");
         trainerRequest.setSpecialization("YOGA");
+        epam.gym.constants.TrainingType type = epam.gym.constants.TrainingType.valueOf(trainerRequest.getSpecialization().toUpperCase());
+
 
         TrainingType yogaType = new TrainingType();
         yogaType.setId(2L);
         yogaType.setTrainingTypeName(epam.gym.constants.TrainingType.YOGA);
 
-        when(trainerRepository.findById(trainerId)).thenReturn(trainer);
-        when(trainingTypeRepository.findByName("YOGA")).thenReturn(yogaType);
+        when(trainerRepository.findById(trainerId)).thenReturn(Optional.of(trainer));
+        when(trainingTypeRepository.findTrainingTypeByTrainingTypeName(type)).thenReturn(Optional.of(yogaType));
         when(trainerRepository.save(trainer)).thenReturn(trainer);
         when(trainerMapper.toModel(trainer)).thenReturn(trainerModel);
 
@@ -131,25 +130,13 @@ class TrainerServiceImplTest {
         assertEquals(yogaType, trainer.getSpecialization());
         verify(trainerRepository).findById(trainerId);
         verify(trainerRepository).save(trainer);
-        verify(trainingTypeRepository).findByName("YOGA");
-    }
-
-    @Test
-    void testUpdate_withInvalidSpecialization_shouldThrowException() {
-        Long trainerId = 1L;
-        trainerRequest.setSpecialization("INVALID_TYPE");
-
-        assertThrows(IllegalArgumentException.class, () ->
-            trainerService.update(trainerRequest, trainerId)
-        );
-        verify(trainerRepository, never()).findById(any());
-        verify(trainerRepository, never()).save(any());
+        verify(trainingTypeRepository).findTrainingTypeByTrainingTypeName(type);
     }
 
     @Test
     void testUpdate_whenTrainerNotExists_shouldThrowException() {
         Long trainerId = 999L;
-        when(trainerRepository.findById(trainerId)).thenReturn(null);
+        when(trainerRepository.findById(trainerId)).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () ->
             trainerService.update(trainerRequest, trainerId)
@@ -161,7 +148,7 @@ class TrainerServiceImplTest {
     @Test
     void testSelect_whenTrainerExists_shouldReturnTrainer() {
         Long trainerId = 1L;
-        when(trainerRepository.findById(trainerId)).thenReturn(trainer);
+        when(trainerRepository.findById(trainerId)).thenReturn(Optional.of(trainer));
         when(trainerMapper.toModel(trainer)).thenReturn(trainerModel);
 
         TrainerModel result = trainerService.select(trainerId);
@@ -175,7 +162,7 @@ class TrainerServiceImplTest {
     @Test
     void testSelect_whenTrainerNotExists_shouldThrowException() {
         Long trainerId = 999L;
-        when(trainerRepository.findById(trainerId)).thenReturn(null);
+        when(trainerRepository.findById(trainerId)).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () ->
             trainerService.select(trainerId)
@@ -187,65 +174,68 @@ class TrainerServiceImplTest {
     void testSetActiveStatus_shouldActivateTrainer() {
         String username = "John.Doe";
         user.setIsActive(false);
-        when(trainerRepository.findByUsername(username)).thenReturn(trainer);
-        doNothing().when(trainerRepository).activate(trainer.getId());
+        when(trainerRepository.findByUser_Username(username)).thenReturn(Optional.of(trainer));
+        when(trainerRepository.save(trainer)).thenReturn(trainer);
 
         trainerService.setActiveStatus(username, true);
 
-        verify(trainerRepository).findByUsername(username);
-        verify(trainerRepository).activate(trainer.getId());
+        verify(trainerRepository).findByUser_Username(username);
+        verify(trainerRepository).save(trainer);
+        assertTrue(trainer.getUser().getIsActive());
     }
 
     @Test
     void testSetActiveStatus_shouldDeactivateTrainer() {
         String username = "John.Doe";
         user.setIsActive(true);
-        when(trainerRepository.findByUsername(username)).thenReturn(trainer);
-        doNothing().when(trainerRepository).deactivate(trainer.getId());
+        when(trainerRepository.findByUser_Username(username)).thenReturn(Optional.of(trainer));
+        when(trainerRepository.save(trainer)).thenReturn(trainer);
 
         trainerService.setActiveStatus(username, false);
 
-        verify(trainerRepository).findByUsername(username);
-        verify(trainerRepository).deactivate(trainer.getId());
+        verify(trainerRepository).findByUser_Username(username);
+        verify(trainerRepository).save(trainer);
+        assertFalse(trainer.getUser().getIsActive());
     }
 
     @Test
     void testSetActiveStatus_whenAlreadyActive_shouldStillActivate() {
         String username = "John.Doe";
         user.setIsActive(true);
-        when(trainerRepository.findByUsername(username)).thenReturn(trainer);
-        doNothing().when(trainerRepository).activate(trainer.getId());
+        when(trainerRepository.findByUser_Username(username)).thenReturn(Optional.of(trainer));
+        when(trainerRepository.save(trainer)).thenReturn(trainer);
 
         trainerService.setActiveStatus(username, true);
 
-        verify(trainerRepository).findByUsername(username);
-        verify(trainerRepository).activate(trainer.getId());
+        verify(trainerRepository).findByUser_Username(username);
+        verify(trainerRepository).save(trainer);
+        assertTrue(trainer.getUser().getIsActive());
     }
 
     @Test
     void testSetActiveStatus_whenAlreadyInactive_shouldStillDeactivate() {
         String username = "John.Doe";
         user.setIsActive(false);
-        when(trainerRepository.findByUsername(username)).thenReturn(trainer);
-        doNothing().when(trainerRepository).deactivate(trainer.getId());
+        when(trainerRepository.findByUser_Username(username)).thenReturn(Optional.of(trainer));
+        when(trainerRepository.save(trainer)).thenReturn(trainer);
 
         trainerService.setActiveStatus(username, false);
 
-        verify(trainerRepository).findByUsername(username);
-        verify(trainerRepository).deactivate(trainer.getId());
+        verify(trainerRepository).findByUser_Username(username);
+        verify(trainerRepository).save(trainer);
+        assertFalse(trainer.getUser().getIsActive());
     }
 
     @Test
     void testSetActiveStatus_whenTrainerNotExists_shouldThrowException() {
         String username = "NonExistent.User";
-        when(trainerRepository.findByUsername(username)).thenReturn(null);
+        when(trainerRepository.findByUser_Username(username)).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () ->
             trainerService.setActiveStatus(username, true)
         );
-        verify(trainerRepository).findByUsername(username);
-        verify(trainerRepository, never()).activate(any(Long.class));
-        verify(trainerRepository, never()).deactivate(any(Long.class));
+        verify(trainerRepository).findByUser_Username(username);
+        verify(trainerRepository, never()).save(any());
     }
 
     @Test
@@ -254,14 +244,15 @@ class TrainerServiceImplTest {
         String oldPassword = "password123";
         String newPassword = "newPassword123";
         when(trainerRepository.authenticate(trainerUsername, oldPassword)).thenReturn(true);
-        when(trainerRepository.findByUsername(trainerUsername)).thenReturn(trainer);
-        doNothing().when(trainerRepository).changePassword(trainer.getId(), newPassword);
+        when(trainerRepository.findByUser_Username(trainerUsername)).thenReturn(Optional.of(trainer));
+        when(trainerRepository.save(trainer)).thenReturn(trainer);
 
         trainerService.changePassword(trainerUsername, oldPassword, newPassword);
 
         verify(trainerRepository).authenticate(trainerUsername, oldPassword);
-        verify(trainerRepository).findByUsername(trainerUsername);
-        verify(trainerRepository).changePassword(trainer.getId(), newPassword);
+        verify(trainerRepository).findByUser_Username(trainerUsername);
+        verify(trainerRepository).save(trainer);
+        assertEquals(newPassword, trainer.getUser().getPassword());
     }
 
     @Test
@@ -275,8 +266,8 @@ class TrainerServiceImplTest {
             trainerService.changePassword(trainerUsername, oldPassword, newPassword)
         );
         verify(trainerRepository).authenticate(trainerUsername, oldPassword);
-        verify(trainerRepository, never()).findByUsername(any());
-        verify(trainerRepository, never()).changePassword(any(Long.class), any(String.class));
+        verify(trainerRepository, never()).findByUser_Username(any());
+        verify(trainerRepository, never()).save(any());
     }
 
     @Test
@@ -299,7 +290,7 @@ class TrainerServiceImplTest {
         TrainerModel model2 = new TrainerModel();
         model2.setId(2L);
 
-        when(traineeRepository.findByUsername(traineeUsername)).thenReturn(trainee);
+        when(traineeRepository.findByUser_Username(traineeUsername)).thenReturn(Optional.of(trainee));
         when(trainerRepository.findAllNotAssignedToTrainee(traineeUsername)).thenReturn(trainers);
         when(trainerMapper.toModel(trainer1)).thenReturn(model1);
         when(trainerMapper.toModel(trainer2)).thenReturn(model2);
@@ -308,19 +299,19 @@ class TrainerServiceImplTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(traineeRepository).findByUsername(traineeUsername);
+        verify(traineeRepository).findByUser_Username(traineeUsername);
         verify(trainerRepository).findAllNotAssignedToTrainee(traineeUsername);
     }
 
     @Test
     void testFindAllNotAssignedToTrainee_whenTraineeNotExists_shouldThrowException() {
         String traineeUsername = "NonExistent.User";
-        when(traineeRepository.findByUsername(traineeUsername)).thenReturn(null);
+        when(traineeRepository.findByUser_Username(traineeUsername)).thenReturn(Optional.empty());
 
         assertThrows(NoSuchElementException.class, () ->
             trainerService.findAllNotAssignedToTrainee(traineeUsername)
         );
-        verify(traineeRepository).findByUsername(traineeUsername);
+        verify(traineeRepository).findByUser_Username(traineeUsername);
         verify(trainerRepository, never()).findAllNotAssignedToTrainee(any());
     }
 }

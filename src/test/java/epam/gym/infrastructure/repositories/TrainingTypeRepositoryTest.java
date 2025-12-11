@@ -3,15 +3,16 @@ package epam.gym.infrastructure.repositories;
 import epam.gym.infrastructure.entities.TrainingType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@DataJpaTest
 @ActiveProfiles("test")
 @Transactional
 class TrainingTypeRepositoryTest {
@@ -32,9 +33,8 @@ class TrainingTypeRepositoryTest {
 
     @Test
     void testFindByName_whenExists_shouldReturnTrainingType() {
-        String name = "FITNESS";
-
-        TrainingType type = trainingTypeRepository.findByName(name);
+        epam.gym.constants.TrainingType tType = epam.gym.constants.TrainingType.valueOf("FITNESS");
+        TrainingType type = trainingTypeRepository.findTrainingTypeByTrainingTypeName(tType).orElse(null);
 
         assertNotNull(type);
         assertEquals(epam.gym.constants.TrainingType.FITNESS, type.getTrainingTypeName());
@@ -53,7 +53,8 @@ class TrainingTypeRepositoryTest {
         String[] expectedTypes = {"FITNESS", "YOGA", "CARDIO", "BOXING", "PILATES", "CROSSFIT", "SWIMMING"};
 
         for (String typeName : expectedTypes) {
-            TrainingType type = trainingTypeRepository.findByName(typeName);
+            epam.gym.constants.TrainingType trType = epam.gym.constants.TrainingType.valueOf(typeName);
+            TrainingType type = trainingTypeRepository.findTrainingTypeByTrainingTypeName(trType).orElse(null);
 
             assertNotNull(type, "Training type " + typeName + " should exist");
             assertEquals(epam.gym.constants.TrainingType.valueOf(typeName), type.getTrainingTypeName());
@@ -61,10 +62,10 @@ class TrainingTypeRepositoryTest {
     }
 
     @Test
-    void testFindByName_whenNotExists_shouldReturnNull() {
-        String nonExistentName = "NONEXISTENT";
-        TrainingType type = trainingTypeRepository.findByName(nonExistentName);
-        assertNull(type);
+    void testFindAll_shouldReturnAllTypes() {
+        List<TrainingType> types = trainingTypeRepository.findAll();
+        assertNotNull(types);
+        assertEquals(7, types.size());
     }
 
     @Test
@@ -73,7 +74,7 @@ class TrainingTypeRepositoryTest {
         assertFalse(types.isEmpty());
         Long firstId = types.get(0).getId();
 
-        TrainingType type = trainingTypeRepository.findById(firstId);
+        TrainingType type = trainingTypeRepository.findById(firstId).orElse(null);
 
         assertNotNull(type);
         assertEquals(firstId, type.getId());
@@ -81,8 +82,8 @@ class TrainingTypeRepositoryTest {
     }
 
     @Test
-    void testFindById_whenNotExists_shouldReturnNull() {
-        TrainingType type = trainingTypeRepository.findById(999L);
-        assertNull(type);
+    void testFindById_whenNotExists_shouldReturnEmpty() {
+        Optional<TrainingType> type = trainingTypeRepository.findById(999L);
+        assertTrue(type.isEmpty());
     }
 }
