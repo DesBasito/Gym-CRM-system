@@ -9,14 +9,17 @@ import epam.gym.domain.dto.response.TrainerProfileDto;
 import epam.gym.domain.models.TrainerModel;
 import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TrainerService;
+import epam.gym.infrastructure.entities.RoleName;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.mappers.TrainerMapper;
 import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.repositories.TrainingTypeRepository;
+import epam.gym.security.RoleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,14 +34,16 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
 
     private final TrainingTypeRepository trainingTypeRepository;
     private final TraineeRepository traineeRepository;
+    private final RoleService roleService;
 
     @Autowired
     public TrainerServiceImpl(TrainerRepository repo, TrainerMapper mapper, TrainingTypeRepository typeRepo, TraineeRepository traineeRepository,
-                              TrainerMapper trainerMapper, UserMetrics userMetrics) {
-        super(repo, mapper, userMetrics);
+                              TrainerMapper trainerMapper, UserMetrics userMetrics, RoleService roleService, PasswordEncoder encoder) {
+        super(repo, mapper, userMetrics, encoder);
         this.trainingTypeRepository = typeRepo;
         this.traineeRepository = traineeRepository;
         this.trainerMapper = trainerMapper;
+        this.roleService = roleService;
     }
 
     @Override
@@ -55,6 +60,7 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
     protected void beforeCreate(Trainer entity, TrainerRequest request) {
         TrainingType type = TrainingType.valueOf(request.getSpecialization().toUpperCase());
         entity.setSpecialization(trainingTypeRepository.findTrainingTypeByTrainingTypeName(type).orElseThrow());
+        roleService.assignRoleToUser(entity.getUser(), RoleName.ROLE_TRAINER);
     }
 
     @Override

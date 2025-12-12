@@ -5,3 +5,7 @@ spring:
     url: jdbc:postgresql://localhost:6543/gym_db
     username: postgres
     password: qwe
+  liquibase:
+    change-log: classpath:db/changelog/master.yml
+  flyway:
+    enabled: false

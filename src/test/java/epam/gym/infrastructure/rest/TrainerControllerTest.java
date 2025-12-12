@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -153,7 +154,7 @@ class TrainerControllerTest {
 
         var trainer = trainerRepository.findByUser_Username(username).orElseThrow();
         assertNotNull(trainer);
-        assertEquals("newPassword456", trainer.getUser().getPassword());
+        assertThat(trainer.getUser().getPassword()).startsWith("$2a$10$");
     }
 
     @Test

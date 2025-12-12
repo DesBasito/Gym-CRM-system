@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -153,7 +154,7 @@ class TraineeControllerTest {
 
         Trainee trainee = traineeRepository.findByUser_Username(username).orElseThrow();
         assertNotNull(trainee);
-        assertEquals("newPassword123", trainee.getUser().getPassword());
+        assertThat(trainee.getUser().getPassword()).startsWith("$2a$10$");
     }
 
     @Test
