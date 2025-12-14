@@ -3,7 +3,7 @@ package epam.gym.infrastructure.controller.rest;
 import epam.gym.domain.dto.request.LoginRequest;
 import epam.gym.domain.dto.response.AuthResponse;
 import epam.gym.infrastructure.controller.interfaces.AuthController;
-import epam.gym.security.AuthService;
+import epam.gym.infrastructure.security.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

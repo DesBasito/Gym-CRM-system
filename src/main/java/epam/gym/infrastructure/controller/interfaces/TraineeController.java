@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,7 +25,9 @@ import java.util.List;
 public interface TraineeController {
 
     @PostMapping
-    @Operation(summary = "Register new trainee", description = "Creates a new trainee profile and returns generated credentials")
+    @Operation(summary = "Register new trainee",
+            description = "Creates a new trainee profile and returns generated credentials",
+    security = {})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Trainee registered successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data")
@@ -32,15 +36,13 @@ public interface TraineeController {
             @Parameter(description = "Trainee registration data", required = true)
             @Valid @RequestBody TraineeRequest request);
 
-    @GetMapping("/{username}")
-    @Operation(summary = "Get trainee profile", description = "Retrieves trainee profile information by username")
+    @GetMapping("/profile")
+    @Operation(summary = "Get trainee profile", description = "Retrieves authenticated trainee profile information")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Trainee not found")
+            @ApiResponse(responseCode = "401", description = "Not authorized!")
     })
-    ResponseEntity<TraineeProfileDto> getTraineeProfile(
-            @Parameter(description = "Trainee username", required = true)
-            @PathVariable("username") String username);
+    ResponseEntity<TraineeProfileDto> getTraineeProfile(Authentication authentication);
 
     @DeleteMapping("/{username}")
     @Operation(summary = "Delete trainee profile", description = "Deletes a trainee profile by username (hard delete with cascade)")
@@ -52,17 +54,15 @@ public interface TraineeController {
             @Parameter(description = "Trainee username", required = true)
             @PathVariable("username") String username);
 
-    @GetMapping("/{username}/available-trainers")
+    @GetMapping("/available-trainers")
     @Operation(summary = "Get available trainers", description = "Retrieves active trainers not assigned to the trainee")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Available trainers retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Trainee not found")
     })
-    ResponseEntity<java.util.List<epam.gym.domain.dto.response.TrainerInfoDto>> getAvailableTrainers(
-            @Parameter(description = "Trainee username", required = true)
-            @PathVariable("username") String username);
+    ResponseEntity<List<TrainerInfoDto>> getAvailableTrainers();
 
-    @PutMapping
+    @PutMapping("/{id}")
     @Operation(summary = "Update trainee profile", description = "Updates trainee profile information")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainee profile updated successfully"),
@@ -71,7 +71,8 @@ public interface TraineeController {
     })
     ResponseEntity<TraineeProfileDto> updateTraineeProfile(
             @Parameter(description = "Trainee update data", required = true)
-            @Valid @RequestBody UpdateTraineeRequest request);
+            @Valid @RequestBody UpdateTraineeRequest request,
+            @PathVariable("id") Long id);
 
     @PutMapping("/change-password")
     @Operation(summary = "Change trainee password", description = "Changes the password for a trainee")

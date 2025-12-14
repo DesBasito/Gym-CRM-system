@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.*;
 public interface TrainerController {
 
     @PostMapping
-    @Operation(summary = "Register new trainer", description = "Creates a new trainer profile and returns generated credentials")
+    @Operation(summary = "Register new trainer",
+            description = "Creates a new trainer profile and returns generated credentials",
+            security = {})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Trainer registered successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data")
@@ -27,17 +29,15 @@ public interface TrainerController {
             @Parameter(description = "Trainer registration data", required = true)
             @Valid @RequestBody TrainerRequest request);
 
-    @GetMapping("/{username}")
+    @GetMapping("/profile")
     @Operation(summary = "Get trainer profile", description = "Retrieves trainer profile information by username")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Profile retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Trainer not found")
     })
-    ResponseEntity<TrainerProfileDto> getTrainerProfile(
-            @Parameter(description = "Trainer username", required = true)
-            @PathVariable("username") String username);
+    ResponseEntity<TrainerProfileDto> getTrainerProfile();
 
-    @PutMapping
+    @PutMapping("/{id}")
     @Operation(summary = "Update trainer profile", description = "Updates trainer profile information (specialization is read-only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Trainer profile updated successfully"),
@@ -46,7 +46,8 @@ public interface TrainerController {
     })
     ResponseEntity<TrainerProfileDto> updateTrainerProfile(
             @Parameter(description = "Trainer update data", required = true)
-            @Valid @RequestBody UpdateTrainerRequest request);
+            @Valid @RequestBody UpdateTrainerRequest request,
+            @PathVariable(name = "id") Long id);
 
     @PutMapping("/change-password")
     @Operation(summary = "Change trainer password", description = "Changes the password for a trainer")

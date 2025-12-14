@@ -1,7 +1,9 @@
-package epam.gym.security;
+package epam.gym.infrastructure.security.service;
 
 import epam.gym.domain.dto.request.LoginRequest;
 import epam.gym.domain.dto.response.AuthResponse;
+import epam.gym.infrastructure.entities.User;
+import epam.gym.infrastructure.security.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,8 +23,7 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         log.info("Attempting to authenticate user: {}", request.getUsername());
-
-        Authentication authentication = authenticationManager.authenticate(
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
                         request.getPassword()

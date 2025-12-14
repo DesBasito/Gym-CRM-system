@@ -1,7 +1,7 @@
-package epam.gym.security;
+package epam.gym.infrastructure.security.service;
 
 import epam.gym.infrastructure.entities.Role;
-import epam.gym.infrastructure.entities.RoleName;
+import epam.gym.constants.RoleName;
 import epam.gym.infrastructure.entities.User;
 import epam.gym.infrastructure.repositories.RoleRepository;
 import lombok.RequiredArgsConstructor;

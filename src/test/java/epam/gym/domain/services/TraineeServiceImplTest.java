@@ -9,7 +9,7 @@ import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.entities.User;
 import epam.gym.infrastructure.mappers.TraineeMapper;
 import epam.gym.infrastructure.repositories.TraineeRepository;
-import epam.gym.security.RoleService;
+import epam.gym.infrastructure.security.service.RoleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

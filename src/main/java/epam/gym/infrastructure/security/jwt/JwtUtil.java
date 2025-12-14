@@ -1,4 +1,4 @@
-package epam.gym.security;
+package epam.gym.infrastructure.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

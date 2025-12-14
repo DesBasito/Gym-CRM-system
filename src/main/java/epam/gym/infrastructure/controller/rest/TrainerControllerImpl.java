@@ -8,10 +8,12 @@ import epam.gym.domain.dto.response.TraineeProfileDto;
 import epam.gym.domain.dto.response.TrainerProfileDto;
 import epam.gym.domain.services.interfaces.TrainerService;
 import epam.gym.infrastructure.controller.interfaces.TrainerController;
+import epam.gym.infrastructure.security.util.AuthenticatedUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TrainerControllerImpl implements TrainerController {
 
     private final TrainerService trainerService;
+    private final AuthenticatedUserUtil authenticatedUserUtil;
 
     @Override
     public ResponseEntity<RegistrationResponse> registerTrainer(TrainerRequest request) {
@@ -34,17 +37,18 @@ public class TrainerControllerImpl implements TrainerController {
     }
 
     @Override
-    public ResponseEntity<TrainerProfileDto> getTrainerProfile(String username) {
-        log.info("Get trainer profile request received for username: {}", username);
+    public ResponseEntity<TrainerProfileDto> getTrainerProfile() {
+        log.info("Get trainer profile request received for username: {}", authenticatedUserUtil.getCurrentUsername());
 
-        TrainerProfileDto profile = trainerService.selectByUsername(username);
+        TrainerProfileDto profile = trainerService.selectByUsername(authenticatedUserUtil.getCurrentUsername());
 
-        log.info("Trainer profile retrieved successfully for username: {}", username);
+        log.info("Trainer profile retrieved successfully for username: {}", authenticatedUserUtil.getCurrentUsername());
         return ResponseEntity.ok(profile);
     }
 
     @Override
-    public ResponseEntity<TrainerProfileDto> updateTrainerProfile(UpdateTrainerRequest request) {
+    @PreAuthorize("@authenticatedUserUtil.isProfileOwner(#id, authentication.name) or hasRole('ADMIN')")
+    public ResponseEntity<TrainerProfileDto> updateTrainerProfile(UpdateTrainerRequest request, Long id) {
         log.info("Update trainer profile request received for username: {}", request.getUsername());
 
         TrainerProfileDto profile = trainerService.updateByUsername(request);
@@ -55,15 +59,16 @@ public class TrainerControllerImpl implements TrainerController {
 
     @Override
     public ResponseEntity<Void> changePassword(ChangePasswordRequest request) {
-        log.info("Change password request received for trainer: {}", request.getUsername());
+        log.info("Change password request received for trainer: {}", authenticatedUserUtil.getCurrentUsername());
 
-        trainerService.changePassword(request.getUsername(), request.getOldPassword(), request.getNewPassword());
+        trainerService.changePassword(authenticatedUserUtil.getCurrentUsername(), request.getOldPassword(), request.getNewPassword());
 
-        log.info("Password changed successfully for trainer: {}", request.getUsername());
+        log.info("Password changed successfully for trainer: {}", authenticatedUserUtil.getCurrentUsername());
         return ResponseEntity.ok().build();
     }
 
     @Override
+    @PreAuthorize("@authenticatedUserUtil.isProfileOwnerByUsername(#username, authentication.name) or hasRole('ADMIN')")
     public ResponseEntity<Void> activateDeactivateTrainer(String username, Boolean isActive) {
         log.info("Activate/Deactivate trainer request received for username: {}, isActive: {}", username, isActive);
 

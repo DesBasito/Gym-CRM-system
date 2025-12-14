@@ -12,9 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateTraineeTrainersRequest {
-    @NotBlank(message = "Trainee username is required")
-    private String traineeUsername;
-
     @NotNull(message = "Trainers list is required")
     private List<String> trainerUsernames;
 }

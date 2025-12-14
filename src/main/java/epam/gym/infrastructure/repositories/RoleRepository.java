@@ -1,7 +1,6 @@
 package epam.gym.infrastructure.repositories;
 
 import epam.gym.infrastructure.entities.Role;
-import epam.gym.infrastructure.entities.RoleName;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

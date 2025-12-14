@@ -1,4 +1,4 @@
-package epam.gym.infrastructure.entities;
+package epam.gym.constants;
 
 public enum RoleName {
     ROLE_TRAINEE,

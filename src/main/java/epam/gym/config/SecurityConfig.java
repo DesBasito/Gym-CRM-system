@@ -1,9 +1,11 @@
 package epam.gym.config;
 
-import epam.gym.security.JwtAuthenticationFilter;
+import epam.gym.infrastructure.security.filter.BruteForceProtectionFilter;
+import epam.gym.infrastructure.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -27,6 +29,7 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final BruteForceProtectionFilter bruteForceProtectionFilter;
     private final UserDetailsService userDetailsService;
 
     @Bean
@@ -36,11 +39,28 @@ public class SecurityConfig {
                 .sessionManagement(manager ->
                         manager.sessionCreationPolicy(STATELESS))
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/api/auth/**","/api/v1/trainees", "/api/v1/trainers").permitAll()
-                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/trainees").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/trainers").permitAll()
+                        .requestMatchers("/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/webjars/**").permitAll()
+                        .requestMatchers("/api/v1/trainings/types").permitAll()
+                        .requestMatchers("/actuator/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/trainees/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/trainees","/api/v1/trainers").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/trainees/**").hasAnyRole("TRAINEE", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/trainees/**").hasAnyRole("TRAINEE", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/trainers/**").hasAnyRole("TRAINER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/trainers/**").hasAnyRole("TRAINER", "ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/trainings").hasAnyRole("TRAINEE", "TRAINER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/trainings/trainer","/api/v1/trainers/profile").hasRole("TRAINER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/trainings/trainee","/api/v1/trainees/profile").hasRole("TRAINEE")
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
+                .addFilterBefore(bruteForceProtectionFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
@@ -52,8 +72,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

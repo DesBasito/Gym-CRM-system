@@ -12,10 +12,6 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Schema(description = "Change password request")
 public class ChangePasswordRequest {
-    @NotBlank(message = "Username is required")
-    @Schema(description = "Username", requiredMode = Schema.RequiredMode.REQUIRED, example = "John.Doe")
-    String username;
-
     @NotBlank(message = "Old password is required")
     @Schema(description = "Old password", requiredMode = Schema.RequiredMode.REQUIRED, example = "oldPassword123")
     String oldPassword;

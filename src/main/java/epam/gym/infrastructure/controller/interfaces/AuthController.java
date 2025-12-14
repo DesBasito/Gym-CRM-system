@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface AuthController {
 
     @PostMapping("/login")
-    @Operation(summary = "User login", description = "Authenticates user and returns JWT token")
+    @Operation(summary = "User login", description = "Authenticates user and returns JWT token",security = {})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login successful"),
             @ApiResponse(responseCode = "401", description = "Invalid credentials")

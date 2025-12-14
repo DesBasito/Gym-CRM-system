@@ -1,4 +1,4 @@
-package epam.gym.security;
+package epam.gym.infrastructure.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,6 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private static final String AUTH_TYPE = "Bearer ";
 
     @Override
     protected void doFilterInternal(
@@ -35,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String username;
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader == null || !authHeader.startsWith(AUTH_TYPE)) {
             filterChain.doFilter(request, response);
             return;
         }

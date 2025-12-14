@@ -3,21 +3,21 @@ package epam.gym.domain.services.impl;
 import epam.gym.constants.TrainingType;
 import epam.gym.domain.dto.request.TrainerRequest;
 import epam.gym.domain.dto.request.UpdateTrainerRequest;
-import epam.gym.domain.dto.response.RegistrationResponse;
 import epam.gym.domain.dto.response.TrainerInfoDto;
 import epam.gym.domain.dto.response.TrainerProfileDto;
 import epam.gym.domain.models.TrainerModel;
 import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TrainerService;
-import epam.gym.infrastructure.entities.RoleName;
+import epam.gym.constants.RoleName;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.mappers.TrainerMapper;
 import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.repositories.TrainingTypeRepository;
-import epam.gym.security.RoleService;
+import epam.gym.infrastructure.security.service.RoleService;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -31,7 +31,6 @@ import java.util.Optional;
 public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerModel, TrainerRepository, TrainerRequest, TrainerProfileDto>
         implements TrainerService {
     private final TrainerMapper trainerMapper;
-
     private final TrainingTypeRepository trainingTypeRepository;
     private final TraineeRepository traineeRepository;
     private final RoleService roleService;
@@ -81,6 +80,10 @@ public class TrainerServiceImpl extends AbstractUserService<Trainer, TrainerMode
         UpdateTrainerRequest request = (UpdateTrainerRequest) updateRequest;
         entity.getUser().setFirstName(request.getFirstName());
         entity.getUser().setLastName(request.getLastName());
+        TrainingType typeEnum = TrainingType.valueOf(((UpdateTrainerRequest) updateRequest).getSpecialization());
+        epam.gym.infrastructure.entities.TrainingType type = trainingTypeRepository
+                .findTrainingTypeByTrainingTypeName(typeEnum).orElseThrow();
+        entity.setSpecialization(type);
     }
 
     @Override
