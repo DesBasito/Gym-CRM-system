@@ -9,12 +9,14 @@ import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.entities.User;
 import epam.gym.infrastructure.mappers.TraineeMapper;
 import epam.gym.infrastructure.repositories.TraineeRepository;
+import epam.gym.infrastructure.security.service.RoleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
@@ -24,6 +26,8 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +38,12 @@ class TraineeServiceImplTest {
 
     @Mock
     private TraineeMapper traineeMapper;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private RoleService roleService;
 
     @InjectMocks
     private TraineeServiceImpl traineeService;
@@ -75,6 +85,11 @@ class TraineeServiceImplTest {
         trainee.setUser(user);
         trainee.setDateOfBirth(LocalDate.of(1990, 1, 1));
         trainee.setAddress("123 Main St");
+
+        lenient().when(passwordEncoder.encode(anyString())).thenAnswer(invocation ->
+            "encoded_" + invocation.getArgument(0));
+        lenient().when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+        lenient().doNothing().when(roleService).assignRoleToUser(any(), any());
     }
 
     @Test
@@ -87,7 +102,7 @@ class TraineeServiceImplTest {
 
         assertNotNull(result);
         assertEquals("John.Doe", result.getUsername());
-        assertEquals("password123", result.getPassword());
+        verify(passwordEncoder).encode(anyString());
         verify(traineeRepository).save(any(Trainee.class));
         verify(traineeMapper).requestToModel(traineeRequest);
         verify(traineeMapper).toEntity(traineeModel);
@@ -278,16 +293,16 @@ class TraineeServiceImplTest {
         String trainerUsername = "Sushka";
         String oldPassword = "password123";
         String newPassword = "newPassword123";
-        when(traineeRepository.authenticate(trainerUsername, oldPassword)).thenReturn(true);
         when(traineeRepository.findByUser_Username(trainerUsername)).thenReturn(Optional.of(trainee));
+        when(passwordEncoder.matches(eq(oldPassword), anyString())).thenReturn(true);
         when(traineeRepository.save(trainee)).thenReturn(trainee);
 
         traineeService.changePassword(trainerUsername, oldPassword, newPassword);
 
-        verify(traineeRepository).authenticate(trainerUsername, oldPassword);
         verify(traineeRepository).findByUser_Username(trainerUsername);
+        verify(passwordEncoder).matches(eq(oldPassword), anyString());
+        verify(passwordEncoder).encode(newPassword);
         verify(traineeRepository).save(trainee);
-        assertEquals(newPassword, trainee.getUser().getPassword());
     }
 
     @Test
@@ -295,13 +310,14 @@ class TraineeServiceImplTest {
         String trainerUsername = "Sushka.Bl";
         String oldPassword = "wrongPassword";
         String newPassword = "newPassword123";
-        when(traineeRepository.authenticate(trainerUsername, oldPassword)).thenReturn(false);
+        when(traineeRepository.findByUser_Username(trainerUsername)).thenReturn(Optional.of(trainee));
+        when(passwordEncoder.matches(eq(oldPassword), anyString())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class, () ->
                 traineeService.changePassword(trainerUsername, oldPassword, newPassword)
         );
-        verify(traineeRepository).authenticate(trainerUsername, oldPassword);
-        verify(traineeRepository, never()).findByUser_Username(any());
+        verify(traineeRepository).findByUser_Username(trainerUsername);
+        verify(passwordEncoder).matches(eq(oldPassword), anyString());
         verify(traineeRepository, never()).save(any());
     }
 }

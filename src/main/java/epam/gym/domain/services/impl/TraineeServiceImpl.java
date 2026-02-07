@@ -7,6 +7,7 @@ import epam.gym.domain.dto.response.TrainerInfoDto;
 import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TraineeService;
+import epam.gym.constants.RoleName;
 import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.mappers.TraineeMapper;
@@ -14,8 +15,10 @@ import epam.gym.infrastructure.mappers.TrainerMapper;
 import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
+import epam.gym.infrastructure.security.service.RoleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,12 +34,19 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
 
     private final TrainerRepository trainerRepository;
     private final TrainerMapper trainerMapper;
+    private final RoleService roleService;
 
     @Autowired
-    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper, TrainerRepository trainerRepository, TrainerMapper trainerMapper, UserMetrics userMetrics) {
-        super(repo, mapper, userMetrics);
+    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper, TrainerRepository trainerRepository, TrainerMapper trainerMapper, UserMetrics userMetrics, RoleService roleService, PasswordEncoder passwordEncoder) {
+        super(repo, mapper, userMetrics, passwordEncoder);
         this.trainerRepository = trainerRepository;
         this.trainerMapper = trainerMapper;
+        this.roleService = roleService;
+    }
+
+    @Override
+    protected void beforeCreate(Trainee entity, TraineeRequest request) {
+        roleService.assignRoleToUser(entity.getUser(), RoleName.ROLE_TRAINEE);
     }
 
     @Override

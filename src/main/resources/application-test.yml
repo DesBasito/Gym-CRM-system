@@ -22,6 +22,9 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
 
+  liquibase:
+    enabled: false
+
   flyway:
     enabled: true
     clean-disabled: false

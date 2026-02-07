@@ -1,12 +1,12 @@
 -- Insert Users
 INSERT INTO users (first_name, last_name, username, password, is_active) VALUES
-    ('John', 'Doe', 'John.Doe', 'password123', true),
-    ('Jane', 'Smith', 'Jane.Smith', 'pass456', true),
-    ('Mike', 'Johnson', 'Mike.Johnson', 'secure789', true),
-    ('Alice', 'Brown', 'Alice.Brown', 'mypass111', true),
-    ('Bob', 'Wilson', 'Bob.Wilson', 'secret222', false),
-    ('Charlie', 'Davis', 'Charlie.Davis', 'pwd333', true),
-    ('Sarah', 'Connor', 'Sarah.Connor', 'term444', true);
+    ('John', 'Doe', 'John.Doe', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', true),
+    ('Jane', 'Smith', 'Jane.Smith', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', true),
+    ('Mike', 'Johnson', 'Mike.Johnson', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', true),
+    ('Alice', 'Brown', 'Alice.Brown', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', true),
+    ('Bob', 'Wilson', 'Bob.Wilson', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', false),
+    ('Charlie', 'Davis', 'Charlie.Davis', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', true),
+    ('Sarah', 'Connor', 'Sarah.Connor', '$2a$12$WB2YUbFcCN0tm44SBcKUjua9yiFBsfB3vW02IjuwzY7HGtlQIKzy2', true);
 
 -- Insert Trainees
 INSERT INTO trainees (user_id, date_of_birth, address)

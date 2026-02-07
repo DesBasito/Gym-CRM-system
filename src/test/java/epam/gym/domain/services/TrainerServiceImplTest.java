@@ -13,12 +13,14 @@ import epam.gym.infrastructure.mappers.TrainerMapper;
 import epam.gym.infrastructure.repositories.TraineeRepository;
 import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.repositories.TrainingTypeRepository;
+import epam.gym.infrastructure.security.service.RoleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +29,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +47,12 @@ class TrainerServiceImplTest {
 
     @Mock
     private TraineeRepository traineeRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private RoleService roleService;
 
     @InjectMocks
     private TrainerServiceImpl trainerService;
@@ -84,6 +94,11 @@ class TrainerServiceImplTest {
         trainer.setId(1L);
         trainer.setUser(user);
         trainer.setSpecialization(trainingType);
+
+        lenient().when(passwordEncoder.encode(anyString())).thenAnswer(invocation ->
+            "encoded_" + invocation.getArgument(0));
+        lenient().when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+        lenient().doNothing().when(roleService).assignRoleToUser(any(), any());
     }
 
     @Test
@@ -102,7 +117,7 @@ class TrainerServiceImplTest {
 
         assertNotNull(result);
         assertEquals("John.Smith", result.getUsername());
-        assertEquals("password123", result.getPassword());
+        verify(passwordEncoder).encode(anyString());
         verify(trainerRepository).save(any(Trainer.class));
     }
 
@@ -243,16 +258,16 @@ class TrainerServiceImplTest {
         String trainerUsername = "John.Smith";
         String oldPassword = "password123";
         String newPassword = "newPassword123";
-        when(trainerRepository.authenticate(trainerUsername, oldPassword)).thenReturn(true);
         when(trainerRepository.findByUser_Username(trainerUsername)).thenReturn(Optional.of(trainer));
+        when(passwordEncoder.matches(eq(oldPassword), anyString())).thenReturn(true);
         when(trainerRepository.save(trainer)).thenReturn(trainer);
 
         trainerService.changePassword(trainerUsername, oldPassword, newPassword);
 
-        verify(trainerRepository).authenticate(trainerUsername, oldPassword);
         verify(trainerRepository).findByUser_Username(trainerUsername);
+        verify(passwordEncoder).matches(eq(oldPassword), anyString());
+        verify(passwordEncoder).encode(newPassword);
         verify(trainerRepository).save(trainer);
-        assertEquals(newPassword, trainer.getUser().getPassword());
     }
 
     @Test
@@ -260,13 +275,14 @@ class TrainerServiceImplTest {
         String trainerUsername = "John.Smith";
         String oldPassword = "wrongPassword";
         String newPassword = "newPassword123";
-        when(trainerRepository.authenticate(trainerUsername, oldPassword)).thenReturn(false);
+        when(trainerRepository.findByUser_Username(trainerUsername)).thenReturn(Optional.of(trainer));
+        when(passwordEncoder.matches(eq(oldPassword), anyString())).thenReturn(false);
 
         assertThrows(IllegalArgumentException.class, () ->
             trainerService.changePassword(trainerUsername, oldPassword, newPassword)
         );
-        verify(trainerRepository).authenticate(trainerUsername, oldPassword);
-        verify(trainerRepository, never()).findByUser_Username(any());
+        verify(trainerRepository).findByUser_Username(trainerUsername);
+        verify(passwordEncoder).matches(eq(oldPassword), anyString());
         verify(trainerRepository, never()).save(any());
     }
 

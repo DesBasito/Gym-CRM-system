@@ -12,10 +12,13 @@ import epam.gym.domain.services.interfaces.TraineeService;
 import epam.gym.domain.services.interfaces.TrainerService;
 import epam.gym.domain.services.interfaces.TrainingService;
 import epam.gym.infrastructure.controller.interfaces.TraineeController;
+import epam.gym.infrastructure.security.util.AuthenticatedUserUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,7 +33,7 @@ public class TraineeControllerImpl implements TraineeController {
 
     private final TraineeService traineeService;
     private final TrainerService trainerService;
-    private final TrainingService trainingService;
+    private final AuthenticatedUserUtil authenticatedUserUtil;
 
     @Override
     public ResponseEntity<RegistrationResponse> registerTrainee(TraineeRequest request) {
@@ -43,12 +46,12 @@ public class TraineeControllerImpl implements TraineeController {
     }
 
     @Override
-    public ResponseEntity<TraineeProfileDto> getTraineeProfile(String username) {
-        log.info("Get trainee profile request received for username: {}", username);
+    public ResponseEntity<TraineeProfileDto> getTraineeProfile(Authentication authentication) {
+        log.info("Get trainee profile request received for username: {}", authentication.getName());
 
-        TraineeProfileDto profile = traineeService.selectByUsername(username);
+        TraineeProfileDto profile = traineeService.selectByUsername(authentication.getName());
 
-        log.info("Trainee profile retrieved successfully for username: {}", username);
+        log.info("Trainee profile retrieved successfully for username: {}", authentication.getName());
         return ResponseEntity.ok(profile);
     }
 
@@ -63,17 +66,18 @@ public class TraineeControllerImpl implements TraineeController {
     }
 
     @Override
-    public ResponseEntity<List<TrainerInfoDto>> getAvailableTrainers(String username) {
-        log.info("Get available trainers request received for trainee: {}", username);
+    public ResponseEntity<List<TrainerInfoDto>> getAvailableTrainers() {
+        log.info("Get available trainers request received for trainee: {}", authenticatedUserUtil.getCurrentUsername());
 
-        List<TrainerInfoDto> trainers = trainerService.findAllNotAssignedToTrainee(username);
+        List<TrainerInfoDto> trainers = trainerService.findAllNotAssignedToTrainee(authenticatedUserUtil.getCurrentUsername());
 
-        log.info("Found {} available trainers for trainee: {}", trainers.size(), username);
+        log.info("Found {} available trainers for trainee: {}", trainers.size(), authenticatedUserUtil.getCurrentUsername());
         return ResponseEntity.ok(trainers);
     }
 
     @Override
-    public ResponseEntity<TraineeProfileDto> updateTraineeProfile(UpdateTraineeRequest request) {
+    @PreAuthorize("@authenticatedUserUtil.isProfileOwner(#id, authentication.name) or hasRole('ADMIN')")
+    public ResponseEntity<TraineeProfileDto> updateTraineeProfile(UpdateTraineeRequest request, Long id) {
         log.info("Update trainee profile request received for username: {}", request.getUsername());
 
         TraineeProfileDto profile = traineeService.updateByUsername(request);
@@ -84,15 +88,16 @@ public class TraineeControllerImpl implements TraineeController {
 
     @Override
     public ResponseEntity<Void> changePassword(ChangePasswordRequest request) {
-        log.info("Change password request received for trainee: {}", request.getUsername());
+        log.info("Change password request received for trainee: {}", authenticatedUserUtil.getCurrentUsername());
 
-        traineeService.changePassword(request.getUsername(), request.getOldPassword(), request.getNewPassword());
+        traineeService.changePassword(authenticatedUserUtil.getCurrentUsername(), request.getOldPassword(), request.getNewPassword());
 
-        log.info("Password changed successfully for trainee: {}", request.getUsername());
+        log.info("Password changed successfully for trainee: {}", authenticatedUserUtil.getCurrentUsername());
         return ResponseEntity.ok().build();
     }
 
     @Override
+    @PreAuthorize("@authenticatedUserUtil.isProfileOwnerByUsername(#username, authentication.name) or hasRole('ADMIN')")
     public ResponseEntity<Void> activateDeactivateTrainee(String username, Boolean isActive) {
         log.info("Activate/Deactivate trainee request received for username: {}, isActive: {}", username, isActive);
 
@@ -104,14 +109,14 @@ public class TraineeControllerImpl implements TraineeController {
 
     @Override
     public ResponseEntity<List<TrainerInfoDto>> updateTrainersList(UpdateTraineeTrainersRequest request) {
-        log.info("Update trainers list request received for trainee: {}", request.getTraineeUsername());
+        log.info("Update trainers list request received for trainee: {}", authenticatedUserUtil.getCurrentUsername());
 
         List<TrainerInfoDto> trainers = traineeService.updateTrainersList(
-                request.getTraineeUsername(),
+                authenticatedUserUtil.getCurrentUsername(),
                 request.getTrainerUsernames()
         );
 
-        log.info("Trainers list updated successfully for trainee: {}, trainers count: {}", request.getTraineeUsername(), trainers.size());
+        log.info("Trainers list updated successfully for trainee: {}, trainers count: {}", authenticatedUserUtil.getCurrentUsername(), trainers.size());
         return ResponseEntity.ok(trainers);
     }
 }

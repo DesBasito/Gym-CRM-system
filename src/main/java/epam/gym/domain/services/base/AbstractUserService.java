@@ -7,7 +7,9 @@ import epam.gym.infrastructure.mappers.BaseMapper;
 import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
 import epam.gym.util.UsernameAndPasswordGenerator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.NoSuchElementException;
@@ -22,10 +24,13 @@ public abstract class AbstractUserService<T extends UserHolder,
 
     protected UserMetrics userMetrics;
 
-    protected AbstractUserService(R repository, BaseMapper<T, M, Q, D> mapper, UserMetrics userMetrics) {
+    protected final PasswordEncoder passwordEncoder;
+
+    protected AbstractUserService(R repository, BaseMapper<T, M, Q, D> mapper, UserMetrics userMetrics, PasswordEncoder encoder) {
         this.repository = repository;
         this.mapper = mapper;
         this.userMetrics = userMetrics;
+        this.passwordEncoder = encoder;
     }
 
     protected abstract void updateEntityFields(T entity, Q request);
@@ -44,6 +49,9 @@ public abstract class AbstractUserService<T extends UserHolder,
         M model = mapper.requestToModel(request);
         setGeneratedCredentials(model);
 
+        String plainPassword = model.getPassword();
+        model.setPassword(passwordEncoder.encode(plainPassword));
+
         T entity = mapper.toEntity(model);
         beforeCreate(entity, request);
 
@@ -55,7 +63,7 @@ public abstract class AbstractUserService<T extends UserHolder,
 
         RegistrationResponse response = RegistrationResponse.builder()
                 .username(created.getUser().getUsername())
-                .password(created.getUser().getPassword())
+                .password(plainPassword)
                 .build();
 
         log.info("User created successfully with username: {}", response.getUsername());
@@ -112,14 +120,14 @@ public abstract class AbstractUserService<T extends UserHolder,
     public void changePassword(String username, String oldPassword, String newPassword) {
         log.info("Changing password for user: {}", username);
 
-        if (!authenticate(username, oldPassword)) {
-            throw new IllegalArgumentException("Invalid username or password");
-        }
-
         T entity = findByUsername(username)
                 .orElseThrow(() -> new NoSuchElementException("User not found with username: " + username));
 
-        entity.getUser().setPassword(newPassword);
+        if (!passwordEncoder.matches(oldPassword, entity.getUser().getPassword())) {
+            throw new IllegalArgumentException("Invalid username or password");
+        }
+
+        entity.getUser().setPassword(passwordEncoder.encode(newPassword));
         repository.save(entity);
         log.info("Password changed successfully for user: {}", username);
     }

@@ -20,7 +20,7 @@ import java.util.List;
 public interface TrainingController {
 
     @GetMapping("/types")
-    @Operation(summary = "Get Training types", description = "Retrieves list of all training types")
+    @Operation(summary = "Get Training types", description = "Retrieves list of all training types", security = {})
     @ApiResponse(responseCode = "200", description = "Types retrieved successfully")
     ResponseEntity<List<TrainingTypeDto>> getTrainingTypes();
 
