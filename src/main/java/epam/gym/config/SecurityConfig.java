@@ -49,7 +49,7 @@ public class SecurityConfig {
                                 "/webjars/**").permitAll()
                         .requestMatchers("/api/v1/trainings/types").permitAll()
                         .requestMatchers("/actuator/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/trainees/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/trainees/**").hasAnyRole("TRAINEE", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/trainees","/api/v1/trainers").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/trainees/**").hasAnyRole("TRAINEE", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/trainees/**").hasAnyRole("TRAINEE", "ADMIN")
@@ -72,7 +72,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

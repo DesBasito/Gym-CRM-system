@@ -8,8 +8,11 @@ import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TraineeService;
 import epam.gym.constants.RoleName;
+import epam.gym.infrastructure.client.WorkloadServiceClient;
+import epam.gym.infrastructure.client.dto.WorkloadRequest;
 import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Trainer;
+import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.mappers.TraineeMapper;
 import epam.gym.infrastructure.mappers.TrainerMapper;
 import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
@@ -19,6 +22,7 @@ import epam.gym.infrastructure.security.service.RoleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,13 +39,15 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
     private final TrainerRepository trainerRepository;
     private final TrainerMapper trainerMapper;
     private final RoleService roleService;
+    private final WorkloadServiceClient workloadServiceClient;
 
     @Autowired
-    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper, TrainerRepository trainerRepository, TrainerMapper trainerMapper, UserMetrics userMetrics, RoleService roleService, PasswordEncoder passwordEncoder) {
+    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper, TrainerRepository trainerRepository, TrainerMapper trainerMapper, UserMetrics userMetrics, RoleService roleService, PasswordEncoder passwordEncoder, WorkloadServiceClient workloadServiceClient) {
         super(repo, mapper, userMetrics, passwordEncoder);
         this.trainerRepository = trainerRepository;
         this.trainerMapper = trainerMapper;
         this.roleService = roleService;
+        this.workloadServiceClient = workloadServiceClient;
     }
 
     @Override
@@ -101,10 +107,39 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
                 .orElseThrow(
                         ()-> new NoSuchElementException("Trainee not found with username: " + username));
 
+        for (Training training : trainee.getTrainings()) {
+            notifyWorkloadService(training, WorkloadRequest.ActionType.DELETE);
+        }
+
         trainee.getTrainings().clear();
 
         repository.delete(trainee);
         log.info("Trainee deleted successfully with username: {}", username);
+    }
+
+    protected void notifyWorkloadService(Training training, WorkloadRequest.ActionType actionType) {
+        try {
+            WorkloadRequest request = WorkloadRequest.builder()
+                    .username(training.getTrainer().getUser().getUsername())
+                    .firstName(training.getTrainer().getUser().getFirstName())
+                    .lastName(training.getTrainer().getUser().getLastName())
+                    .isActive(training.getTrainer().getUser().getIsActive())
+                    .trainingDate(training.getTrainingDate())
+                    .trainingDuration(training.getTrainingDuration())
+                    .actionType(actionType)
+                    .build();
+
+            log.info("Notifying workload-service about training {} for trainer: {}",
+                    actionType, training.getTrainer().getUser().getUsername());
+
+            workloadServiceClient.updateWorkload(request);
+
+            log.debug("Successfully notified workload-service for trainer: {}",
+                    training.getTrainer().getUser().getUsername());
+        } catch (Exception e) {
+            log.error("Failed to notify workload-service for trainer: {}. Error: {}",
+                    training.getTrainer().getUser().getUsername(), e.getMessage(), e);
+        }
     }
 
     @Override

@@ -6,10 +6,12 @@ import epam.gym.domain.dto.request.TrainingRequest;
 import epam.gym.domain.dto.response.TrainingDto;
 import epam.gym.domain.models.TrainingModel;
 import epam.gym.domain.services.impl.TrainingServiceImpl;
+import epam.gym.infrastructure.client.WorkloadServiceClient;
 import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.entities.TrainingType;
+import epam.gym.infrastructure.entities.User;
 import epam.gym.infrastructure.mappers.TrainingMapper;
 import epam.gym.infrastructure.monitoring.metrics.TrainingMetrics;
 import epam.gym.infrastructure.repositories.TraineeRepository;
@@ -55,6 +57,9 @@ class TrainingServiceImplTest {
     @Mock
     private TrainingMetrics trainingMetrics;
 
+    @Mock
+    private WorkloadServiceClient workloadServiceClient;
+
     @InjectMocks
     private TrainingServiceImpl trainingService;
 
@@ -64,6 +69,8 @@ class TrainingServiceImplTest {
     private Trainee trainee;
     private Trainer trainer;
     private TrainingType trainingType;
+    private User traineeUser;
+    private User trainerUser;
 
     @BeforeEach
     void setUp() {
@@ -75,11 +82,27 @@ class TrainingServiceImplTest {
         trainingRequest.setTrainingDate(LocalDate.of(2024, 1, 15));
         trainingRequest.setTrainingDuration(60);
 
+        traineeUser = new User();
+        traineeUser.setId(1L);
+        traineeUser.setUsername("John.Doe");
+        traineeUser.setFirstName("John");
+        traineeUser.setLastName("Doe");
+        traineeUser.setIsActive(true);
+
         trainee = new Trainee();
         trainee.setId(1L);
+        trainee.setUser(traineeUser);
+
+        trainerUser = new User();
+        trainerUser.setId(2L);
+        trainerUser.setUsername("Jane.Smith");
+        trainerUser.setFirstName("Jane");
+        trainerUser.setLastName("Smith");
+        trainerUser.setIsActive(true);
 
         trainer = new Trainer();
         trainer.setId(1L);
+        trainer.setUser(trainerUser);
 
         trainingType = new TrainingType();
         trainingType.setId(1L);
