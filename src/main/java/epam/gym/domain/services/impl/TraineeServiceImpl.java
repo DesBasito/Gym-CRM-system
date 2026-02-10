@@ -8,7 +8,7 @@ import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TraineeService;
 import epam.gym.constants.RoleName;
-import epam.gym.infrastructure.client.WorkloadServiceClient;
+import epam.gym.domain.services.interfaces.WorkloadService;
 import epam.gym.infrastructure.client.dto.WorkloadRequest;
 import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Trainer;
@@ -39,15 +39,15 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
     private final TrainerRepository trainerRepository;
     private final TrainerMapper trainerMapper;
     private final RoleService roleService;
-    private final WorkloadServiceClient workloadServiceClient;
+    private final WorkloadService workloadService;
 
     @Autowired
-    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper, TrainerRepository trainerRepository, TrainerMapper trainerMapper, UserMetrics userMetrics, RoleService roleService, PasswordEncoder passwordEncoder, WorkloadServiceClient workloadServiceClient) {
+    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper, TrainerRepository trainerRepository, TrainerMapper trainerMapper, UserMetrics userMetrics, RoleService roleService, PasswordEncoder passwordEncoder, WorkloadService workloadService) {
         super(repo, mapper, userMetrics, passwordEncoder);
         this.trainerRepository = trainerRepository;
         this.trainerMapper = trainerMapper;
         this.roleService = roleService;
-        this.workloadServiceClient = workloadServiceClient;
+        this.workloadService = workloadService;
     }
 
     @Override
@@ -132,7 +132,7 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
             log.info("Notifying workload-service about training {} for trainer: {}",
                     actionType, training.getTrainer().getUser().getUsername());
 
-            workloadServiceClient.updateWorkload(request);
+            workloadService.updateWorkload(request);
 
             log.debug("Successfully notified workload-service for trainer: {}",
                     training.getTrainer().getUser().getUsername());

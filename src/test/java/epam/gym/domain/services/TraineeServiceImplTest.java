@@ -4,7 +4,7 @@ import epam.gym.domain.dto.request.TraineeRequest;
 import epam.gym.domain.dto.response.RegistrationResponse;
 import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.services.impl.TraineeServiceImpl;
-import epam.gym.infrastructure.client.WorkloadServiceClient;
+import epam.gym.domain.services.interfaces.WorkloadService;
 import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.entities.User;
@@ -59,7 +59,7 @@ class TraineeServiceImplTest {
     private UserMetrics userMetrics;
 
     @Mock
-    private WorkloadServiceClient workloadServiceClient;
+    private WorkloadService workloadService;
 
     @InjectMocks
     private TraineeServiceImpl traineeService;

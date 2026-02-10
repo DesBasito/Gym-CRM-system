@@ -8,7 +8,7 @@ import epam.gym.domain.dto.response.TrainingDto;
 import epam.gym.domain.dto.response.TrainingTypeDto;
 import epam.gym.domain.models.TrainingModel;
 import epam.gym.domain.services.interfaces.TrainingService;
-import epam.gym.infrastructure.client.WorkloadServiceClient;
+import epam.gym.domain.services.interfaces.WorkloadService;
 import epam.gym.infrastructure.client.dto.WorkloadRequest;
 import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.mappers.TrainingMapper;
@@ -39,7 +39,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingMapper mapper;
     private final TrainingTypeMapper trainingTypeMapper;
     private final TrainingMetrics trainingMetrics;
-    private final WorkloadServiceClient workloadServiceClient;
+    private final WorkloadService workloadService;
 
     @Transactional
     @Override
@@ -129,7 +129,7 @@ public class TrainingServiceImpl implements TrainingService {
             log.info("Notifying workload-service about training {} for trainer: {}",
                     actionType, training.getTrainer().getUser().getUsername());
 
-            workloadServiceClient.updateWorkload(request);
+            workloadService.updateWorkload(request);
 
             log.debug("Successfully notified workload-service for trainer: {}",
                     training.getTrainer().getUser().getUsername());
