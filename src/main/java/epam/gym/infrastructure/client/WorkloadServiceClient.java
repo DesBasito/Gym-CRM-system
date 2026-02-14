@@ -1,6 +1,6 @@
 package epam.gym.infrastructure.client;
 
-import epam.gym.infrastructure.client.dto.WorkloadRequest;
+import epam.gym.domain.dto.request.WorkloadRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

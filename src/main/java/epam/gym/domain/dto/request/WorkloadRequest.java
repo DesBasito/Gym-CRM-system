@@ -1,4 +1,4 @@
-package epam.gym.infrastructure.client.dto;
+package epam.gym.domain.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

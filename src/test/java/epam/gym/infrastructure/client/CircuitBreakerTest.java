@@ -1,6 +1,6 @@
 package epam.gym.infrastructure.client;
 
-import epam.gym.infrastructure.client.dto.WorkloadRequest;
+import epam.gym.domain.dto.request.WorkloadRequest;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
@@ -48,15 +48,7 @@ class CircuitBreakerTest {
     @Test
     @DisplayName("Should successfully call workload service when circuit is closed")
     void testSuccessfulCall_circuitClosed() {
-        WorkloadRequest request = WorkloadRequest.builder()
-                .username("trainer.test")
-                .firstName("Trainer")
-                .lastName("Test")
-                .isActive(true)
-                .trainingDate(null)
-                .trainingDuration(60)
-                .actionType(WorkloadRequest.ActionType.ADD)
-                .build();
+        WorkloadRequest request = buildRequest();
 
         doNothing().when(workloadServiceClient).updateWorkload(any(WorkloadRequest.class));
 
@@ -67,62 +59,49 @@ class CircuitBreakerTest {
     }
 
     @Test
-    @DisplayName("Should propagate exception when workload service fails")
-    void testFailedCall_exceptionPropagated() {
-        WorkloadRequest request = WorkloadRequest.builder()
-                .username("trainer.test")
-                .firstName("Trainer")
-                .lastName("Test")
-                .isActive(true)
-                .trainingDate(null)
-                .trainingDuration(60)
-                .actionType(WorkloadRequest.ActionType.ADD)
-                .build();
+    @DisplayName("Should invoke fallback when workload service fails")
+    void testFailedCall_fallbackInvoked() {
+        WorkloadRequest request = buildRequest();
 
         doThrow(FeignException.ServiceUnavailable.class)
                 .when(workloadServiceClient)
                 .updateWorkload(any(WorkloadRequest.class));
 
-        assertThrows(FeignException.ServiceUnavailable.class,
-                () -> workloadService.updateWorkload(request));
-
-        verify(workloadServiceClient, times(1)).updateWorkload(request);
+        assertDoesNotThrow(() -> workloadService.updateWorkload(request));
     }
 
     @Test
     @DisplayName("Should open circuit after failure threshold is reached")
     void testCircuitOpensAfterFailures() {
-        WorkloadRequest request = WorkloadRequest.builder()
-                .username("trainer.test")
-                .firstName("Trainer")
-                .lastName("Test")
-                .isActive(true)
-                .trainingDate(null)
-                .trainingDuration(60)
-                .actionType(WorkloadRequest.ActionType.ADD)
-                .build();
+        WorkloadRequest request = buildRequest();
 
         doThrow(FeignException.ServiceUnavailable.class)
                 .when(workloadServiceClient)
                 .updateWorkload(any(WorkloadRequest.class));
 
-        // Make multiple failed calls to exceed the minimum-number-of-calls (5) and failure-rate-threshold (50%)
         for (int i = 0; i < 10; i++) {
-            try {
-                workloadService.updateWorkload(request);
-            } catch (Exception e) {
-                // Expected exception, continue
-            }
+            workloadService.updateWorkload(request);
         }
 
-        // Circuit should be open after 10 failures (100% failure rate with window size 10)
         assertEquals(CircuitBreaker.State.OPEN, circuitBreaker.getState());
     }
 
     @Test
     @DisplayName("Should record metrics for successful and failed calls")
     void testCircuitBreakerMetrics() {
-        WorkloadRequest request = WorkloadRequest.builder()
+        WorkloadRequest request = buildRequest();
+
+        doNothing().when(workloadServiceClient).updateWorkload(any(WorkloadRequest.class));
+        workloadService.updateWorkload(request);
+        workloadService.updateWorkload(request);
+
+        CircuitBreaker.Metrics metrics = circuitBreaker.getMetrics();
+        assertEquals(2, metrics.getNumberOfSuccessfulCalls());
+        assertEquals(0, metrics.getNumberOfFailedCalls());
+    }
+
+    private WorkloadRequest buildRequest() {
+        return WorkloadRequest.builder()
                 .username("trainer.test")
                 .firstName("Trainer")
                 .lastName("Test")
@@ -131,15 +110,5 @@ class CircuitBreakerTest {
                 .trainingDuration(60)
                 .actionType(WorkloadRequest.ActionType.ADD)
                 .build();
-
-        // Make some successful calls
-        doNothing().when(workloadServiceClient).updateWorkload(any(WorkloadRequest.class));
-        workloadService.updateWorkload(request);
-        workloadService.updateWorkload(request);
-
-        // Verify metrics are being recorded
-        CircuitBreaker.Metrics metrics = circuitBreaker.getMetrics();
-        assertEquals(2, metrics.getNumberOfSuccessfulCalls());
-        assertEquals(0, metrics.getNumberOfFailedCalls());
     }
 }

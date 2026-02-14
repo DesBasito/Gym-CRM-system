@@ -9,8 +9,9 @@ import epam.gym.domain.dto.response.TrainingTypeDto;
 import epam.gym.domain.models.TrainingModel;
 import epam.gym.domain.services.interfaces.TrainingService;
 import epam.gym.domain.services.interfaces.WorkloadService;
-import epam.gym.infrastructure.client.dto.WorkloadRequest;
+import epam.gym.domain.dto.request.WorkloadRequest;
 import epam.gym.infrastructure.entities.Training;
+import epam.gym.infrastructure.mappers.WorkloadRequestMapper;
 import epam.gym.infrastructure.mappers.TrainingMapper;
 import epam.gym.infrastructure.mappers.TrainingTypeMapper;
 import epam.gym.infrastructure.monitoring.metrics.TrainingMetrics;
@@ -62,8 +63,7 @@ public class TrainingServiceImpl implements TrainingService {
         trainingMetrics.incrementTrainingCreated();
         trainingMetrics.incrementActiveTrainings();
 
-        // Notify workload-service about new training (async, non-blocking)
-        notifyWorkloadService(createdTraining, WorkloadRequest.ActionType.ADD);
+        workloadService.updateWorkload(WorkloadRequestMapper.fromTraining(createdTraining, WorkloadRequest.ActionType.ADD));
 
         log.info("Training created successfully: {}", trainingModel.getTrainingName());
         return trainingModel;
@@ -114,28 +114,4 @@ public class TrainingServiceImpl implements TrainingService {
         return trainingTypeRepository.findAll().stream().map(trainingTypeMapper::toDto).toList();
     }
 
-    protected void notifyWorkloadService(Training training, WorkloadRequest.ActionType actionType) {
-        try {
-            WorkloadRequest request = WorkloadRequest.builder()
-                    .username(training.getTrainer().getUser().getUsername())
-                    .firstName(training.getTrainer().getUser().getFirstName())
-                    .lastName(training.getTrainer().getUser().getLastName())
-                    .isActive(training.getTrainer().getUser().getIsActive())
-                    .trainingDate(training.getTrainingDate())
-                    .trainingDuration(training.getTrainingDuration())
-                    .actionType(actionType)
-                    .build();
-
-            log.info("Notifying workload-service about training {} for trainer: {}",
-                    actionType, training.getTrainer().getUser().getUsername());
-
-            workloadService.updateWorkload(request);
-
-            log.debug("Successfully notified workload-service for trainer: {}",
-                    training.getTrainer().getUser().getUsername());
-        } catch (Exception e) {
-            log.error("Failed to notify workload-service for trainer: {}. Error: {}",
-                    training.getTrainer().getUser().getUsername(), e.getMessage(), e);
-        }
-    }
 }

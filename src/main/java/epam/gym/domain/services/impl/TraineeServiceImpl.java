@@ -9,8 +9,9 @@ import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TraineeService;
 import epam.gym.constants.RoleName;
 import epam.gym.domain.services.interfaces.WorkloadService;
-import epam.gym.infrastructure.client.dto.WorkloadRequest;
+import epam.gym.domain.dto.request.WorkloadRequest;
 import epam.gym.infrastructure.entities.Trainee;
+import epam.gym.infrastructure.mappers.WorkloadRequestMapper;
 import epam.gym.infrastructure.entities.Trainer;
 import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.mappers.TraineeMapper;
@@ -108,7 +109,7 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
                         ()-> new NoSuchElementException("Trainee not found with username: " + username));
 
         for (Training training : trainee.getTrainings()) {
-            notifyWorkloadService(training, WorkloadRequest.ActionType.DELETE);
+            workloadService.updateWorkload(WorkloadRequestMapper.fromTraining(training, WorkloadRequest.ActionType.DELETE));
         }
 
         trainee.getTrainings().clear();
@@ -117,30 +118,7 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
         log.info("Trainee deleted successfully with username: {}", username);
     }
 
-    protected void notifyWorkloadService(Training training, WorkloadRequest.ActionType actionType) {
-        try {
-            WorkloadRequest request = WorkloadRequest.builder()
-                    .username(training.getTrainer().getUser().getUsername())
-                    .firstName(training.getTrainer().getUser().getFirstName())
-                    .lastName(training.getTrainer().getUser().getLastName())
-                    .isActive(training.getTrainer().getUser().getIsActive())
-                    .trainingDate(training.getTrainingDate())
-                    .trainingDuration(training.getTrainingDuration())
-                    .actionType(actionType)
-                    .build();
 
-            log.info("Notifying workload-service about training {} for trainer: {}",
-                    actionType, training.getTrainer().getUser().getUsername());
-
-            workloadService.updateWorkload(request);
-
-            log.debug("Successfully notified workload-service for trainer: {}",
-                    training.getTrainer().getUser().getUsername());
-        } catch (Exception e) {
-            log.error("Failed to notify workload-service for trainer: {}. Error: {}",
-                    training.getTrainer().getUser().getUsername(), e.getMessage(), e);
-        }
-    }
 
     @Override
     @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})
