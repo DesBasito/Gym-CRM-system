@@ -8,7 +8,10 @@ import epam.gym.domain.dto.response.TrainingDto;
 import epam.gym.domain.dto.response.TrainingTypeDto;
 import epam.gym.domain.models.TrainingModel;
 import epam.gym.domain.services.interfaces.TrainingService;
+import epam.gym.domain.services.interfaces.WorkloadService;
+import epam.gym.domain.dto.request.WorkloadRequest;
 import epam.gym.infrastructure.entities.Training;
+import epam.gym.infrastructure.mappers.WorkloadRequestMapper;
 import epam.gym.infrastructure.mappers.TrainingMapper;
 import epam.gym.infrastructure.mappers.TrainingTypeMapper;
 import epam.gym.infrastructure.monitoring.metrics.TrainingMetrics;
@@ -20,6 +23,7 @@ import epam.gym.infrastructure.specifications.TrainingSpecification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,6 +40,7 @@ public class TrainingServiceImpl implements TrainingService {
     private final TrainingMapper mapper;
     private final TrainingTypeMapper trainingTypeMapper;
     private final TrainingMetrics trainingMetrics;
+    private final WorkloadService workloadService;
 
     @Transactional
     @Override
@@ -57,6 +62,8 @@ public class TrainingServiceImpl implements TrainingService {
 
         trainingMetrics.incrementTrainingCreated();
         trainingMetrics.incrementActiveTrainings();
+
+        workloadService.updateWorkload(WorkloadRequestMapper.fromTraining(createdTraining, WorkloadRequest.ActionType.ADD));
 
         log.info("Training created successfully: {}", trainingModel.getTrainingName());
         return trainingModel;
@@ -106,4 +113,5 @@ public class TrainingServiceImpl implements TrainingService {
         log.info("Getting all Training types");
         return trainingTypeRepository.findAll().stream().map(trainingTypeMapper::toDto).toList();
     }
+
 }

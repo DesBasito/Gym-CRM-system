@@ -8,8 +8,12 @@ import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.services.base.AbstractUserService;
 import epam.gym.domain.services.interfaces.TraineeService;
 import epam.gym.constants.RoleName;
+import epam.gym.domain.services.interfaces.WorkloadService;
+import epam.gym.domain.dto.request.WorkloadRequest;
 import epam.gym.infrastructure.entities.Trainee;
+import epam.gym.infrastructure.mappers.WorkloadRequestMapper;
 import epam.gym.infrastructure.entities.Trainer;
+import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.mappers.TraineeMapper;
 import epam.gym.infrastructure.mappers.TrainerMapper;
 import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
@@ -19,6 +23,7 @@ import epam.gym.infrastructure.security.service.RoleService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,13 +40,15 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
     private final TrainerRepository trainerRepository;
     private final TrainerMapper trainerMapper;
     private final RoleService roleService;
+    private final WorkloadService workloadService;
 
     @Autowired
-    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper, TrainerRepository trainerRepository, TrainerMapper trainerMapper, UserMetrics userMetrics, RoleService roleService, PasswordEncoder passwordEncoder) {
+    public TraineeServiceImpl(TraineeRepository repo, TraineeMapper mapper, TrainerRepository trainerRepository, TrainerMapper trainerMapper, UserMetrics userMetrics, RoleService roleService, PasswordEncoder passwordEncoder, WorkloadService workloadService) {
         super(repo, mapper, userMetrics, passwordEncoder);
         this.trainerRepository = trainerRepository;
         this.trainerMapper = trainerMapper;
         this.roleService = roleService;
+        this.workloadService = workloadService;
     }
 
     @Override
@@ -101,11 +108,17 @@ public class TraineeServiceImpl extends AbstractUserService<Trainee, TraineeMode
                 .orElseThrow(
                         ()-> new NoSuchElementException("Trainee not found with username: " + username));
 
+        for (Training training : trainee.getTrainings()) {
+            workloadService.updateWorkload(WorkloadRequestMapper.fromTraining(training, WorkloadRequest.ActionType.DELETE));
+        }
+
         trainee.getTrainings().clear();
 
         repository.delete(trainee);
         log.info("Trainee deleted successfully with username: {}", username);
     }
+
+
 
     @Override
     @Transactional(rollbackFor = {IllegalArgumentException.class, NoSuchElementException.class})

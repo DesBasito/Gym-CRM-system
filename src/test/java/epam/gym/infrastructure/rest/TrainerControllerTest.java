@@ -49,6 +49,9 @@ class TrainerControllerTest {
         entityManager.createNativeQuery("DELETE FROM trainees WHERE user_id NOT IN (SELECT id FROM users WHERE username IN ('Alice.Brown', 'Bob.Wilson', 'Charlie.Davis'))").executeUpdate();
         entityManager.createNativeQuery("DELETE FROM trainers WHERE user_id NOT IN (SELECT id FROM users WHERE username IN ('John.Doe', 'Jane.Smith', 'Mike.Johnson', 'Sarah.Connor'))").executeUpdate();
         entityManager.createNativeQuery("DELETE FROM users WHERE username NOT IN ('John.Doe', 'Jane.Smith', 'Mike.Johnson', 'Alice.Brown', 'Bob.Wilson', 'Charlie.Davis', 'Sarah.Connor')").executeUpdate();
+
+        entityManager.createNativeQuery("ALTER TABLE users ALTER COLUMN id RESTART WITH 100").executeUpdate();
+        entityManager.createNativeQuery("ALTER TABLE trainings ALTER COLUMN id RESTART WITH 100").executeUpdate();
         entityManager.flush();
     }
 

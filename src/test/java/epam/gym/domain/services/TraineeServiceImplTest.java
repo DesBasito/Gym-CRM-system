@@ -4,11 +4,15 @@ import epam.gym.domain.dto.request.TraineeRequest;
 import epam.gym.domain.dto.response.RegistrationResponse;
 import epam.gym.domain.models.TraineeModel;
 import epam.gym.domain.services.impl.TraineeServiceImpl;
+import epam.gym.domain.services.interfaces.WorkloadService;
 import epam.gym.infrastructure.entities.Trainee;
 import epam.gym.infrastructure.entities.Training;
 import epam.gym.infrastructure.entities.User;
 import epam.gym.infrastructure.mappers.TraineeMapper;
+import epam.gym.infrastructure.mappers.TrainerMapper;
+import epam.gym.infrastructure.monitoring.metrics.UserMetrics;
 import epam.gym.infrastructure.repositories.TraineeRepository;
+import epam.gym.infrastructure.repositories.TrainerRepository;
 import epam.gym.infrastructure.security.service.RoleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +48,18 @@ class TraineeServiceImplTest {
 
     @Mock
     private RoleService roleService;
+
+    @Mock
+    private TrainerRepository trainerRepository;
+
+    @Mock
+    private TrainerMapper trainerMapper;
+
+    @Mock
+    private UserMetrics userMetrics;
+
+    @Mock
+    private WorkloadService workloadService;
 
     @InjectMocks
     private TraineeServiceImpl traineeService;
@@ -183,13 +199,30 @@ class TraineeServiceImplTest {
     void testDelete_shouldDeleteTraineeAndClearTrainings() {
         String username = "John.Doe";
 
+        User trainerUser = new User();
+        trainerUser.setId(2L);
+        trainerUser.setUsername("trainer.test");
+        trainerUser.setFirstName("Trainer");
+        trainerUser.setLastName("Test");
+        trainerUser.setIsActive(true);
+
+        epam.gym.infrastructure.entities.Trainer trainer = new epam.gym.infrastructure.entities.Trainer();
+        trainer.setId(1L);
+        trainer.setUser(trainerUser);
+
         Training training1 = new Training();
         training1.setId(1L);
         training1.setTrainingName("Morning Workout");
+        training1.setTrainer(trainer);
+        training1.setTrainingDate(LocalDate.of(2024, 1, 15));
+        training1.setTrainingDuration(60);
 
         Training training2 = new Training();
         training2.setId(2L);
         training2.setTrainingName("Evening Run");
+        training2.setTrainer(trainer);
+        training2.setTrainingDate(LocalDate.of(2024, 1, 16));
+        training2.setTrainingDuration(45);
 
         Set<Training> trainings = new LinkedHashSet<>();
         trainings.add(training1);
