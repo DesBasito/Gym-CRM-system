@@ -1,11 +1,12 @@
 package epam.gym.infrastructure.client;
 
+import epam.gym.config.RabbitMQConfig;
 import epam.gym.domain.dto.request.WorkloadRequest;
 import epam.gym.domain.services.interfaces.WorkloadService;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.AmqpException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -13,17 +14,24 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class WorkloadServiceImpl implements WorkloadService {
 
-    private final WorkloadServiceClient workloadServiceClient;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
-    @Retry(name = "workloadService")
-    @CircuitBreaker(name = "workloadService", fallbackMethod = "fallbackUpdate")
     public void updateWorkload(WorkloadRequest request) {
-        workloadServiceClient.updateWorkload(request);
-    }
+        try {
+            log.info("Sending workload message to RabbitMQ. Action: {}, Trainer: {}",
+                    request.getActionType(), request.getUsername());
 
-    private void fallbackUpdate(WorkloadRequest request, Throwable ex) {
-        log.error("Workload service unavailable. Action: {}, Trainer: {}. Error: {}",
-                request.getActionType(), request.getUsername(), ex.getMessage());
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.WORKLOAD_EXCHANGE,
+                    RabbitMQConfig.WORKLOAD_ROUTING_KEY,
+                    request
+            );
+
+            log.info("Workload message sent successfully for trainer: {}", request.getUsername());
+        } catch (AmqpException ex) {
+            log.error("Failed to send workload message to RabbitMQ. Action: {}, Trainer: {}. Error: {}",
+                    request.getActionType(), request.getUsername(), ex.getMessage());
+        }
     }
 }
