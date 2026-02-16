@@ -14,7 +14,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,7 +37,8 @@ class WorkloadServiceImplTest {
         verify(rabbitTemplate).convertAndSend(
                 eq(RabbitMQConfig.WORKLOAD_EXCHANGE),
                 eq(RabbitMQConfig.WORKLOAD_ROUTING_KEY),
-                eq(request)
+                eq(request),
+                any(org.springframework.amqp.core.MessagePostProcessor.class)
         );
     }
 
@@ -48,7 +49,8 @@ class WorkloadServiceImplTest {
 
         doThrow(new AmqpException("Connection refused"))
                 .when(rabbitTemplate)
-                .convertAndSend(anyString(), anyString(), any(WorkloadRequest.class));
+                .convertAndSend(anyString(), anyString(), any(WorkloadRequest.class),
+                        any(org.springframework.amqp.core.MessagePostProcessor.class));
 
         assertDoesNotThrow(() -> workloadService.updateWorkload(request));
     }
