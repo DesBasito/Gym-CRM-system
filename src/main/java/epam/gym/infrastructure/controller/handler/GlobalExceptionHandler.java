@@ -1,6 +1,5 @@
 package epam.gym.infrastructure.controller.handler;
 
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
@@ -67,14 +66,6 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", "Invalid username or password");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-    }
-
-    @ExceptionHandler(CallNotPermittedException.class)
-    public ResponseEntity<Map<String, String>> handleCircuitBreakerOpen(CallNotPermittedException ex) {
-        log.warn("Circuit breaker is open: {}", ex.getMessage());
-        Map<String, String> error = new HashMap<>();
-        error.put("error", "Service temporarily unavailable. Please try again later.");
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
     }
 
     @ExceptionHandler(Exception.class)
