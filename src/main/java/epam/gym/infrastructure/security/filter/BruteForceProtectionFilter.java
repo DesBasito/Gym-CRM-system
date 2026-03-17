@@ -51,6 +51,7 @@ public class BruteForceProtectionFilter extends OncePerRequestFilter {
                     return;
                 }
             } catch (Exception e) {
+                log.debug("Could not parse login request body for brute-force check: {}", e.getMessage());
             }
 
             filterChain.doFilter(cachedRequest, response);
